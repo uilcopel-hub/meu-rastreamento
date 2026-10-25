@@ -1,13 +1,18 @@
 // ==============================================
-// 🔷 URL DA SUA WEB APP (COLE A SUA AQUI)
+// 🔷 VERSÃO: 4.0 — SISTEMA COM ADMINISTRADOR
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbxdhs27cAFCzgpBhNMxFtxkvloV5hc2OZwDSRS-M9lr_4msAr3cJatVud4zNfDzIMjm/exec`;
+
+// 🔐 DADOS DO ADMINISTRADOR (ALTERE AQUI SE QUISER!)
+const ADM_USUARIO = `adm`;
+const ADM_SENHA = `123456`;
 // ==============================================
 
-const VERSAO_SISTEMA = '3.0 — 2026';
+const VERSAO_SISTEMA = '4.0 — ADM Implementado';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
 let usuarioAtual = null;
+let ehAdm = false;
 let veiculos = [];
 let veiculoSelecionado = null;
 let mapa = null;
@@ -17,13 +22,18 @@ let mapaRuas, mapaSatellite;
 document.addEventListener('DOMContentLoaded', () => {
   console.log('✅ SISTEMA CARREGADO — Versão:', VERSAO_SISTEMA);
   const sessao = sessionStorage.getItem('usuario_logado');
-  if (sessao) {
-    entrarComoUsuario(sessao);
-  }
+  if (sessao) entrarComoUsuario(sessao);
 });
 
 function mostrarCadastro(e) {
   e.preventDefault();
+  
+  // 🔒 APENAS ADM PODE CRIAR CONTAS
+  if (!ehAdm) {
+    alert('⚠️ Apenas o Administrador pode criar contas!');
+    return;
+  }
+  
   document.getElementById('form-entrar').classList.remove('form-visivel');
   document.getElementById('form-entrar').classList.add('form-escondido');
   document.getElementById('form-cadastro').classList.remove('form-escondido');
@@ -47,8 +57,13 @@ function limparErros() {
   if (el2) el2.textContent = '';
 }
 
-// CRIAR CONTA
+// CRIAR CONTA (SÓ ADM)
 async function criarConta() {
+  if (!ehAdm) {
+    alert('⚠️ Apenas o Administrador pode criar contas!');
+    return;
+  }
+
   const usuario = document.getElementById('novo-usuario').value.trim();
   const senha = document.getElementById('nova-senha').value;
   const confirma = document.getElementById('confirma-senha').value;
@@ -63,6 +78,9 @@ async function criarConta() {
   if (senha !== confirma) {
     erro.textContent = 'As senhas não coincidem!'; return;
   }
+  if (usuario === ADM_USUARIO) {
+    erro.textContent = '❌ Este usuário é reservado para o Administrador!'; return;
+  }
 
   try {
     erro.textContent = 'A processar...';
@@ -76,18 +94,21 @@ async function criarConta() {
     const resultado = await res.json();
     
     if (resultado.ok === true) {
-      erro.textContent = '✅ Conta criada com sucesso! Entrando...';
-      setTimeout(() => entrarComoUsuario(usuario), 1000);
+      erro.textContent = `✅ Conta criada!\nUsuário: ${usuario}\nSenha: ${senha}\n\nPasse estes dados para a pessoa!`;
+      // Limpa os campos
+      document.getElementById('novo-usuario').value = '';
+      document.getElementById('nova-senha').value = '';
+      document.getElementById('confirma-senha').value = '';
     } else {
       erro.textContent = '❌ ' + (resultado.msg || 'Erro ao criar conta');
     }
   } catch (err) {
     console.error(err);
-    erro.textContent = '⚠️ Erro de conexão com a planilha.';
+    erro.textContent = '⚠️ Erro de conexão.';
   }
 }
 
-// FAZER LOGIN
+// LOGIN
 async function fazerLogin() {
   const usuario = document.getElementById('usuario').value.trim();
   const senha = document.getElementById('senha').value;
@@ -99,6 +120,15 @@ async function fazerLogin() {
 
   try {
     erro.textContent = 'A verificar...';
+    
+    // 🔑 VERIFICA SE É O ADMINISTRADOR
+    if (usuario === ADM_USUARIO && senha === ADM_SENHA) {
+      ehAdm = true;
+      erro.textContent = '';
+      entrarComoUsuario(usuario);
+      return;
+    }
+
     const res = await fetch(URL_APPSCRIPT);
     if (!res.ok) throw new Error('Erro de rede');
     const dados = await res.json();
@@ -113,29 +143,43 @@ async function fazerLogin() {
     }
     
     if (encontrado) {
+      ehAdm = false;
       erro.textContent = '';
       entrarComoUsuario(usuario);
     } else {
-      erro.textContent = '❌ Utilizador ou senha incorretos!';
+      erro.textContent = '❌ Usuário ou senha incorretos!';
     }
   } catch (err) {
     console.error(err);
-    erro.textContent = '⚠️ Erro de conexão com a planilha.';
+    erro.textContent = '⚠️ Erro de conexão.';
   }
 }
 
 function entrarComoUsuario(usuario) {
   usuarioAtual = usuario;
   sessionStorage.setItem('usuario_logado', usuario);
+  sessionStorage.setItem('eh_adm', ehAdm);
+  
   document.getElementById('tela-login').classList.add('tela-escondida');
   document.getElementById('tela-principal').classList.remove('tela-escondida');
-  document.getElementById('nome-usuario-logado').textContent = `👤 Utilizador: ${usuario}`;
+  
+  document.getElementById('nome-usuario-logado').innerHTML = 
+    ehAdm ? `👑 Administrador: ${usuario}` : `👤 Usuário: ${usuario}`;
+  
+  // 🔒 MOSTRA/OCULTA BOTÃO DE GERENCIAR
+  const btnGerenciar = document.querySelector('.btn-gerenciar');
+  if (ehAdm) {
+    btnGerenciar.style.display = 'block';
+  } else {
+    btnGerenciar.style.display = 'none';
+  }
+  
   if (!mapa) inicializarMapa();
   carregarVeiculosDaNuvem();
 }
 
 function sair() {
-  sessionStorage.removeItem('usuario_logado');
+  sessionStorage.clear();
   location.reload();
 }
 
@@ -197,21 +241,40 @@ async function carregarVeiculosDaNuvem() {
   }
 }
 
+// SALVAR VEÍCULO (SÓ ADM)
 async function salvarVeiculo() {
+  if (!ehAdm) {
+    alert('⚠️ Apenas o Administrador pode cadastrar veículos!');
+    return;
+  }
+
   const nome = document.getElementById('campo-nome').value.trim();
   const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
   const cor = document.getElementById('campo-cor').value.trim();
   
   if (!nome || !placa) { 
-    alert('Preencha pelo menos o Nome e a Placa!'); 
+    alert('Preencha Nome e Placa!'); 
     return; 
   }
 
+  // 📌 IMPORTANTE: Veículo vinculado ao USUÁRIO que o ADM escolher
+  const usuarioDestino = prompt(`Digite o NOME DO USUÁRIO que irá acessar este veículo:`);
+  if (!usuarioDestino || usuarioDestino.trim() === '') {
+    alert('⚠️ Operação cancelada!');
+    return;
+  }
+  
   try {
     const res = await fetch(URL_APPSCRIPT, {
       method: 'POST',
       headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({ acao: 'adicionarVeiculo', usuario: usuarioAtual, placa, nomeVeiculo: nome, dados: cor })
+      body: JSON.stringify({ 
+        acao: 'adicionarVeiculo', 
+        usuario: usuarioDestino.trim(),  // Vincula ao usuário escolhido
+        placa, 
+        nomeVeiculo: nome, 
+        dados: cor 
+      })
     });
     if (!res.ok) throw new Error('Erro ao salvar');
     
@@ -221,16 +284,21 @@ async function salvarVeiculo() {
     document.getElementById('campo-nome').value = '';
     document.getElementById('campo-placa').value = '';
     document.getElementById('campo-cor').value = '';
-    alert('✅ Veículo salvo com sucesso!');
+    alert(`✅ Veículo cadastrado!\nVinculado ao usuário: ${usuarioDestino}`);
   } catch (err) {
     console.error(err);
     alert('⚠️ Erro ao salvar veículo.');
   }
 }
 
+// EXCLUIR VEÍCULO (SÓ ADM)
 async function excluirVeiculo(placa) {
-  if (!confirm(`Tem certeza que deseja excluir o veículo ${placa}?`)) return;
+  if (!ehAdm) {
+    alert('⚠️ Apenas o Administrador pode excluir veículos!');
+    return;
+  }
 
+  if (!confirm(`Tem certeza que deseja excluir o veículo ${placa}?`)) return;
   try {
     const res = await fetch(URL_APPSCRIPT, {
       method: 'POST',
@@ -238,7 +306,6 @@ async function excluirVeiculo(placa) {
       body: JSON.stringify({ acao: 'excluirVeiculo', usuario: usuarioAtual, placa })
     });
     if (!res.ok) throw new Error('Erro ao excluir');
-
     await res.json();
     await carregarVeiculosDaNuvem();
   } catch (err) {
@@ -248,6 +315,10 @@ async function excluirVeiculo(placa) {
 }
 
 function abrirGerenciador() {
+  if (!ehAdm) {
+    alert('⚠️ Apenas o Administrador pode gerenciar veículos!');
+    return;
+  }
   document.getElementById('modal-gerenciar').classList.add('modal-ativo');
   atualizarListaCadastro();
 }
@@ -266,7 +337,7 @@ function renderizarListaVeiculos() {
   c.innerHTML = '';
   
   if (veiculos.length === 0) {
-    c.innerHTML = `<p class="sem-veiculo">Nenhum veículo registado.<br>Clique em ➕ Gerenciar Veículos.</p>`;
+    c.innerHTML = `<p class="sem-veiculo">Nenhum veículo registado.</p>`;
   } else {
     veiculos.forEach(v => {
       const semSinal = !v.lat || !v.lon;
@@ -281,12 +352,16 @@ function renderizarListaVeiculos() {
       c.appendChild(div);
     });
   }
-  document.getElementById('ultima-atualizacao').textContent = `Versão ${VERSAO_SISTEMA} | ${new Date().toLocaleTimeString('pt-BR')}`;
+  
+  document.getElementById('ultima-atualizacao').textContent = 
+    `Versão ${VERSAO_SISTEMA} | ${ehAdm?'👑 MODO ADMINISTRADOR':'👤 Usuário Comum'}`;
 }
 
 function atualizarListaCadastro() {
   const c = document.getElementById('lista-cadastro');
   c.innerHTML = '';
+  
+  if (!ehAdm) return; // Usuário comum não vê a lista de cadastro
   
   if (veiculos.length === 0) { 
     c.innerHTML = '<p style="color:#888; text-align:center; padding: 10px;">Nenhum veículo registado.</p>'; 
