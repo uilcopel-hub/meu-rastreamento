@@ -1,7 +1,7 @@
 // ==============================================
-// 🔷 VERSÃO: 2.2 — CORRIGINDO CORS
+// 🔷 VERSÃO: 2.2 — CONEXÃO COM GOOGLE APPS SCRIPT
 // ==============================================
-const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbyVxRltf0QoKF9BojJipM0FcLMEj04eHMq68v5yPCG_XpeYNrZTR0nhhubQ4Ue2eF7htg/exec`;
+const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbwmh74g0utys21aRRUU6eCWvx6LEqvaPZa9lB8MtyQYgdjylr8oDOl-pAKleGdq8mlf/exec`;
 // ==============================================
 
 const VERSAO_SISTEMA = '2.2 — 25/10/2026';
@@ -26,12 +26,14 @@ function mostrarCadastro(e) {
   document.getElementById('form-cadastro').classList.add('visivel');
   limparErros();
 }
+
 function mostrarLogin(e) {
   e.preventDefault();
   document.getElementById('form-cadastro').classList.remove('visivel');
   document.getElementById('form-entrar').classList.remove('escondido');
   limparErros();
 }
+
 function limparErros() {
   const el1 = document.getElementById('erro-login');
   const el2 = document.getElementById('erro-cadastro');
@@ -56,18 +58,24 @@ async function criarConta() {
   }
 
   try {
-    await fetch(URL_APPSCRIPT, {
+    const res = await fetch(URL_APPSCRIPT, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
       body: JSON.stringify({ acao: 'criarConta', usuario, senha })
     });
     
-    erro.textContent = '✅ Conta criada! Entrando...';
-    setTimeout(() => entrarComoUsuario(usuario), 1500);
+    if (!res.ok) throw new Error('Erro ' + res.status);
+    const resultado = await res.json();
+    
+    if (resultado.ok === true) {
+      erro.textContent = '✅ Conta criada! Entrando...';
+      setTimeout(() => entrarComoUsuario(usuario), 1000);
+    } else {
+      erro.textContent = '❌ ' + (resultado.msg || 'Erro ao criar conta');
+    }
   } catch (err) {
     console.error(err);
-    erro.textContent = '⚠️ Erro. Tente novamente.';
+    erro.textContent = '⚠️ Erro de conexão. Atualize (Ctrl+F5).';
   }
 }
 
@@ -88,7 +96,7 @@ async function fazerLogin() {
     
     let encontrado = false;
     for (let i = 0; i < linhas.length; i++) {
-      if (linhas[i][0] === 'conta' && linhas[i][1] === usuario && linhas[i][2] === senha) {
+      if (linhas[i][0] === 'conta' && linhas[i][1] === usuario && String(linhas[i][2]) === senha) {
         encontrado = true;
         break;
       }
@@ -131,6 +139,7 @@ function inicializarMapa() {
   });
   mapaRuas.addTo(mapa); modoAtual = 'ruas';
 }
+
 function trocarMapa(tipo) {
   if (!mapa) return;
   if (tipo === 'ruas' && modoAtual !== 'ruas') {
@@ -174,14 +183,13 @@ async function salvarVeiculo() {
   if (!nome || !placa) { alert('Preencha Nome e Placa!'); return; }
 
   try {
-    await fetch(URL_APPSCRIPT, {
+    const res = await fetch(URL_APPSCRIPT, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
       body: JSON.stringify({ acao: 'adicionarVeiculo', usuario: usuarioAtual, placa, nomeVeiculo: nome, dados: cor })
     });
-    
-    await new Promise(r => setTimeout(r, 800));
+    if (!res.ok) throw new Error('Erro');
+    await res.json();
     await carregarVeiculosDaNuvem();
     renderizarListaVeiculos();
     atualizarListaCadastro();
@@ -198,19 +206,23 @@ function excluirVeiculo(placa) {
   renderizarListaVeiculos();
   atualizarListaCadastro();
 }
+
 function abrirGerenciador() {
   document.getElementById('modal-gerenciar').classList.add('modal-ativo');
   atualizarListaCadastro();
 }
+
 function fecharGerenciador() {
   document.getElementById('modal-gerenciar').classList.remove('modal-ativo');
 }
+
 function focarNoVeiculo(placa) {
   const v = veiculos.find(x => x.placa === placa);
   if (!v) return;
   veiculoSelecionado = veiculoSelecionado === placa ? null : placa;
   renderizarListaVeiculos();
 }
+
 function renderizarListaVeiculos() {
   const c = document.getElementById('lista-veiculos');
   c.innerHTML = '';
@@ -231,6 +243,7 @@ function renderizarListaVeiculos() {
   }
   document.getElementById('ultima-atualizacao').textContent = `Versão ${VERSAO_SISTEMA} | ${new Date().toLocaleString('pt-BR')}`;
 }
+
 function atualizarListaCadastro() {
   const c = document.getElementById('lista-cadastro');
   c.innerHTML = '';
