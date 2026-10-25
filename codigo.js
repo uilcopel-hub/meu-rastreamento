@@ -1,7 +1,10 @@
 // ==============================================
-const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbzHREmFkIG3VyDnMxw59W-_FW2jp14sqSF4RnxIqLdSlVfcigNzOdnNd4iSheNGq_kFfg/exec`;
+// 🔷 VERSÃO: 1.0 — 25/10/2026 — FINAL
+// ==============================================
+const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbyVxRltf0QoKF9BojJipM0FcLMEj04eHMq68v5yPCG_XpeYNrZTR0nhhubQ4Ue2eF7htg/exec`;
 // ==============================================
 
+const VERSAO_SISTEMA = '1.0 — 25/10/2026';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
 let usuarioAtual = null;
@@ -12,6 +15,7 @@ let modoAtual = 'ruas';
 let mapaRuas, mapaSatellite;
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('✅ SISTEMA RASTREAMENTO — Versão:', VERSAO_SISTEMA);
   const sessao = sessionStorage.getItem('usuario_logado');
   if (sessao) entrarComoUsuario(sessao);
 });
@@ -221,7 +225,8 @@ function renderizarListaVeiculos() {
   container.innerHTML = '';
   if (veiculos.length === 0) {
     container.innerHTML = `<p class="sem-veiculo">Nenhum veículo cadastrado.<br>Clique em "➕ Gerenciar Veículos" para adicionar.</p>`;
-    document.getElementById('ultima-atualizacao').textContent = new Date().toLocaleString('pt-BR');
+    document.getElementById('ultima-atualizacao').textContent = 
+      `Versão ${VERSAO_SISTEMA} | ${new Date().toLocaleString('pt-BR')}`;
     return;
   }
   veiculos.forEach(v => {
@@ -240,8 +245,10 @@ function renderizarListaVeiculos() {
     `;
     container.appendChild(div);
   });
-  document.getElementById('ultima-atualizacao').textContent = new Date().toLocaleString('pt-BR');
+  document.getElementById('ultima-atualizacao').textContent = 
+    `Versão ${VERSAO_SISTEMA} | ${new Date().toLocaleString('pt-BR')}`;
 }
+
 function atualizarListaCadastro() {
   const container = document.getElementById('lista-cadastro');
   container.innerHTML = '';
