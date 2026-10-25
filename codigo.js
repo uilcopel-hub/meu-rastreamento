@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 2.0 — 25/10/2026 — FINAL
+// 🔷 VERSÃO: 2.1 — CORRIGINDO LINK DUPLICADO
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbzcOiF47DmQZu15Pnytno7IG3CW__8q0ZExrXFwrXT5wyF4kPQXUjq4H4xo8TIyK2Xc9Q/exec`;
 // ==============================================
 
-const VERSAO_SISTEMA = '2.0 — 25/10/2026';
+const VERSAO_SISTEMA = '2.1 — 25/10/2026';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
 let usuarioAtual = null;
