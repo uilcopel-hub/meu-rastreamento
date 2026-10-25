@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Rastreamento de Veículos</title>
+    
+    <!-- Biblioteca do Mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Nosso estilo -->
+    <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header>
+        <h1>🚗 Meu Rastreamento de Veículos</h1>
+        <p>Acompanhamento em tempo real — Ibaiti / PR</p>
+    </header>
+
+    <!-- Área Principal -->
+    <main>
+        <!-- Lista dos Carros — Lado Esquerdo -->
+        <div class="painel-veiculos">
+            <h2>Meus Veículos</h2>
+            
+            <div class="veiculo" id="carro1" onclick="focarNoCarro(1)">
+                <strong>Carro 1</strong><br>
+                Placa: ABC-1234<br>
+                <span id="status1">🔄 Aguardando sinal...</span>
+            </div>
+
+            <div class="veiculo" id="carro2" onclick="focarNoCarro(2)">
+                <strong>Carro 2</strong><br>
+                Placa: DEF-5678<br>
+                <span id="status2">🔄 Aguardando sinal...</span>
+            </div>
+
+            <div class="veiculo" id="carro3" onclick="focarNoCarro(3)">
+                <strong>Carro 3</strong><br>
+                Placa: GHI-9012<br>
+                <span id="status3">🔄 Aguardando sinal...</span>
+            </div>
+        </div>
+
+        <!-- Mapa — Lado Direito com Botões -->
+        <div id="mapa">
+            <div class="tipo-mapa">
+                <button id="btnRuas" onclick="trocarMapa('ruas')">🛣️ Ruas</button>
+                <button id="btnSat" onclick="trocarMapa('satellite')">🛰️ Satélite</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Rodapé -->
+    <footer>
+        Última atualização: <span id="ultima-atualizacao">--/--/---- --:--</span>
+    </footer>
+
+    <script src="codigo.js"></script>
+</body>
+</html>

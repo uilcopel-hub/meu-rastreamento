@@ -1,0 +1,129 @@
+/* === CONFIGURAÇÕES GERAIS === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f0f4f8;
+    color: #333;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* === CABEÇALHO === */
+header {
+    background: linear-gradient(90deg, #0056b3, #007bff);
+    color: white;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+header h1 {
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+
+header p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* === ÁREA PRINCIPAL === */
+main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* === PAINEL DOS VEÍCULOS === */
+.painel-veiculos {
+    width: 280px;
+    background: white;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.painel-veiculos h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #0056b3;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+}
+
+.veiculo {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.veiculo:hover {
+    border-color: #007bff;
+    background: #e7f1ff;
+}
+
+/* === MAPA === */
+#mapa {
+    flex: 1;
+    height: 100%;
+    position: relative;
+}
+
+/* === BOTÕES TIPO DE MAPA === */
+.tipo-mapa {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tipo-mapa button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    transition: all 0.2s;
+}
+
+.tipo-mapa button:hover {
+    transform: scale(1.05);
+}
+
+#btnRuas {
+    background: #007bff;
+}
+
+#btnSat {
+    background: #6c757d;
+}
+
+/* === RODAPÉ === */
+footer {
+    background: #343a40;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* === CELULAR === */
+@media (max-width: 768px) {
+    main { flex-direction: column; }
+    .painel-veiculos { width: 100%; max-height: 200px; }
+}
