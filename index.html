@@ -9,11 +9,10 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-
   <!-- TELA DE LOGIN / CADASTRO -->
   <div id="tela-login" class="tela">
     <div class="caixa-login">
-      <h1>🚗 Rastreamento</h1>
+      <h1>🚗 Rastreamento Veicular</h1>
       
       <!-- Formulário de Login -->
       <form id="form-entrar" class="form-visivel" onsubmit="event.preventDefault(); fazerLogin();">
@@ -24,15 +23,15 @@
         <button type="submit">Entrar</button>
         <p class="troca-form">Não tem conta? <a href="#" onclick="mostrarCadastro(event)">Criar conta</a></p>
       </form>
-
-      <!-- Formulário de Cadastro -->
+      
+      <!-- Formulário de Cadastro (Só ADM) -->
       <form id="form-cadastro" class="form-escondido" onsubmit="event.preventDefault(); criarConta();">
-        <h2>Criar Conta</h2>
-        <input type="text" id="novo-usuario" placeholder="Novo usuário" autocomplete="username" required>
+        <h2>➕ Criar Novo Usuário</h2>
+        <input type="text" id="novo-usuario" placeholder="Nome do usuário" autocomplete="username" required>
         <input type="password" id="nova-senha" placeholder="Senha (mín. 4 caracteres)" autocomplete="new-password" required>
         <input type="password" id="confirma-senha" placeholder="Repetir senha" autocomplete="new-password" required>
         <p id="erro-cadastro" class="erro"></p>
-        <button type="submit">Criar conta</button>
+        <button type="submit">✅ Criar Conta</button>
         <p class="troca-form">Já tem conta? <a href="#" onclick="mostrarLogin(event)">Entrar</a></p>
       </form>
     </div>
@@ -47,15 +46,21 @@
       </div>
       <button onclick="sair()" class="btn-sair">Sair</button>
     </header>
-
     <div class="conteudo">
       <aside class="barra-lateral">
-        <button onclick="abrirGerenciador()" class="btn-gerenciar">➕ Gerenciar Veículos</button>
+        <button onclick="abrirGerenciador()" class="btn-gerenciar">➕ Gerenciar Sistema</button>
+        
+        <!-- 👑 PAINEL DO ADMINISTRADOR -->
+        <div id="painel-adm" style="display:none; border-top:2px solid #ffc107; margin-top:1rem; padding-top:1rem;">
+          <h3>👑 Área do Administrador</h3>
+          <p style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">Acesso completo ao sistema</p>
+        </div>
+        
         <h3>Meus Veículos</h3>
         <div id="lista-veiculos"></div>
         <p id="ultima-atualizacao" class="info-versao"></p>
       </aside>
-
+      
       <main class="area-mapa">
         <div class="botoes-mapa">
           <button id="btnRuas" onclick="trocarMapa('ruas')">🗺️ Ruas</button>
@@ -66,25 +71,32 @@
     </div>
   </div>
 
-  <!-- MODAL DE GERENCIAMENTO DE VEÍCULOS -->
+  <!-- MODAL COMPLETO DE GERENCIAMENTO -->
   <div id="modal-gerenciar" class="modal">
-    <div class="modal-conteudo">
+    <div class="modal-conteudo" style="max-width:600px;">
       <span class="fechar" onclick="fecharGerenciador()">&times;</span>
-      <h2>Gerenciar Veículos</h2>
+      <h2>👑 Painel de Controle</h2>
       
-      <div class="cadastro-veiculo">
-        <h3>Adicionar Novo Veículo</h3>
-        <input type="text" id="campo-nome" placeholder="Nome / Modelo (ex: Carro Empresa)">
-        <input type="text" id="campo-placa" placeholder="Placa (ex: ABC1D23)">
+      <!-- CADASTRAR VEÍCULO -->
+      <div class="cadastro-veiculo" style="border-bottom:2px solid #eee; padding-bottom:1.5rem; margin-bottom:1.5rem;">
+        <h3>🚙 Adicionar Veículo</h3>
+        <input type="text" id="campo-nome" placeholder="Nome / Modelo">
+        <input type="text" id="campo-placa" placeholder="Placa">
         <input type="text" id="campo-cor" placeholder="Cor / Observação">
+        <input type="text" id="campo-usuario-dono" placeholder="Usuário DONO deste veículo" style="border-color:#28a745;">
         <button type="button" onclick="salvarVeiculo()">💾 Salvar Veículo</button>
       </div>
-
-      <h3>Veículos Cadastrados</h3>
-      <div id="lista-cadastro"></div>
+      
+      <!-- TODOS OS USUÁRIOS -->
+      <h3>👤 Todos os Usuários</h3>
+      <div id="lista-todos-usuarios" style="margin-bottom:1.5rem;"></div>
+      
+      <!-- TODOS OS VEÍCULOS -->
+      <h3>🚘 Todos os Veículos do Sistema</h3>
+      <div id="lista-todos-veiculos"></div>
     </div>
   </div>
 
-  <script src="codigo.js?v=3.2"></script>
+  <script src="codigo.js?v=5.1"></script>
 </body>
 </html>

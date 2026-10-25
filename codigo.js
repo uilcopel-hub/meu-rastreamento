@@ -1,19 +1,21 @@
 // ==============================================
-// 🔷 VERSÃO: 4.0 — SISTEMA COM ADMINISTRADOR
+// 🔷 VERSÃO: 5.0 — PAINEL ADMINISTRADOR COMPLETO
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbxdhs27cAFCzgpBhNMxFtxkvloV5hc2OZwDSRS-M9lr_4msAr3cJatVud4zNfDzIMjm/exec`;
 
-// 🔐 DADOS DO ADMINISTRADOR (ALTERE AQUI SE QUISER!)
+// 🔐 DADOS DO ADMINISTRADOR — ALTERE AQUI SE QUISER!
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
 // ==============================================
 
-const VERSAO_SISTEMA = '4.0 — ADM Implementado';
+const VERSAO_SISTEMA = '5.0 — Painel Completo ADM';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
 let usuarioAtual = null;
 let ehAdm = false;
 let veiculos = [];
+let todosUsuarios = [];
+let todosVeiculos = [];
 let veiculoSelecionado = null;
 let mapa = null;
 let modoAtual = 'ruas';
@@ -27,13 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function mostrarCadastro(e) {
   e.preventDefault();
-  
-  // 🔒 APENAS ADM PODE CRIAR CONTAS
   if (!ehAdm) {
-    alert('⚠️ Apenas o Administrador pode criar contas!');
+    alert('⚠️ Apenas o Administrador pode criar contas! Entre com a conta de ADM primeiro.');
     return;
   }
-  
   document.getElementById('form-entrar').classList.remove('form-visivel');
   document.getElementById('form-entrar').classList.add('form-escondido');
   document.getElementById('form-cadastro').classList.remove('form-escondido');
@@ -57,7 +56,7 @@ function limparErros() {
   if (el2) el2.textContent = '';
 }
 
-// CRIAR CONTA (SÓ ADM)
+// CRIAR CONTA — SÓ ADM
 async function criarConta() {
   if (!ehAdm) {
     alert('⚠️ Apenas o Administrador pode criar contas!');
@@ -94,11 +93,11 @@ async function criarConta() {
     const resultado = await res.json();
     
     if (resultado.ok === true) {
-      erro.textContent = `✅ Conta criada!\nUsuário: ${usuario}\nSenha: ${senha}\n\nPasse estes dados para a pessoa!`;
-      // Limpa os campos
+      erro.innerHTML = `✅ <strong>Conta criada!</strong><br>Usuário: <code>${usuario}</code><br>Senha: <code>${senha}</code>`;
       document.getElementById('novo-usuario').value = '';
       document.getElementById('nova-senha').value = '';
       document.getElementById('confirma-senha').value = '';
+      await carregarDadosCompletos(); // Atualiza lista
     } else {
       erro.textContent = '❌ ' + (resultado.msg || 'Erro ao criar conta');
     }
@@ -121,7 +120,7 @@ async function fazerLogin() {
   try {
     erro.textContent = 'A verificar...';
     
-    // 🔑 VERIFICA SE É O ADMINISTRADOR
+    // 🔑 LOGIN DO ADMINISTRADOR
     if (usuario === ADM_USUARIO && senha === ADM_SENHA) {
       ehAdm = true;
       erro.textContent = '';
@@ -129,6 +128,7 @@ async function fazerLogin() {
       return;
     }
 
+    // LOGIN DE USUÁRIO COMUM
     const res = await fetch(URL_APPSCRIPT);
     if (!res.ok) throw new Error('Erro de rede');
     const dados = await res.json();
@@ -166,21 +166,262 @@ function entrarComoUsuario(usuario) {
   document.getElementById('nome-usuario-logado').innerHTML = 
     ehAdm ? `👑 Administrador: ${usuario}` : `👤 Usuário: ${usuario}`;
   
-  // 🔒 MOSTRA/OCULTA BOTÃO DE GERENCIAR
+  // 🔒 MOSTRA/OCULTA ELEMENTOS DE ADM
+  const painelAdm = document.getElementById('painel-adm');
   const btnGerenciar = document.querySelector('.btn-gerenciar');
+  
   if (ehAdm) {
+    painelAdm.style.display = 'block';
     btnGerenciar.style.display = 'block';
+    carregarDadosCompletos();
   } else {
+    painelAdm.style.display = 'none';
     btnGerenciar.style.display = 'none';
+    carregarVeiculosDaNuvem();
   }
   
   if (!mapa) inicializarMapa();
-  carregarVeiculosDaNuvem();
 }
 
 function sair() {
   sessionStorage.clear();
   location.reload();
+}
+
+// 📊 CARREGAR TUDO — APENAS PARA ADM
+async function carregarDadosCompletos() {
+  try {
+    const res = await fetch(URL_APPSCRIPT);
+    const dados = await res.json();
+    const linhas = dados.dados;
+    
+    todosUsuarios = [];
+    todosVeiculos = [];
+    veiculos = [];
+
+    for (let i = 1; i < linhas.length; i++) {
+      if (!linhas[i] || !linhas[i][0]) continue;
+      
+      if (linhas[i][0] === 'conta' && linhas[i][1] !== ADM_USUARIO) {
+        todosUsuarios.push({
+          nome: linhas[i][1],
+          senha: linhas[i][2]
+        });
+      }
+      
+      if (linhas[i][0] === 'veiculo' && linhas[i][3]) {
+        todosVeiculos.push({
+          usuario: linhas[i][1],
+          placa: linhas[i][3],
+          nome: linhas[i][4] || linhas[i][3],
+          cor: linhas[i][5] || ''
+        });
+      }
+    }
+
+    renderizarPainelAdm();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// CARREGAR APENAS OS PRÓPRIOS VEÍCULOS — USUÁRIO COMUM
+async function carregarVeiculosDaNuvem() {
+  try {
+    const res = await fetch(URL_APPSCRIPT);
+    const dados = await res.json();
+    const linhas = dados.dados;
+    veiculos = [];
+    
+    for (let i = 1; i < linhas.length; i++) {
+      if (linhas[i][0] === 'veiculo' && linhas[i][1] === usuarioAtual && linhas[i][3]) {
+        veiculos.push({
+          placa: linhas[i][3],
+          nome: linhas[i][4] || linhas[i][3],
+          cor: linhas[i][5] || '',
+          corMarcador: CORES_PADRAO[veiculos.length % CORES_PADRAO.length],
+          lat: null, lon: null, velocidade: 0
+        });
+      }
+    }
+    renderizarListaVeiculos();
+  } catch (err) {
+    console.error(err);
+    veiculos = [];
+  }
+}
+
+// 🗑️ EXCLUIR USUÁRIO + VEÍCULOS DELE
+async function excluirUsuario(nomeUsuario) {
+  if (!ehAdm) return;
+  if (!confirm(`Tem certeza que deseja EXCLUIR o usuário "${nomeUsuario}" e TODOS os veículos dele?`)) return;
+
+  try {
+    const res = await fetch(URL_APPSCRIPT, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ acao: 'excluirUsuario', usuario: nomeUsuario })
+    });
+    if (!res.ok) throw new Error('Erro');
+    await res.json();
+    await carregarDadosCompletos();
+    alert(`✅ Usuário "${nomeUsuario}" removido!`);
+  } catch (err) {
+    console.error(err);
+    alert('⚠️ Erro ao excluir usuário.');
+  }
+}
+
+// 🗑️ EXCLUIR VEÍCULO
+async function excluirVeiculo(placa, usuarioDono) {
+  if (!ehAdm) return;
+  if (!confirm(`Excluir veículo ${placa} do usuário ${usuarioDono}?`)) return;
+
+  try {
+    const res = await fetch(URL_APPSCRIPT, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ acao: 'excluirVeiculo', usuario: usuarioDono, placa })
+    });
+    if (!res.ok) throw new Error('Erro');
+    await res.json();
+    await carregarDadosCompletos();
+  } catch (err) {
+    console.error(err);
+    alert('⚠️ Erro ao excluir veículo.');
+  }
+}
+
+// 💾 SALVAR VEÍCULO
+async function salvarVeiculo() {
+  if (!ehAdm) {
+    alert('⚠️ Apenas o Administrador pode cadastrar veículos!');
+    return;
+  }
+
+  const nome = document.getElementById('campo-nome').value.trim();
+  const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
+  const cor = document.getElementById('campo-cor').value.trim();
+  const usuarioDestino = document.getElementById('campo-usuario-dono').value.trim();
+  
+  if (!nome || !placa || !usuarioDestino) { 
+    alert('Preencha Nome, Placa e Usuário!'); 
+    return; 
+  }
+  
+  try {
+    const res = await fetch(URL_APPSCRIPT, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ 
+        acao: 'adicionarVeiculo', 
+        usuario: usuarioDestino,
+        placa, 
+        nomeVeiculo: nome, 
+        dados: cor 
+      })
+    });
+    if (!res.ok) throw new Error('Erro ao salvar');
+    
+    await res.json();
+    document.getElementById('campo-nome').value = '';
+    document.getElementById('campo-placa').value = '';
+    document.getElementById('campo-cor').value = '';
+    document.getElementById('campo-usuario-dono').value = '';
+    alert(`✅ Veículo salvo!\nVinculado a: ${usuarioDestino}`);
+    await carregarDadosCompletos();
+  } catch (err) {
+    console.error(err);
+    alert('⚠️ Erro ao salvar veículo.');
+  }
+}
+
+function abrirGerenciador() {
+  if (!ehAdm) { alert('⚠️ Apenas o Administrador!'); return; }
+  document.getElementById('modal-gerenciar').classList.add('modal-ativo');
+}
+
+function fecharGerenciador() {
+  document.getElementById('modal-gerenciar').classList.remove('modal-ativo');
+}
+
+function focarNoVeiculo(placa) {
+  veiculoSelecionado = veiculoSelecionado === placa ? null : placa;
+  renderizarListaVeiculos();
+}
+
+// 📊 PAINEL COMPLETO DO ADM
+function renderizarPainelAdm() {
+  const listaUsuarios = document.getElementById('lista-todos-usuarios');
+  const listaVeiculosGeral = document.getElementById('lista-todos-veiculos');
+
+  // Lista de Usuários
+  listaUsuarios.innerHTML = '';
+  if (todosUsuarios.length === 0) {
+    listaUsuarios.innerHTML = '<p style="color:#888">Nenhum usuário cadastrado.</p>';
+  } else {
+    todosUsuarios.forEach(u => {
+      const qtdVeic = todosVeiculos.filter(v => v.usuario === u.nome).length;
+      const div = document.createElement('div');
+      div.className = 'item-cadastro';
+      div.innerHTML = `
+        <div>
+          <strong>👤 ${u.nome}</strong><br>
+          Senha: ${u.senha} | Veículos: ${qtdVeic}
+        </div>
+        <button class="btn-excluir" onclick="excluirUsuario('${u.nome}')">🗑️ Excluir</button>
+      `;
+      listaUsuarios.appendChild(div);
+    });
+  }
+
+  // Lista de Todos os Veículos
+  listaVeiculosGeral.innerHTML = '';
+  if (todosVeiculos.length === 0) {
+    listaVeiculosGeral.innerHTML = '<p style="color:#888">Nenhum veículo cadastrado.</p>';
+  } else {
+    todosVeiculos.forEach(v => {
+      const div = document.createElement('div');
+      div.className = 'item-cadastro';
+      div.innerHTML = `
+        <div>
+          <strong>${v.nome}</strong><br>
+          Placa: ${v.placa} | Dono: <em>${v.usuario}</em>${v.cor?` | ${v.cor}`:''}
+        </div>
+        <button class="btn-excluir" onclick="excluirVeiculo('${v.placa}', '${v.usuario}')">🗑️ Excluir</button>
+      `;
+      listaVeiculosGeral.appendChild(div);
+    });
+  }
+
+  document.getElementById('ultima-atualizacao').textContent = 
+    `Versão ${VERSAO_SISTEMA} | 👑 ADM — Usuários: ${todosUsuarios.length} | Veículos: ${todosVeiculos.length}`;
+}
+
+// LISTA SIMPLES PARA USUÁRIO COMUM
+function renderizarListaVeiculos() {
+  const c = document.getElementById('lista-veiculos');
+  c.innerHTML = '';
+  
+  if (veiculos.length === 0) {
+    c.innerHTML = `<p class="sem-veiculo">Nenhum veículo vinculado.<br>Aguarde o administrador.</p>`;
+  } else {
+    veiculos.forEach(v => {
+      const semSinal = !v.lat || !v.lon;
+      const sel = veiculoSelecionado === v.placa;
+      const status = semSinal ? '🔄 Aguardando sinal...' : (v.velocidade > 0 ? `✅ ${v.velocidade} km/h` : '⏹ Parado');
+      
+      const div = document.createElement('div');
+      div.className = `veiculo ${semSinal?'veiculo-sem-sinal':''} ${sel?'veiculo-selecionado':''}`;
+      div.style.borderLeft = `4px solid ${v.corMarcador}`;
+      div.onclick = () => focarNoVeiculo(v.placa);
+      div.innerHTML = `<strong>${sel?'📍 ':''}${v.nome}</strong><br>Placa: ${v.placa}<br>${v.cor?`Cor: ${v.cor}<br>`:''}<span>${status}</span>`;
+      c.appendChild(div);
+    });
+  }
+  
+  document.getElementById('ultima-atualizacao').textContent = 
+    `Versão ${VERSAO_SISTEMA} | 👤 Usuário Comum`;
 }
 
 // MAPA
@@ -212,166 +453,4 @@ function trocarMapa(tipo) {
     document.getElementById('btnSat').style.background = '#007bff';
     document.getElementById('btnRuas').style.background = '#6c757d';
   }
-}
-
-// VEÍCULOS
-async function carregarVeiculosDaNuvem() {
-  try {
-    const res = await fetch(URL_APPSCRIPT);
-    const dados = await res.json();
-    const linhas = dados.dados;
-    veiculos = [];
-    
-    for (let i = 1; i < linhas.length; i++) {
-      if (linhas[i][0] === 'veiculo' && linhas[i][1] === usuarioAtual && linhas[i][3]) {
-        veiculos.push({
-          placa: linhas[i][3],
-          nome: linhas[i][4] || linhas[i][3],
-          cor: linhas[i][5] || '',
-          corMarcador: CORES_PADRAO[veiculos.length % CORES_PADRAO.length],
-          lat: null, lon: null, velocidade: 0
-        });
-      }
-    }
-    renderizarListaVeiculos();
-    atualizarListaCadastro();
-  } catch (err) {
-    console.error(err);
-    veiculos = [];
-  }
-}
-
-// SALVAR VEÍCULO (SÓ ADM)
-async function salvarVeiculo() {
-  if (!ehAdm) {
-    alert('⚠️ Apenas o Administrador pode cadastrar veículos!');
-    return;
-  }
-
-  const nome = document.getElementById('campo-nome').value.trim();
-  const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
-  const cor = document.getElementById('campo-cor').value.trim();
-  
-  if (!nome || !placa) { 
-    alert('Preencha Nome e Placa!'); 
-    return; 
-  }
-
-  // 📌 IMPORTANTE: Veículo vinculado ao USUÁRIO que o ADM escolher
-  const usuarioDestino = prompt(`Digite o NOME DO USUÁRIO que irá acessar este veículo:`);
-  if (!usuarioDestino || usuarioDestino.trim() === '') {
-    alert('⚠️ Operação cancelada!');
-    return;
-  }
-  
-  try {
-    const res = await fetch(URL_APPSCRIPT, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({ 
-        acao: 'adicionarVeiculo', 
-        usuario: usuarioDestino.trim(),  // Vincula ao usuário escolhido
-        placa, 
-        nomeVeiculo: nome, 
-        dados: cor 
-      })
-    });
-    if (!res.ok) throw new Error('Erro ao salvar');
-    
-    await res.json();
-    await carregarVeiculosDaNuvem();
-    
-    document.getElementById('campo-nome').value = '';
-    document.getElementById('campo-placa').value = '';
-    document.getElementById('campo-cor').value = '';
-    alert(`✅ Veículo cadastrado!\nVinculado ao usuário: ${usuarioDestino}`);
-  } catch (err) {
-    console.error(err);
-    alert('⚠️ Erro ao salvar veículo.');
-  }
-}
-
-// EXCLUIR VEÍCULO (SÓ ADM)
-async function excluirVeiculo(placa) {
-  if (!ehAdm) {
-    alert('⚠️ Apenas o Administrador pode excluir veículos!');
-    return;
-  }
-
-  if (!confirm(`Tem certeza que deseja excluir o veículo ${placa}?`)) return;
-  try {
-    const res = await fetch(URL_APPSCRIPT, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({ acao: 'excluirVeiculo', usuario: usuarioAtual, placa })
-    });
-    if (!res.ok) throw new Error('Erro ao excluir');
-    await res.json();
-    await carregarVeiculosDaNuvem();
-  } catch (err) {
-    console.error(err);
-    alert('⚠️ Erro ao excluir veículo.');
-  }
-}
-
-function abrirGerenciador() {
-  if (!ehAdm) {
-    alert('⚠️ Apenas o Administrador pode gerenciar veículos!');
-    return;
-  }
-  document.getElementById('modal-gerenciar').classList.add('modal-ativo');
-  atualizarListaCadastro();
-}
-
-function fecharGerenciador() {
-  document.getElementById('modal-gerenciar').classList.remove('modal-ativo');
-}
-
-function focarNoVeiculo(placa) {
-  veiculoSelecionado = veiculoSelecionado === placa ? null : placa;
-  renderizarListaVeiculos();
-}
-
-function renderizarListaVeiculos() {
-  const c = document.getElementById('lista-veiculos');
-  c.innerHTML = '';
-  
-  if (veiculos.length === 0) {
-    c.innerHTML = `<p class="sem-veiculo">Nenhum veículo registado.</p>`;
-  } else {
-    veiculos.forEach(v => {
-      const semSinal = !v.lat || !v.lon;
-      const sel = veiculoSelecionado === v.placa;
-      const status = semSinal ? '🔄 Aguardando sinal...' : (v.velocidade > 0 ? `✅ ${v.velocidade} km/h` : '⏹ Parado');
-      
-      const div = document.createElement('div');
-      div.className = `veiculo ${semSinal?'veiculo-sem-sinal':''} ${sel?'veiculo-selecionado':''}`;
-      div.style.borderLeft = `4px solid ${v.corMarcador}`;
-      div.onclick = () => focarNoVeiculo(v.placa);
-      div.innerHTML = `<strong>${sel?'📍 ':''}${v.nome}</strong><br>Placa: ${v.placa}<br>${v.cor?`Cor: ${v.cor}<br>`:''}<span>${status}</span>`;
-      c.appendChild(div);
-    });
-  }
-  
-  document.getElementById('ultima-atualizacao').textContent = 
-    `Versão ${VERSAO_SISTEMA} | ${ehAdm?'👑 MODO ADMINISTRADOR':'👤 Usuário Comum'}`;
-}
-
-function atualizarListaCadastro() {
-  const c = document.getElementById('lista-cadastro');
-  c.innerHTML = '';
-  
-  if (!ehAdm) return; // Usuário comum não vê a lista de cadastro
-  
-  if (veiculos.length === 0) { 
-    c.innerHTML = '<p style="color:#888; text-align:center; padding: 10px;">Nenhum veículo registado.</p>'; 
-    return; 
-  }
-  
-  veiculos.forEach(v => {
-    const div = document.createElement('div');
-    div.className = 'item-cadastro';
-    div.innerHTML = `<div><strong>${v.nome}</strong><br>${v.placa}${v.cor?` — ${v.cor}`:''}</div><button class="btn-excluir" onclick="excluirVeiculo('${v.placa}')">Excluir</button>`;
-    c.appendChild(div);
-  });
 }
