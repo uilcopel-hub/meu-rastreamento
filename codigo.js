@@ -1,5 +1,4 @@
 // ==============================================
-// ✅ CONFIGURAÇÃO PRONTA
 const ID_PLANILHA = '1GqozRunE4lnBaCvU7dAb6D9Nu6BiVVk1bKD8v0eoacI';
 const URL_BASE = `https://docs.google.com/spreadsheets/d/${ID_PLANILHA}/gviz/tq?tqx=out:json`;
 const URL_GRAVAR = `https://script.google.com/macros/s/AKfycbxGFYOwqpt6eYGnJEd-DS31bNK0i2kKk0WpJiDRz1joRwcsb84ZBFXh1kKXvAgNQM2_pw/exec`;
@@ -22,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sessao) entrarComoUsuario(sessao);
 });
 
-// === TROCAR TELAS ===
 function mostrarCadastro(e) {
     e.preventDefault();
     document.getElementById('form-entrar').classList.add('escondido');
@@ -42,7 +40,6 @@ function limparErros() {
     if (el2) el2.textContent = '';
 }
 
-// === CRIAR CONTA ===
 async function criarConta() {
     const usuario = document.getElementById('novo-usuario').value.trim();
     const senha = document.getElementById('nova-senha').value;
@@ -60,7 +57,7 @@ async function criarConta() {
     }
 
     try {
-        const resposta = await fetch(URL_GRAVAR, {
+        await fetch(URL_GRAVAR, {
             method: 'POST',
             mode: 'no-cors',
             headers: {'Content-Type': 'application/json'},
@@ -70,11 +67,10 @@ async function criarConta() {
         erro.textContent = '✅ Conta criada! Entrando...';
         setTimeout(() => entrarComoUsuario(usuario), 1500);
     } catch {
-        erro.textContent = '⚠️ Erro ao conectar. Verifique o Apps Script.';
+        erro.textContent = '⚠️ Erro de conexão. Tente novamente.';
     }
 }
 
-// === LOGIN ===
 async function fazerLogin() {
     const usuario = document.getElementById('usuario').value.trim();
     const senha = document.getElementById('senha').value;
@@ -85,30 +81,41 @@ async function fazerLogin() {
     }
 
     try {
+        console.log('🔍 Buscando dados...');
         const res = await fetch(URL_BASE);
-        const texto = await res.text();
-        const dados = JSON.parse(texto.substring(47, texto.length - 2));
+        if (!res.ok) throw new Error('Erro ao ler planilha');
+        
+        let texto = await res.text();
+        texto = texto.substring(47, texto.length - 2);
+        const dados = JSON.parse(texto);
+        
+        console.log('📋 Dados carregados:', dados.table.rows);
         
         let encontrado = false;
         for (const linha of dados.table.rows) {
+            const tipo = linha.c[0]?.v;
             const u = linha.c[1]?.v;
             const s = linha.c[2]?.v;
-            if (u === usuario && s === senha) {
-                encontrado = true; break;
+            
+            console.log(`Linha: tipo=${tipo} usuario=${u} senha=${s}`);
+            
+            if (tipo === 'conta' && u === usuario && s === senha) {
+                encontrado = true;
+                break;
             }
         }
         
         if (encontrado) {
             entrarComoUsuario(usuario);
         } else {
-            erro.textContent = 'Usuário ou senha incorretos!';
+            erro.textContent = '❌ Usuário ou senha não encontrado!';
         }
-    } catch {
-        erro.textContent = '⚠️ Verifique a planilha e o compartilhamento.';
+    } catch (erroLeitura) {
+        console.error(erroLeitura);
+        erro.textContent = '⚠️ Erro de leitura — verifique o compartilhamento da planilha!';
     }
 }
 
-// === ENTRAR NO SISTEMA ===
 async function entrarComoUsuario(usuario) {
     usuarioAtual = usuario;
     sessionStorage.setItem('usuario_logado', usuario);
@@ -129,7 +136,6 @@ function sair() {
     location.reload();
 }
 
-// === MAPA ===
 function inicializarMapa() {
     mapa = L.map('mapa').setView([-23.8478, -50.1961], 13);
     mapaRuas = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -158,16 +164,19 @@ function trocarMapa(tipo) {
     }
 }
 
-// === CARREGAR VEÍCULOS ===
 async function carregarVeiculosDaNuvem() {
     try {
         const res = await fetch(URL_BASE);
-        const texto = await res.text();
-        const dados = JSON.parse(texto.substring(47, texto.length - 2));
+        let texto = await res.text();
+        texto = texto.substring(47, texto.length - 2);
+        const dados = JSON.parse(texto);
+        
         veiculos = []; historico = {};
         
         for (const linha of dados.table.rows) {
-            if (linha.c[1]?.v === usuarioAtual && linha.c[3]?.v) {
+            const tipo = linha.c[0]?.v;
+            const dono = linha.c[1]?.v;
+            if (tipo === 'veiculo' && dono === usuarioAtual && linha.c[3]?.v) {
                 const v = {
                     placa: linha.c[3]?.v,
                     nome: linha.c[4]?.v || linha.c[3]?.v,
@@ -179,12 +188,12 @@ async function carregarVeiculosDaNuvem() {
                 historico[v.placa] = [];
             }
         }
+        console.log('🚗 Veículos carregados:', veiculos);
     } catch {
         veiculos = [];
     }
 }
 
-// === SALVAR VEÍCULO ===
 async function salvarVeiculo() {
     const nome = document.getElementById('campo-nome').value.trim();
     const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
@@ -211,7 +220,7 @@ async function salvarVeiculo() {
         document.getElementById('campo-nome').value = '';
         document.getElementById('campo-placa').value = '';
         document.getElementById('campo-cor').value = '';
-        alert('✅ Veículo salvo!');
+        alert('✅ Veículo salvo! Atualize a página para ver!');
     } catch {
         alert('⚠️ Erro ao salvar. Tente novamente.');
     }
@@ -237,7 +246,6 @@ function fecharGerenciador() {
     document.getElementById('modal-gerenciar').classList.add('modal-escondido');
 }
 
-// === RASTRO ===
 function focarNoVeiculo(placa) {
     const v = veiculos.find(x => x.placa === placa);
     if (!v) return;
@@ -249,7 +257,6 @@ function focarNoVeiculo(placa) {
     }
 }
 
-// === RENDERIZAR ===
 function renderizarListaVeiculos() {
     const container = document.getElementById('lista-veiculos');
     container.innerHTML = '';
