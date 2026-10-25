@@ -1,16 +1,11 @@
 // ==============================================
-const ID_PLANILHA = '1GqozRunE4lnBaCvU7dAb6D9Nu6BiVVk1bKD8v0eoacI';
-const URL_BASE = `https://docs.google.com/spreadsheets/d/${ID_PLANILHA}/gviz/tq?tqx=out:json`;
-const URL_GRAVAR = `https://script.google.com/macros/s/AKfycbxGFYOwqpt6eYGnJEd-DS31bNK0i2kKk0WpJiDRz1joRwcsb84ZBFXh1kKXvAgNQM2_pw/exec`;
+const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbxGFYOwqpt6eYGnJEd-DS31bNK0i2kKk0WpJiDRz1joRwcsb84ZBFXh1kKXvAgNQM2_pw/exec`;
 // ==============================================
 
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
 let usuarioAtual = null;
 let veiculos = [];
-let marcadores = {};
-let rastros = {};
-let historico = {};
 let veiculoSelecionado = null;
 let mapa = null;
 let modoAtual = 'ruas';
@@ -57,7 +52,7 @@ async function criarConta() {
   }
 
   try {
-    await fetch(URL_GRAVAR, {
+    await fetch(URL_APPSCRIPT, {
       method: 'POST',
       mode: 'no-cors',
       headers: {'Content-Type': 'application/json'},
@@ -66,7 +61,7 @@ async function criarConta() {
     erro.textContent = '✅ Conta criada! Entrando...';
     setTimeout(() => entrarComoUsuario(usuario), 1500);
   } catch {
-    erro.textContent = '⚠️ Erro de conexão. Tente novamente.';
+    erro.textContent = '⚠️ Erro. Verifique o Apps Script.';
   }
 }
 
@@ -80,19 +75,15 @@ async function fazerLogin() {
   }
 
   try {
-    const res = await fetch(URL_BASE);
-    if (!res.ok) throw new Error('Erro leitura');
-    
-    let texto = await res.text();
-    texto = texto.substring(47, texto.length - 2);
-    const dados = JSON.parse(texto);
+    const res = await fetch(URL_APPSCRIPT);
+    const dados = await res.json();
+    const linhas = dados.dados;
     
     let encontrado = false;
-    for (const linha of dados.table.rows) {
-      const tipo = linha.c[0]?.v;
-      const u = linha.c[1]?.v;
-      const s = linha.c[2]?.v;
-      
+    for (let i = 0; i < linhas.length; i++) {
+      const tipo = linhas[i][0];
+      const u = linhas[i][1];
+      const s = linhas[i][2];
       if (tipo === 'conta' && u === usuario && s === senha) {
         encontrado = true;
         break;
@@ -105,18 +96,16 @@ async function fazerLogin() {
       erro.textContent = '❌ Usuário ou senha incorretos!';
     }
   } catch {
-    erro.textContent = '⚠️ Verifique o compartilhamento da planilha!';
+    erro.textContent = '⚠️ Erro de conexão. Confirme o compartilhamento!';
   }
 }
 
 async function entrarComoUsuario(usuario) {
   usuarioAtual = usuario;
   sessionStorage.setItem('usuario_logado', usuario);
-
   document.getElementById('tela-login').classList.add('tela-escondida');
   document.getElementById('tela-principal').classList.remove('tela-escondida');
   document.getElementById('nome-usuario-logado').textContent = `👤 ${usuario}`;
-  
   if (!mapa) inicializarMapa();
   await carregarVeiculosDaNuvem();
   renderizarListaVeiculos();
@@ -130,12 +119,10 @@ function sair() {
 function inicializarMapa() {
   mapa = L.map('mapa').setView([-23.8478, -50.1961], 13);
   mapaRuas = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-    maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-    attribution: '© Google Maps'
+    maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '© Google Maps'
   });
   mapaSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-    maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-    attribution: '© Google Maps'
+    maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '© Google Maps'
   });
   mapaRuas.addTo(mapa); modoAtual = 'ruas';
 }
@@ -157,20 +144,18 @@ function trocarMapa(tipo) {
 
 async function carregarVeiculosDaNuvem() {
   try {
-    const res = await fetch(URL_BASE);
-    let texto = await res.text();
-    texto = texto.substring(47, texto.length - 2);
-    const dados = JSON.parse(texto);
-    
+    const res = await fetch(URL_APPSCRIPT);
+    const dados = await res.json();
+    const linhas = dados.dados;
     veiculos = [];
-    for (const linha of dados.table.rows) {
-      const tipo = linha.c[0]?.v;
-      const dono = linha.c[1]?.v;
-      if (tipo === 'veiculo' && dono === usuarioAtual && linha.c[3]?.v) {
+    for (let i = 0; i < linhas.length; i++) {
+      const tipo = linhas[i][0];
+      const dono = linhas[i][1];
+      if (tipo === 'veiculo' && dono === usuarioAtual && linhas[i][3]) {
         veiculos.push({
-          placa: linha.c[3]?.v,
-          nome: linha.c[4]?.v || linha.c[3]?.v,
-          cor: linha.c[5]?.v || '',
+          placa: linhas[i][3],
+          nome: linhas[i][4] || linhas[i][3],
+          cor: linhas[i][5] || '',
           corMarcador: CORES_PADRAO[veiculos.length % CORES_PADRAO.length],
           lat: null, lon: null, velocidade: 0
         });
@@ -185,19 +170,14 @@ async function salvarVeiculo() {
   const nome = document.getElementById('campo-nome').value.trim();
   const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
   const cor = document.getElementById('campo-cor').value.trim();
-
   if (!nome || !placa) { alert('Preencha Nome e Placa!'); return; }
 
   try {
-    await fetch(URL_GRAVAR, {
+    await fetch(URL_APPSCRIPT, {
       method: 'POST',
       mode: 'no-cors',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        acao: 'adicionarVeiculo',
-        usuario: usuarioAtual,
-        placa, nomeVeiculo: nome, dados: cor
-      })
+      body: JSON.stringify({ acao: 'adicionarVeiculo', usuario: usuarioAtual, placa, nomeVeiculo: nome, dados: cor })
     });
     await carregarVeiculosDaNuvem();
     renderizarListaVeiculos();
@@ -214,9 +194,6 @@ async function salvarVeiculo() {
 function excluirVeiculo(placa) {
   if (!confirm('Tem certeza?')) return;
   veiculos = veiculos.filter(v => v.placa !== placa);
-  if (marcadores[placa]) mapa.removeLayer(marcadores[placa]);
-  if (rastros[placa]) mapa.removeLayer(rastros[placa]);
-  if (veiculoSelecionado === placa) veiculoSelecionado = null;
   renderizarListaVeiculos();
   atualizarListaCadastro();
 }
@@ -234,10 +211,6 @@ function focarNoVeiculo(placa) {
   if (!v) return;
   veiculoSelecionado = veiculoSelecionado === placa ? null : placa;
   renderizarListaVeiculos();
-  if (v.lat && v.lon && veiculoSelecionado) {
-    mapa.setView([v.lat, v.lon], 16);
-    if (marcadores[placa]) marcadores[placa].openPopup();
-  }
 }
 
 function renderizarListaVeiculos() {
