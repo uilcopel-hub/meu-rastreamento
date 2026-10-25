@@ -1,5 +1,5 @@
 // ==============================================
-// 🔷 VERSÃO: 5.0 — PAINEL ADMINISTRADOR COMPLETO
+// 🔷 VERSÃO: 5.2 — CRIAR CONTA SEMPRE VISÍVEL + FUNCIONAL
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbxdhs27cAFCzgpBhNMxFtxkvloV5hc2OZwDSRS-M9lr_4msAr3cJatVud4zNfDzIMjm/exec`;
 
@@ -8,7 +8,7 @@ const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
 // ==============================================
 
-const VERSAO_SISTEMA = '5.0 — Painel Completo ADM';
+const VERSAO_SISTEMA = '5.2 — Criar Conta Corrigido';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
 let usuarioAtual = null;
@@ -24,20 +24,27 @@ let mapaRuas, mapaSatellite;
 document.addEventListener('DOMContentLoaded', () => {
   console.log('✅ SISTEMA CARREGADO — Versão:', VERSAO_SISTEMA);
   const sessao = sessionStorage.getItem('usuario_logado');
-  if (sessao) entrarComoUsuario(sessao);
+  const ehAdmSessao = sessionStorage.getItem('eh_adm') === 'true';
+  if (sessao) {
+    ehAdm = ehAdmSessao;
+    entrarComoUsuario(sessao);
+  }
 });
 
+// ✅ FORMULÁRIO ABRE NORMALMENTE PARA TODOS
 function mostrarCadastro(e) {
   e.preventDefault();
-  if (!ehAdm) {
-    alert('⚠️ Apenas o Administrador pode criar contas! Entre com a conta de ADM primeiro.');
-    return;
-  }
   document.getElementById('form-entrar').classList.remove('form-visivel');
   document.getElementById('form-entrar').classList.add('form-escondido');
   document.getElementById('form-cadastro').classList.remove('form-escondido');
   document.getElementById('form-cadastro').classList.add('form-visivel');
   limparErros();
+  
+  // 💡 Avisa logo: só funciona logado como ADM
+  const aviso = document.getElementById('erro-cadastro');
+  aviso.textContent = ehAdm 
+    ? '✅ Você está logado como ADM — pode criar contas!'
+    : 'ℹ️ Entre com a conta de ADM primeiro para criar usuários.';
 }
 
 function mostrarLogin(e) {
@@ -56,10 +63,12 @@ function limparErros() {
   if (el2) el2.textContent = '';
 }
 
-// CRIAR CONTA — SÓ ADM
+// ✅ CRIAR CONTA — SÓ FUNCIONA SE FOR ADM
 async function criarConta() {
+  // 🔒 BLOQUEIO REAL: SÓ ADM CONSEGUE SALVAR
   if (!ehAdm) {
-    alert('⚠️ Apenas o Administrador pode criar contas!');
+    alert('⚠️ Entre primeiro com o usuário e senha de ADM para poder criar contas!');
+    mostrarLogin(new Event('click'));
     return;
   }
 
@@ -93,11 +102,14 @@ async function criarConta() {
     const resultado = await res.json();
     
     if (resultado.ok === true) {
-      erro.innerHTML = `✅ <strong>Conta criada!</strong><br>Usuário: <code>${usuario}</code><br>Senha: <code>${senha}</code>`;
+      erro.innerHTML = `✅ <strong>Conta criada com sucesso!</strong><br><br>
+        👤 Usuário: <code>${usuario}</code><br>
+        🔑 Senha: <code>${senha}</code><br><br>
+        📋 Passe estes dados para a pessoa!`;
       document.getElementById('novo-usuario').value = '';
       document.getElementById('nova-senha').value = '';
       document.getElementById('confirma-senha').value = '';
-      await carregarDadosCompletos(); // Atualiza lista
+      await carregarDadosCompletos();
     } else {
       erro.textContent = '❌ ' + (resultado.msg || 'Erro ao criar conta');
     }
@@ -355,7 +367,6 @@ function renderizarPainelAdm() {
   const listaUsuarios = document.getElementById('lista-todos-usuarios');
   const listaVeiculosGeral = document.getElementById('lista-todos-veiculos');
 
-  // Lista de Usuários
   listaUsuarios.innerHTML = '';
   if (todosUsuarios.length === 0) {
     listaUsuarios.innerHTML = '<p style="color:#888">Nenhum usuário cadastrado.</p>';
@@ -375,7 +386,6 @@ function renderizarPainelAdm() {
     });
   }
 
-  // Lista de Todos os Veículos
   listaVeiculosGeral.innerHTML = '';
   if (todosVeiculos.length === 0) {
     listaVeiculosGeral.innerHTML = '<p style="color:#888">Nenhum veículo cadastrado.</p>';
@@ -398,7 +408,6 @@ function renderizarPainelAdm() {
     `Versão ${VERSAO_SISTEMA} | 👑 ADM — Usuários: ${todosUsuarios.length} | Veículos: ${todosVeiculos.length}`;
 }
 
-// LISTA SIMPLES PARA USUÁRIO COMUM
 function renderizarListaVeiculos() {
   const c = document.getElementById('lista-veiculos');
   c.innerHTML = '';
@@ -424,7 +433,6 @@ function renderizarListaVeiculos() {
     `Versão ${VERSAO_SISTEMA} | 👤 Usuário Comum`;
 }
 
-// MAPA
 function inicializarMapa() {
   mapa = L.map('mapa').setView([-23.8478, -50.1961], 13);
   mapaRuas = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
