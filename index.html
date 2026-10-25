@@ -9,6 +9,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <link rel="stylesheet" href="estilo.css">
+    <!-- Esconde cadastro desde o início -->
+    <style>#form-cadastro{display:none !important;}</style>
 </head>
 <body>
 
@@ -35,7 +37,7 @@
                 <p class="troca-form">Não tem conta? <a href="#" onclick="mostrarCadastro(event)">Criar conta</a></p>
             </div>
 
-            <div id="form-cadastro" class="escondido">
+            <div id="form-cadastro">
                 <h2>📝 Criar Nova Conta</h2>
                 <p class="subtitulo">Preencha seus dados para começar</p>
                 
