@@ -1,5 +1,5 @@
 // ==============================================
-// 🔷 VERSÃO: 5.2 — CRIAR CONTA SEMPRE VISÍVEL + FUNCIONAL
+// 🔷 VERSÃO: 6.0 — CRIAR CONTA DENTRO DO PAINEL ADM
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbxdhs27cAFCzgpBhNMxFtxkvloV5hc2OZwDSRS-M9lr_4msAr3cJatVud4zNfDzIMjm/exec`;
 
@@ -8,7 +8,7 @@ const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
 // ==============================================
 
-const VERSAO_SISTEMA = '5.2 — Criar Conta Corrigido';
+const VERSAO_SISTEMA = '6.0 — Criar Conta no Painel ADM';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
 let usuarioAtual = null;
@@ -31,92 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ✅ FORMULÁRIO ABRE NORMALMENTE PARA TODOS
-function mostrarCadastro(e) {
-  e.preventDefault();
-  document.getElementById('form-entrar').classList.remove('form-visivel');
-  document.getElementById('form-entrar').classList.add('form-escondido');
-  document.getElementById('form-cadastro').classList.remove('form-escondido');
-  document.getElementById('form-cadastro').classList.add('form-visivel');
-  limparErros();
-  
-  // 💡 Avisa logo: só funciona logado como ADM
-  const aviso = document.getElementById('erro-cadastro');
-  aviso.textContent = ehAdm 
-    ? '✅ Você está logado como ADM — pode criar contas!'
-    : 'ℹ️ Entre com a conta de ADM primeiro para criar usuários.';
-}
-
-function mostrarLogin(e) {
-  e.preventDefault();
-  document.getElementById('form-cadastro').classList.remove('form-visivel');
-  document.getElementById('form-cadastro').classList.add('form-escondido');
-  document.getElementById('form-entrar').classList.remove('form-escondido');
-  document.getElementById('form-entrar').classList.add('form-visivel');
-  limparErros();
-}
-
 function limparErros() {
   const el1 = document.getElementById('erro-login');
   const el2 = document.getElementById('erro-cadastro');
   if (el1) el1.textContent = '';
   if (el2) el2.textContent = '';
-}
-
-// ✅ CRIAR CONTA — SÓ FUNCIONA SE FOR ADM
-async function criarConta() {
-  // 🔒 BLOQUEIO REAL: SÓ ADM CONSEGUE SALVAR
-  if (!ehAdm) {
-    alert('⚠️ Entre primeiro com o usuário e senha de ADM para poder criar contas!');
-    mostrarLogin(new Event('click'));
-    return;
-  }
-
-  const usuario = document.getElementById('novo-usuario').value.trim();
-  const senha = document.getElementById('nova-senha').value;
-  const confirma = document.getElementById('confirma-senha').value;
-  const erro = document.getElementById('erro-cadastro');
-
-  if (!usuario || usuario.length < 3) {
-    erro.textContent = 'Mínimo 3 caracteres no usuário!'; return;
-  }
-  if (!senha || senha.length < 4) {
-    erro.textContent = 'Mínimo 4 caracteres na senha!'; return;
-  }
-  if (senha !== confirma) {
-    erro.textContent = 'As senhas não coincidem!'; return;
-  }
-  if (usuario === ADM_USUARIO) {
-    erro.textContent = '❌ Este usuário é reservado para o Administrador!'; return;
-  }
-
-  try {
-    erro.textContent = 'A processar...';
-    const res = await fetch(URL_APPSCRIPT, {
-      method: 'POST',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({ acao: 'criarConta', usuario, senha })
-    });
-    
-    if (!res.ok) throw new Error('Erro de rede');
-    const resultado = await res.json();
-    
-    if (resultado.ok === true) {
-      erro.innerHTML = `✅ <strong>Conta criada com sucesso!</strong><br><br>
-        👤 Usuário: <code>${usuario}</code><br>
-        🔑 Senha: <code>${senha}</code><br><br>
-        📋 Passe estes dados para a pessoa!`;
-      document.getElementById('novo-usuario').value = '';
-      document.getElementById('nova-senha').value = '';
-      document.getElementById('confirma-senha').value = '';
-      await carregarDadosCompletos();
-    } else {
-      erro.textContent = '❌ ' + (resultado.msg || 'Erro ao criar conta');
-    }
-  } catch (err) {
-    console.error(err);
-    erro.textContent = '⚠️ Erro de conexão.';
-  }
 }
 
 // LOGIN
@@ -178,16 +97,12 @@ function entrarComoUsuario(usuario) {
   document.getElementById('nome-usuario-logado').innerHTML = 
     ehAdm ? `👑 Administrador: ${usuario}` : `👤 Usuário: ${usuario}`;
   
-  // 🔒 MOSTRA/OCULTA ELEMENTOS DE ADM
-  const painelAdm = document.getElementById('painel-adm');
-  const btnGerenciar = document.querySelector('.btn-gerenciar');
-  
+  // 🔒 SÓ ADM VÊ O BOTÃO DE GERENCIAR
+  const btnGerenciar = document.getElementById('btn-gerenciar');
   if (ehAdm) {
-    painelAdm.style.display = 'block';
     btnGerenciar.style.display = 'block';
     carregarDadosCompletos();
   } else {
-    painelAdm.style.display = 'none';
     btnGerenciar.style.display = 'none';
     carregarVeiculosDaNuvem();
   }
@@ -198,6 +113,57 @@ function entrarComoUsuario(usuario) {
 function sair() {
   sessionStorage.clear();
   location.reload();
+}
+
+// ✅ CRIAR CONTA — DENTRO DO PAINEL, SÓ ADM
+async function criarConta() {
+  if (!ehAdm) {
+    alert('⚠️ Apenas o Administrador pode criar contas!');
+    return;
+  }
+
+  const usuario = document.getElementById('novo-usuario').value.trim();
+  const senha = document.getElementById('nova-senha').value;
+  const confirma = document.getElementById('confirma-senha').value;
+  const erro = document.getElementById('erro-cadastro');
+
+  if (!usuario || usuario.length < 3) {
+    erro.textContent = 'Mínimo 3 caracteres no usuário!'; return;
+  }
+  if (!senha || senha.length < 4) {
+    erro.textContent = 'Mínimo 4 caracteres na senha!'; return;
+  }
+  if (senha !== confirma) {
+    erro.textContent = 'As senhas não coincidem!'; return;
+  }
+  if (usuario === ADM_USUARIO) {
+    erro.textContent = '❌ Este usuário é reservado para o Administrador!'; return;
+  }
+
+  try {
+    erro.textContent = 'A processar...';
+    const res = await fetch(URL_APPSCRIPT, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({ acao: 'criarConta', usuario, senha })
+    });
+    
+    if (!res.ok) throw new Error('Erro de rede');
+    const resultado = await res.json();
+    
+    if (resultado.ok === true) {
+      erro.innerHTML = `✅ <strong>Conta criada!</strong><br>👤 Usuário: <code>${usuario}</code><br>🔑 Senha: <code>${senha}</code>`;
+      document.getElementById('novo-usuario').value = '';
+      document.getElementById('nova-senha').value = '';
+      document.getElementById('confirma-senha').value = '';
+      await carregarDadosCompletos();
+    } else {
+      erro.textContent = '❌ ' + (resultado.msg || 'Erro ao criar conta');
+    }
+  } catch (err) {
+    console.error(err);
+    erro.textContent = '⚠️ Erro de conexão.';
+  }
 }
 
 // 📊 CARREGAR TUDO — APENAS PARA ADM
@@ -350,11 +316,13 @@ async function salvarVeiculo() {
 
 function abrirGerenciador() {
   if (!ehAdm) { alert('⚠️ Apenas o Administrador!'); return; }
+  limparErros();
   document.getElementById('modal-gerenciar').classList.add('modal-ativo');
 }
 
 function fecharGerenciador() {
   document.getElementById('modal-gerenciar').classList.remove('modal-ativo');
+  limparErros();
 }
 
 function focarNoVeiculo(placa) {
@@ -362,7 +330,7 @@ function focarNoVeiculo(placa) {
   renderizarListaVeiculos();
 }
 
-// 📊 PAINEL COMPLETO DO ADM
+// 📊 RENDERIZAR PAINEL ADM
 function renderizarPainelAdm() {
   const listaUsuarios = document.getElementById('lista-todos-usuarios');
   const listaVeiculosGeral = document.getElementById('lista-todos-veiculos');
