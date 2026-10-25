@@ -1,5 +1,5 @@
 // ==============================================
-const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbxGFYOwqpt6eYGnJEd-DS31bNK0i2kKk0WpJiDRz1joRwcsb84ZBFXh1kKXvAgNQM2_pw/exec`;
+const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbzHREmFkIG3VyDnMxw59W-_FW2jp14sqSF4RnxIqLdSlVfcigNzOdnNd4iSheNGq_kFfg/exec`;
 // ==============================================
 
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
@@ -54,14 +54,13 @@ async function criarConta() {
   try {
     await fetch(URL_APPSCRIPT, {
       method: 'POST',
-      mode: 'no-cors',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ acao: 'criarConta', usuario, senha })
     });
     erro.textContent = '✅ Conta criada! Entrando...';
     setTimeout(() => entrarComoUsuario(usuario), 1500);
   } catch {
-    erro.textContent = '⚠️ Erro. Verifique o Apps Script.';
+    erro.textContent = '⚠️ Erro. Tente novamente.';
   }
 }
 
@@ -76,6 +75,8 @@ async function fazerLogin() {
 
   try {
     const res = await fetch(URL_APPSCRIPT);
+    if (!res.ok) throw new Error('Erro ' + res.status);
+    
     const dados = await res.json();
     const linhas = dados.dados;
     
@@ -84,6 +85,7 @@ async function fazerLogin() {
       const tipo = linhas[i][0];
       const u = linhas[i][1];
       const s = linhas[i][2];
+      
       if (tipo === 'conta' && u === usuario && s === senha) {
         encontrado = true;
         break;
@@ -95,8 +97,9 @@ async function fazerLogin() {
     } else {
       erro.textContent = '❌ Usuário ou senha incorretos!';
     }
-  } catch {
-    erro.textContent = '⚠️ Erro de conexão. Confirme o compartilhamento!';
+  } catch (err) {
+    console.error(err);
+    erro.textContent = '⚠️ Erro de conexão!';
   }
 }
 
@@ -147,6 +150,7 @@ async function carregarVeiculosDaNuvem() {
     const res = await fetch(URL_APPSCRIPT);
     const dados = await res.json();
     const linhas = dados.dados;
+    
     veiculos = [];
     for (let i = 0; i < linhas.length; i++) {
       const tipo = linhas[i][0];
@@ -175,7 +179,6 @@ async function salvarVeiculo() {
   try {
     await fetch(URL_APPSCRIPT, {
       method: 'POST',
-      mode: 'no-cors',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ acao: 'adicionarVeiculo', usuario: usuarioAtual, placa, nomeVeiculo: nome, dados: cor })
     });
