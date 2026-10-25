@@ -1,45 +1,126 @@
-// === DADOS DE ACESSO ===
-const USUARIO_PERMITIDO = 'admin';
-const SENHA_PERMITIDA = '123456';
-
-// === CORES DOS VEÍCULOS ===
+// === CORES ===
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
-// === DADOS ARMAZENADOS ===
+// === DADOS GLOBAIS ===
+let usuarioAtual = null;
 let veiculos = [];
 let marcadores = {};
-let rastros = {};       // Guarda a linha do percurso de cada carro
-let historico = {};     // Guarda os pontos por onde o carro passou
-let veiculoSelecionado = null; // Qual carro está ativo
+let rastros = {};
+let historico = {};
+let veiculoSelecionado = null;
 let mapa = null;
 let modoAtual = 'ruas';
 let mapaRuas, mapaSatellite;
 
-// === INICIALIZAÇÃO ===
+// === INICIO ===
 document.addEventListener('DOMContentLoaded', () => {
-    carregarVeiculosSalvos();
+    // Verifica se já está logado
+    const sessao = localStorage.getItem('usuario_logado');
+    if (sessao) {
+        entrarComoUsuario(sessao);
+    }
 });
 
-// === LOGIN ===
+// === TROCAR FORMULÁRIO ===
+function mostrarCadastro(e) {
+    e.preventDefault();
+    document.getElementById('form-entrar').classList.add('escondido');
+    document.getElementById('form-cadastro').classList.remove('escondido');
+    limparErros();
+}
+
+function mostrarLogin(e) {
+    e.preventDefault();
+    document.getElementById('form-cadastro').classList.add('escondido');
+    document.getElementById('form-entrar').classList.remove('escondido');
+    limparErros();
+}
+
+function limparErros() {
+    document.getElementById('erro-login').textContent = '';
+    document.getElementById('erro-cadastro').textContent = '';
+}
+
+// === CRIAR CONTA ===
+function criarConta() {
+    const usuario = document.getElementById('novo-usuario').value.trim();
+    const senha = document.getElementById('nova-senha').value;
+    const confirma = document.getElementById('confirma-senha').value;
+    const erro = document.getElementById('erro-cadastro');
+
+    if (!usuario || usuario.length < 3) {
+        erro.textContent = 'Usuário precisa ter pelo menos 3 caracteres!';
+        return;
+    }
+    if (!senha || senha.length < 4) {
+        erro.textContent = 'Senha precisa ter pelo menos 4 caracteres!';
+        return;
+    }
+    if (senha !== confirma) {
+        erro.textContent = 'As senhas não coincidem!';
+        return;
+    }
+
+    const contas = JSON.parse(localStorage.getItem('contas') || '{}');
+    if (contas[usuario]) {
+        erro.textContent = 'Esse usuário já existe! Escolha outro.';
+        return;
+    }
+
+    // Cria conta nova
+    contas[usuario] = { senha: senha };
+    localStorage.setItem('contas', JSON.stringify(contas));
+    
+    // Entra direto
+    entrarComoUsuario(usuario);
+}
+
+// === FAZER LOGIN ===
 function fazerLogin() {
     const usuario = document.getElementById('usuario').value.trim();
     const senha = document.getElementById('senha').value;
     const erro = document.getElementById('erro-login');
 
-    if (usuario === USUARIO_PERMITIDO && senha === SENHA_PERMITIDA) {
-        document.getElementById('tela-login').classList.remove('tela-ativa');
-        document.getElementById('tela-login').classList.add('tela-escondida');
-        document.getElementById('tela-principal').classList.remove('tela-escondida');
-        document.getElementById('tela-principal').classList.add('tela-ativa');
-        inicializarMapa();
-        renderizarListaVeiculos();
-    } else {
-        erro.textContent = 'Usuário ou senha incorretos!';
+    const contas = JSON.parse(localStorage.getItem('contas') || '{}');
+    
+    if (!contas[usuario]) {
+        erro.textContent = 'Usuário não encontrado!';
+        return;
     }
+    if (contas[usuario].senha !== senha) {
+        erro.textContent = 'Senha incorreta!';
+        return;
+    }
+
+    entrarComoUsuario(usuario);
+}
+
+// === ENTRAR E CARREGAR DADOS DO USUÁRIO ===
+function entrarComoUsuario(usuario) {
+    usuarioAtual = usuario;
+    localStorage.setItem('usuario_logado', usuario);
+
+    // Troca de tela
+    document.getElementById('tela-login').classList.remove('tela-ativa');
+    document.getElementById('tela-login').classList.add('tela-escondida');
+    document.getElementById('tela-principal').classList.remove('tela-escondida');
+    document.getElementById('tela-principal').classList.add('tela-ativa');
+
+    // Mostra nome do usuário
+    document.getElementById('nome-usuario-logado').textContent = `👤 ${usuario}`;
+
+    // Carrega veículos DESTE usuário (sem exemplos!)
+    carregarVeiculosDoUsuario();
+    
+    // Inicia mapa
+    if (!mapa) inicializarMapa();
+    
+    renderizarListaVeiculos();
 }
 
 // === SAIR ===
 function sair() {
+    localStorage.removeItem('usuario_logado');
     location.reload();
 }
 
@@ -79,7 +160,7 @@ function trocarMapa(tipo) {
     }
 }
 
-// === GERENCIADOR DE VEÍCULOS ===
+// === GERENCIAR VEÍCULOS ===
 function abrirGerenciador() {
     document.getElementById('modal-gerenciar').classList.add('modal-ativo');
     document.getElementById('modal-gerenciar').classList.remove('modal-escondido');
@@ -93,7 +174,7 @@ function fecharGerenciador() {
 
 function salvarVeiculo() {
     const nome = document.getElementById('campo-nome').value.trim();
-    const placa = document.getElementById('campo-placa').value.trim();
+    const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
     const cor = document.getElementById('campo-cor').value.trim();
 
     if (!nome || !placa) {
@@ -119,10 +200,10 @@ function salvarVeiculo() {
         veiculos[indiceExistente] = { ...veiculos[indiceExistente], nome, cor };
     } else {
         veiculos.push(veiculo);
-        historico[placa] = [];  // Inicia histórico vazio
+        historico[placa] = [];
     }
 
-    salvarNoNavegador();
+    salvarVeiculosDoUsuario();
     renderizarListaVeiculos();
     atualizarListaCadastro();
     
@@ -132,7 +213,7 @@ function salvarVeiculo() {
 }
 
 function excluirVeiculo(placa) {
-    if (!confirm('Tem certeza que deseja excluir este veículo?')) return;
+    if (!confirm('Tem certeza?')) return;
     
     veiculos = veiculos.filter(v => v.placa !== placa);
     
@@ -144,24 +225,22 @@ function excluirVeiculo(placa) {
     
     if (veiculoSelecionado === placa) veiculoSelecionado = null;
 
-    salvarNoNavegador();
+    salvarVeiculosDoUsuario();
     renderizarListaVeiculos();
     atualizarListaCadastro();
 }
 
-// === SELECIONAR VEÍCULO E INICIAR RASTRO ===
+// === SELECIONAR E RASTRO ===
 function focarNoVeiculo(placa) {
     const v = veiculos.find(x => x.placa === placa);
     if (!v) return;
 
-    // Se clicar no mesmo, desmarca
     if (veiculoSelecionado === placa) {
         veiculoSelecionado = null;
         renderizarListaVeiculos();
         return;
     }
 
-    // Se clicar em outro, marca como selecionado
     veiculoSelecionado = placa;
     renderizarListaVeiculos();
 
@@ -171,29 +250,19 @@ function focarNoVeiculo(placa) {
     }
 }
 
-// === ADICIONAR PONTO NO RASTRO ===
 function adicionarPontoRastro(placa, lat, lon) {
     if (!historico[placa]) historico[placa] = [];
 
-    // Evita pontos repetidos ou muito próximos
     const ultimo = historico[placa][historico[placa].length - 1];
     if (ultimo && Math.abs(ultimo[0] - lat) < 0.0001 && Math.abs(ultimo[1] - lon) < 0.0001) return;
 
-    // Adiciona novo ponto
     historico[placa].push([lat, lon]);
+    if (historico[placa].length > 200) historico[placa].shift();
 
-    // Limita o histórico a 200 pontos para não travar
-    if (historico[placa].length > 200) {
-        historico[placa].shift();
-    }
-
-    // Desenha/atualiza a linha no mapa
     const v = veiculos.find(x => x.placa === placa);
     if (!v) return;
 
-    if (rastros[placa]) {
-        mapa.removeLayer(rastros[placa]);
-    }
+    if (rastros[placa]) mapa.removeLayer(rastros[placa]);
 
     rastros[placa] = L.polyline(historico[placa], {
         color: v.corMarcador,
@@ -203,10 +272,16 @@ function adicionarPontoRastro(placa, lat, lon) {
     }).addTo(mapa);
 }
 
-// === ATUALIZAR LISTA E DESENHAR MARCADORES ===
+// === RENDERIZAR ===
 function renderizarListaVeiculos() {
     const container = document.getElementById('lista-veiculos');
     container.innerHTML = '';
+
+    if (veiculos.length === 0) {
+        container.innerHTML = `<p class="sem-veiculo">Nenhum veículo cadastrado ainda.<br>Clique em "➕ Gerenciar Veículos" para adicionar.</p>`;
+        document.getElementById('ultima-atualizacao').textContent = new Date().toLocaleString('pt-BR');
+        return;
+    }
 
     veiculos.forEach(v => {
         const semSinal = !v.lat || !v.lon;
@@ -223,11 +298,10 @@ function renderizarListaVeiculos() {
             <strong>${selecionado ? '📍 ' : ''}${v.nome}</strong><br>
             Placa: ${v.placa}<br>
             ${v.cor ? `Cor/Modelo: ${v.cor}<br>` : ''}
-            <span id="status-${v.placa.replace(/[^A-Z0-9]/g, '')}">${status}</span>
+            <span>${status}</span>
         `;
         container.appendChild(div);
 
-        // Atualiza marcador
         if (!semSinal) {
             if (!marcadores[v.placa]) {
                 marcadores[v.placa] = L.circleMarker([v.lat, v.lon], {
@@ -249,14 +323,11 @@ function renderizarListaVeiculos() {
                 Lat: ${v.lat.toFixed(6)}<br>
                 Lon: ${v.lon.toFixed(6)}<br>
                 Velocidade: ${v.velocidade} km/h<br>
-                Pontos no rastro: ${historico[v.placa] ? historico[v.placa].length : 0}<br>
+                Pontos: ${historico[v.placa] ? historico[v.placa].length : 0}<br>
                 Último sinal: ${v.ultimoSinal ? new Date(v.ultimoSinal).toLocaleString('pt-BR') : '--'}
             `);
 
-            // Adiciona ponto ao rastro SOMENTE se for o veículo selecionado
-            if (selecionado) {
-                adicionarPontoRastro(v.placa, v.lat, v.lon);
-            }
+            if (selecionado) adicionarPontoRastro(v.placa, v.lat, v.lon);
         }
     });
 
@@ -266,6 +337,11 @@ function renderizarListaVeiculos() {
 function atualizarListaCadastro() {
     const container = document.getElementById('lista-cadastro');
     container.innerHTML = '';
+
+    if (veiculos.length === 0) {
+        container.innerHTML = '<p style="color:#888">Nenhum veículo cadastrado.</p>';
+        return;
+    }
 
     veiculos.forEach(v => {
         const div = document.createElement('div');
@@ -279,68 +355,19 @@ function atualizarListaCadastro() {
         `;
         container.appendChild(div);
     });
-
-    if (veiculos.length === 0) {
-        container.innerHTML = '<p style="color:#888">Nenhum veículo cadastrado ainda.</p>';
-    }
 }
 
-// === SALVAR/CARREGAR NO NAVEGADOR ===
-function salvarNoNavegador() {
-    localStorage.setItem('rastreamento_veiculos', JSON.stringify(veiculos));
+// === SALVAR/CARREGAR POR USUÁRIO ===
+function salvarVeiculosDoUsuario() {
+    localStorage.setItem(`veiculos_${usuarioAtual}`, JSON.stringify(veiculos));
 }
 
-function carregarVeiculosSalvos() {
-    const dados = localStorage.getItem('rastreamento_veiculos');
-    if (dados) {
-        veiculos = JSON.parse(dados);
-        // Inicializa históricos
-        veiculos.forEach(v => {
-            if (!historico[v.placa]) historico[v.placa] = [];
-        });
-    } else {
-        veiculos = [
-            { id: 'ABC-1234', nome: 'Veículo 1', placa: 'ABC-1234', cor: '', corMarcador: '#28a745', lat: null, lon: null, velocidade: 0, ultimoSinal: null },
-            { id: 'DEF-5678', nome: 'Veículo 2', placa: 'DEF-5678', cor: '', corMarcador: '#007bff', lat: null, lon: null, velocidade: 0, ultimoSinal: null },
-            { id: 'GHI-9012', nome: 'Veículo 3', placa: 'GHI-9012', cor: '', corMarcador: '#fd7e14', lat: null, lon: null, velocidade: 0, ultimoSinal: null }
-        ];
-        veiculos.forEach(v => historico[v.placa] = []);
-    }
-}
-
-// ==================================================
-// 🧪 SIMULAÇÃO DE MOVIMENTO (para testar o rastro)
-// ==================================================
-let simulacaoAtiva = false;
-
-function iniciarSimulacao() {
-    if (simulacaoAtiva) return;
-    simulacaoAtiva = true;
-
-    // Posições iniciais para teste
+function carregarVeiculosDoUsuario() {
+    const dados = localStorage.getItem(`veiculos_${usuarioAtual}`);
+    veiculos = dados ? JSON.parse(dados) : [];
+    
+    // Inicializa históricos
     veiculos.forEach(v => {
-        if (!v.lat) {
-            v.lat = -23.8478 + (Math.random() - 0.5) * 0.02;
-            v.lon = -50.1961 + (Math.random() - 0.5) * 0.02;
-        }
+        if (!historico[v.placa]) historico[v.placa] = [];
     });
-
-    setInterval(() => {
-        veiculos.forEach(v => {
-            // Movimento contínuo
-            v.lon += 0.0001 + Math.random() * 0.0001;
-            v.lat += 0.00005 + Math.random() * 0.00005;
-            v.velocidade = Math.floor(35 + Math.random() * 30);
-            v.ultimoSinal = new Date().toISOString();
-        });
-        renderizarListaVeiculos();
-    }, 2000);
 }
-
-// Inicia automaticamente após login
-const verificarLogin = setInterval(() => {
-    if (mapa) {
-        clearInterval(verificarLogin);
-        iniciarSimulacao();
-    }
-}, 300);
