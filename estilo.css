@@ -1,0 +1,314 @@
+/* === CONFIGURAÇÕES GERAIS === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f0f4f8;
+    color: #333;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* === CONTROLE DE TELAS === */
+.tela-escondida { display: none !important; }
+.tela-ativa { display: block; }
+
+/* === TELA DE LOGIN === */
+#tela-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #0056b3, #007bff);
+}
+
+.caixa-login {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.caixa-login h2 {
+    color: #0056b3;
+    margin-bottom: 5px;
+}
+
+.subtitulo {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.grupo-form {
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+.grupo-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #444;
+}
+
+.grupo-form input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+.grupo-form input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.btn-principal {
+    width: 100%;
+    padding: 13px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-principal:hover {
+    background: #0056b3;
+}
+
+.erro {
+    color: red;
+    margin-top: 12px;
+}
+
+.dica-padrao {
+    margin-top: 20px;
+    font-size: 13px;
+    color: #888;
+}
+
+/* === CABEÇALHO TELA PRINCIPAL === */
+header {
+    background: linear-gradient(90deg, #0056b3, #007bff);
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+header h1 { font-size: 20px; }
+header p { font-size: 14px; opacity: 0.9; }
+
+.menu-topo {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-secundario {
+    padding: 8px 14px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.btn-secundario:hover { background: #218838; }
+.btn-sair {
+    padding: 8px 14px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-sair:hover { background: #c82333; }
+
+/* === ÁREA PRINCIPAL === */
+main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    height: calc(100vh - 100px);
+}
+
+/* === PAINEL VEÍCULOS === */
+.painel-veiculos {
+    width: 300px;
+    background: white;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.painel-veiculos h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #0056b3;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+}
+
+.veiculo {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.veiculo:hover {
+    border-color: #007bff;
+    background: #e7f1ff;
+}
+
+.veiculo-sem-sinal {
+    opacity: 0.6;
+    border-color: #ccc;
+}
+
+/* === MAPA === */
+#mapa {
+    flex: 1;
+    height: 100%;
+    position: relative;
+}
+
+.tipo-mapa {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tipo-mapa button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+#btnRuas { background: #007bff; }
+#btnSat { background: #6c757d; }
+
+/* === JANELA MODAL GERENCIAR === */
+.modal-escondido { display: none; }
+.modal-ativo {
+    display: flex;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.conteudo-modal {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.fechar {
+    position: absolute;
+    top: 15px; right: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #888;
+}
+
+.fechar:hover { color: #000; }
+
+.conteudo-modal h3 {
+    color: #0056b3;
+    margin-bottom: 20px;
+}
+
+.conteudo-modal h4 {
+    margin: 20px 0 10px;
+    color: #333;
+}
+
+.form-cadastro input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+}
+
+.item-cadastro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin-bottom: 8px;
+}
+
+.btn-excluir {
+    padding: 5px 10px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* === RODAPÉ === */
+footer {
+    background: #343a40;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* === CELULAR === */
+@media (max-width: 768px) {
+    main { flex-direction: column; }
+    .painel-veiculos { width: 100%; max-height: 200px; }
+    header { flex-direction: column; text-align: center; }
+}
+
+/* === VEÍCULO SELECIONADO COM RASTRO ATIVO === */
+.veiculo-selecionado {
+    border-color: #ffc107 !important;
+    background: #fff8e1 !important;
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.6);
+    transform: scale(1.02);
+}
