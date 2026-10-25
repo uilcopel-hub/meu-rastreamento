@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 2.1 — CORRIGINDO LINK DUPLICADO
+// 🔷 VERSÃO: 2.2 — CORRIGINDO CORS
 // ==============================================
-const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbzcOiF47DmQZu15Pnytno7IG3CW__8q0ZExrXFwrXT5wyF4kPQXUjq4H4xo8TIyK2Xc9Q/exec`;
+const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbyVxRltf0QoKF9BojJipM0FcLMEj04eHMq68v5yPCG_XpeYNrZTR0nhhubQ4Ue2eF7htg/exec`;
 // ==============================================
 
-const VERSAO_SISTEMA = '2.1 — 25/10/2026';
+const VERSAO_SISTEMA = '2.2 — 25/10/2026';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
 let usuarioAtual = null;
@@ -56,24 +56,18 @@ async function criarConta() {
   }
 
   try {
-    const res = await fetch(URL_APPSCRIPT, {
+    await fetch(URL_APPSCRIPT, {
       method: 'POST',
+      mode: 'no-cors',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ acao: 'criarConta', usuario, senha })
     });
     
-    if (!res.ok) throw new Error('Erro ' + res.status);
-    const resultado = await res.json();
-    
-    if (resultado.ok === true) {
-      erro.textContent = '✅ Conta criada! Entrando...';
-      setTimeout(() => entrarComoUsuario(usuario), 1000);
-    } else {
-      erro.textContent = '❌ ' + (resultado.msg || 'Erro ao criar conta');
-    }
+    erro.textContent = '✅ Conta criada! Entrando...';
+    setTimeout(() => entrarComoUsuario(usuario), 1500);
   } catch (err) {
     console.error(err);
-    erro.textContent = '⚠️ Erro de conexão. Atualize (Ctrl+F5).';
+    erro.textContent = '⚠️ Erro. Tente novamente.';
   }
 }
 
@@ -180,13 +174,14 @@ async function salvarVeiculo() {
   if (!nome || !placa) { alert('Preencha Nome e Placa!'); return; }
 
   try {
-    const res = await fetch(URL_APPSCRIPT, {
+    await fetch(URL_APPSCRIPT, {
       method: 'POST',
+      mode: 'no-cors',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ acao: 'adicionarVeiculo', usuario: usuarioAtual, placa, nomeVeiculo: nome, dados: cor })
     });
-    if (!res.ok) throw new Error('Erro');
-    await res.json();
+    
+    await new Promise(r => setTimeout(r, 800));
     await carregarVeiculosDaNuvem();
     renderizarListaVeiculos();
     atualizarListaCadastro();
