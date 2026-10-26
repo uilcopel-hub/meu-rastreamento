@@ -23,39 +23,57 @@
     </div>
   </div>
 
-  <!-- TELA PRINCIPAL -->
+  <!-- TELA PRINCIPAL — MAPA TELA INTEIRA -->
   <div id="tela-principal" class="tela escondida">
-    <header>
+    <!-- MAPA FUNDO TOTAL -->
+    <div id="mapa"></div>
+
+    <!-- BOTÕES DO MAPA FLUTUANDO -->
+    <div class="botoes-mapa-flutuante">
+      <button id="btnRuas" class="btn-mapa ativo" onclick="trocarMapa('ruas')">🗺️ Ruas</button>
+      <button id="btnSat" class="btn-mapa" onclick="trocarMapa('satellite')">🛰️ Satélite</button>
+    </div>
+
+    <!-- CABEÇALHO FLUTUANDO NO CANTO SUPERIOR -->
+    <div class="cabecalho-flutuante">
       <h1>🚗 Rastreamento Veicular</h1>
       <div class="cabecalho-direita">
         <span id="nome-usuario-logado"></span>
         <button id="btn-gerenciar" class="btn-secundario escondida" onclick="abrirFecharPainel()">⚙️ Gerenciar</button>
         <button class="btn-sair" onclick="sair()">Sair</button>
       </div>
-    </header>
+    </div>
 
-    <!-- PAINEL ADMINISTRADOR -->
-    <div id="painel-adm" class="escondida">
+    <!-- PAINEL LATERAL ESQUERDA FLUTUANDO -->
+    <div class="barra-lateral-flutuante">
+      <h3>Meus Veículos</h3>
+      <div id="lista-veiculos"></div>
+      <div id="ultima-atualizacao" class="rodape-lista"></div>
+    </div>
+
+    <!-- PAINEL ADMINISTRADOR FLUTUANDO NO CENTRO -->
+    <div id="painel-adm" class="painel-central escondida">
       <div class="painel-conteudo">
-        <h2>👑 Painel do Administrador</h2>
+        <span class="fechar-painel" onclick="abrirFecharPainel()">&times;</span>
+        <h2>👑 Painel de Controle</h2>
         
         <div class="secao-adm">
-          <h3>➕ Criar Conta de Usuário</h3>
+          <h3>➕ Criar Usuário</h3>
           <input type="text" id="novo-usuario" placeholder="Nome do usuário">
-          <input type="password" id="nova-senha" placeholder="Senha">
+          <input type="password" id="nova-senha" placeholder="Senha (mín. 4 caracteres)">
           <input type="password" id="confirma-senha" placeholder="Repetir senha">
           <p id="erro-cadastro" class="erro"></p>
-          <button onclick="criarConta()">Criar Conta</button>
+          <button onclick="criarConta()">✅ Criar Conta</button>
         </div>
 
         <div class="secao-adm">
           <h3>🚙 Cadastrar Veículo</h3>
           <input type="text" id="campo-nome" placeholder="Nome / Modelo">
           <input type="text" id="campo-placa" placeholder="Placa">
-          <input type="text" id="campo-imei" placeholder="IMEI do rastreador">
+          <input type="text" id="campo-imei" placeholder="IMEI do Rastreador">
           <input type="text" id="campo-cor" placeholder="Cor / Observação">
-          <input type="text" id="campo-usuario-dono" placeholder="Usuário dono">
-          <button onclick="salvarVeiculo()">Salvar Veículo</button>
+          <input type="text" id="campo-usuario-dono" placeholder="Usuário DONO">
+          <button onclick="salvarVeiculo()">💾 Salvar Veículo</button>
         </div>
 
         <div class="secao-adm">
@@ -67,24 +85,6 @@
           <h3>🚘 Todos os Veículos</h3>
           <div id="lista-todos-veiculos"></div>
         </div>
-      </div>
-    </div>
-
-    <div class="container-principal">
-      <!-- LISTA DE VEÍCULOS -->
-      <div class="barra-lateral">
-        <h3>Meus Veículos</h3>
-        <div id="lista-veiculos"></div>
-        <div id="ultima-atualizacao" class="rodape-lista"></div>
-      </div>
-
-      <!-- MAPA -->
-      <div class="area-mapa">
-        <div class="botoes-mapa">
-          <button id="btnRuas" class="btn-mapa ativo" onclick="trocarMapa('ruas')">🗺️ Ruas</button>
-          <button id="btnSat" class="btn-mapa" onclick="trocarMapa('satellite')">🛰️ Satélite</button>
-        </div>
-        <div id="mapa"></div>
       </div>
     </div>
   </div>
