@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 7.5 — CORRIGIDO — RASTREAMENTO 📡
+// 🔷 VERSÃO: 7.6 — CORRIGIDO E TESTADO 📡
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec`;
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
-const VERSAO_SISTEMA = '7.5 — CORRIGIDO';
+const VERSAO_SISTEMA = '7.6 — CORRIGIDO';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 const INTERVALO_ATUALIZACAO = 30000;
 
@@ -17,7 +17,6 @@ let todosUsuarios = [], todosVeiculos = [], veiculoSelecionado = null;
 let mapa = null, modoAtual = 'ruas', mapaRuas, mapaSatellite;
 let marcadores = {}, rotas = {}, timerAtualizacao = null, ultimaAtualizacao = '--:--';
 
-// ✅ Função que faltava
 function abrirFecharPainel() {
   const painel = document.getElementById('painel-adm');
   if (painel) {
@@ -58,10 +57,14 @@ function fazerLogin() {
     .then(r => r.json())
     .then(dados => {
       let ok = false;
+      if (!dados.dados) {
+        erro.textContent = '⚠️ Formato de dados inválido!';
+        return;
+      }
       for (let i = 1; i < dados.dados.length; i++) {
-        if (dados.dados[i][0] === 'conta' && 
-            dados.dados[i][1] === usuario && 
-            String(dados.dados[i][2]) === senha) { 
+        const linha = dados.dados[i];
+        if (!linha) continue;
+        if (linha[0] === 'conta' && linha[1] === usuario && String(linha[2]) === senha) { 
           ok = true; 
           break; 
         }
@@ -74,7 +77,10 @@ function fazerLogin() {
         erro.textContent = '❌ Usuário ou senha incorretos!';
       }
     })
-    .catch(() => erro.textContent = '⚠️ Erro de conexão.');
+    .catch(err => {
+      console.error(err);
+      erro.textContent = '⚠️ Erro de conexão. Verifique o Apps Script.';
+    });
 }
 
 function entrarComoUsuario(usuario) {
@@ -82,8 +88,8 @@ function entrarComoUsuario(usuario) {
   sessionStorage.setItem('usuario_logado', usuario);
   sessionStorage.setItem('eh_adm', ehAdm);
   
-  const telaLogin = document.querySelector('.tela-login');
-  const telaPrincipal = document.querySelector('.tela-principal');
+  const telaLogin = document.getElementById('tela-login');
+  const telaPrincipal = document.getElementById('tela-principal');
   
   if (telaLogin) telaLogin.classList.add('escondida');
   if (telaPrincipal) telaPrincipal.classList.remove('escondida');
@@ -122,6 +128,7 @@ async function carregarDadosCompletos() {
   try {
     const res = await fetch(URL_APPSCRIPT);
     const dados = await res.json();
+    if (!dados.dados) return;
     const linhas = dados.dados;
     
     todosUsuarios = [];
@@ -152,6 +159,7 @@ async function carregarVeiculosDaNuvem() {
   try {
     const res = await fetch(URL_APPSCRIPT);
     const dados = await res.json();
+    if (!dados.dados) return;
     const linhas = dados.dados;
     veiculos = [];
     
@@ -179,10 +187,11 @@ async function atualizarTudo() {
   try {
     const res = await fetch(URL_APPSCRIPT);
     const dados = await res.json();
+    if (!dados.dados) return;
     const linhas = dados.dados;
     
-    const registrosGPS = linhas.filter(l => l[0] === 'gps');
-    const registrosKM = linhas.filter(l => l[0] === 'km_diario');
+    const registrosGPS = linhas.filter(l => l && l[0] === 'gps');
+    const registrosKM = linhas.filter(l => l && l[0] === 'km_diario');
     
     const hoje = new Date();
     const data7dias = new Date(); data7dias.setDate(hoje.getDate() - 7);
@@ -197,7 +206,8 @@ async function atualizarTudo() {
         v.lon = Number(ultimo[3]);
         v.velocidade = Number(ultimo[4] || 0);
         v.horario = ultimo[5];
-        v.rota = pontosVeiculo.slice(-20).map(g => [Number(g[2]), Number(g[3])]);
+        v.rota = pontosVeiculo.slice(-20).map(g => 
+ [Number(g[2]), Number(g[3])]);
         atualizarMarcadorNoMapa(v);
       }
       
@@ -501,7 +511,6 @@ async function excluirVeiculo(placa, usuario) {
     alert('❌ ' + (r.msg || 'Erro'));
   }
 }
-
 
 
 
