@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 15.9 ✅
-// Mapa Google via Leaflet + Planilha atual
+// SISTEMA RASTREAMENTO — Versão: 15.11 ✅
+// Planilha: tipo | referencia | valor1 | valor2 | valor3 | horario/data | dados extras
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.9";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.11";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -10,8 +10,8 @@ const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#0
 
 console.log('========================================');
 console.log('✅ SISTEMA CARREGADO — VERSÃO:', VERSAO_SISTEMA);
-console.log('📅 Data:', new Date().toLocaleString('pt-BR'));
-console.log('🔗 Planilha conectada');
+console.log('📋 Planilha: tipo | ref | placa | imei | nome | cor');
+console.log('🔗 Conectado');
 console.log('========================================');
 
 let mapa = null;
@@ -27,26 +27,20 @@ let veiculoSelecionado = null;
 let veiculoSeguido = null;
 let veiculoDetalheAberto = null;
 let marcadores = {};
-let ultimaAtualizacao = "--:--";
 
-// ===== MAPA — EXATAMENTE COMO NA VERSÃO 7.2 =====
+// ===== MAPA =====
 function inicializarMapa() {
   if (mapa) return;
-
   const centro = [-24.7, -50.6]; // Ibaiti / PR
   mapa = L.map('mapa').setView(centro, 10);
-
   mapaRuas = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
     maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google'
   });
-
   mapaSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
     maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google'
   });
-
   mapaRuas.addTo(mapa);
   modoAtual = 'ruas';
-  console.log('🗺️ Mapa Google carregado — Ruas + Satélite');
 }
 
 function trocarMapa(tipo) {
@@ -65,10 +59,9 @@ function trocarMapa(tipo) {
     document.getElementById('btnSat').classList.add('ativo');
     document.getElementById('btnRuas').classList.remove('ativo');
   }
-  console.log('🗺️ Tipo mapa:', modoAtual);
 }
 
-// ===== BUSCA DADOS NA PLANILHA =====
+// ===== BUSCA DADOS =====
 async function buscarDados() {
   try {
     const resposta = await fetch(URL_SCRIPT + '?t=' + Date.now());
@@ -115,38 +108,57 @@ async function fazerLogin() {
   entrarTelaPrincipal();
 }
 
+// ✅ CORRIGIDO — MAPEAMENTO EXATO DA PLANILHA:
+// [0]=tipo | [1]=referencia=dono | [2]=valor1=placa | [3]=valor2=imei | [4]=valor3=nome | [5]=horario/data=cor
 async function carregarDadosUsuario(dados = null) {
   if (!dados) dados = await buscarDados();
+  
   veiculosDoUsuario = (dados.dados || [])
     .filter(linha => linha[0] === 'veiculo' && linha[1] === usuarioAtual)
-    .map(linha => ({
-      placa: linha[2] || '',
-      nome: linha[4] || linha[2] || '',
-      imei: linha[6] || '',
-      usuario: linha[1] || '',
-      cor: linha[5] || '',
-      lat: null, lon: null, velocidade: 0,
-      kmHoje: 0, km7dias: 0, km30dias: 0,
-      corMarcador: CORES_PADRAO[veiculosDoUsuario.length % CORES_PADRAO.length]
+    .map((linha, idx) => ({
+      tipo: linha[0],
+      usuario: linha[1],          // dono
+      placa: linha[2] || '',      // valor1 = placa
+      imei: linha[3] || '',       // valor2 = imei
+      nome: linha[4] || linha[2] || '', // valor3 = nome
+      cor: linha[5] || '',        // horario/data = cor
+      lat: null, 
+      lon: null, 
+      velocidade: 0,
+      kmHoje: 0, 
+      km7dias: 0, 
+      km30dias: 0,
+      corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
+  
+  console.log(`✅ Usuário "${usuarioAtual}" — ${veiculosDoUsuario.length} veículo(s)`);
 }
 
 async function carregarTodosDados() {
   const dados = await buscarDados();
+  
   todosUsuarios = (dados.dados || []).filter(l => l[0] === 'conta');
+  
   todosVeiculos = (dados.dados || [])
     .filter(linha => linha[0] === 'veiculo')
-    .map(linha => ({
+    .map((linha, idx) => ({
+      tipo: linha[0],
+      usuario: linha[1],
       placa: linha[2] || '',
+      imei: linha[3] || '',
       nome: linha[4] || linha[2] || '',
-      imei: linha[6] || '',
-      usuario: linha[1] || '',
       cor: linha[5] || '',
-      lat: null, lon: null, velocidade: 0,
-      kmHoje: 0, km7dias: 0, km30dias: 0,
-      corMarcador: CORES_PADRAO[todosVeiculos.length % CORES_PADRAO.length]
+      lat: null, 
+      lon: null, 
+      velocidade: 0,
+      kmHoje: 0, 
+      km7dias: 0, 
+      km30dias: 0,
+      corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
+  
   veiculosDoUsuario = todosVeiculos;
+  console.log(`✅ ADM — ${todosVeiculos.length} veículo(s) no total`);
 }
 
 async function entrarTelaPrincipal() {
@@ -168,7 +180,7 @@ function sair() {
   veiculosDoUsuario = []; todosVeiculos = []; todosUsuarios = [];
   Object.values(marcadores).forEach(m => mapa?.removeLayer(m));
   marcadores = {};
-  
+  sessionStorage.clear();
   document.getElementById('tela-login').classList.remove('escondida');
   document.getElementById('tela-principal').classList.add('escondida');
   document.getElementById('cartao-detalhes').classList.remove('aberto');
@@ -210,7 +222,6 @@ function focarNoVeiculo(placa) {
     mapa.setView(marcadores[placa].getLatLng(), 15);
   }
   veiculoSelecionado = placa;
-  
   document.getElementById('cartao-detalhes').classList.add('aberto');
   renderizarListaVeiculos();
 }
@@ -225,7 +236,6 @@ function fecharCartao() {
 function alternarSeguirAtual() {
   if (!veiculoDetalheAberto) return;
   veiculoSeguido = veiculoSeguido === veiculoDetalheAberto ? null : veiculoDetalheAberto;
-  
   const btnSeguir = document.getElementById('btn-seguir-cartao');
   const ehSeguindo = veiculoSeguido === veiculoDetalheAberto;
   btnSeguir.textContent = ehSeguindo ? '📍 Seguindo' : '📍 Seguir no mapa';
@@ -246,12 +256,10 @@ function renderizarListaVeiculos() {
   listaDados.forEach(v => {
     const ehSelecionado = veiculoDetalheAberto === v.placa;
     const semSinal = !v.lat || !v.lon;
-    
     const div = document.createElement('div');
     div.className = `veiculo ${semSinal?'veiculo-sem-sinal':''} ${ehSelecionado?'selecionado':''}`;
     div.style.borderLeft = `4px solid ${v.corMarcador}`;
     div.onclick = () => focarNoVeiculo(v.placa);
-    
     div.innerHTML = `
       <strong>${v.nome || v.placa}</strong>
       <small style="color:#666; display:block;">${semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado')}</small>
@@ -276,15 +284,15 @@ function abrirFecharPainel() {
 
 function renderizarPainelAdm() {
   if (!ehAdm) return;
-  
   const listaUsuarios = document.getElementById('lista-todos-usuarios');
   listaUsuarios.innerHTML = '';
   todosUsuarios.forEach(u => {
     if (u[1] === USUARIO_ADM) return;
+    const qtd = todosVeiculos.filter(v => v.usuario === u[1]).length;
     const div = document.createElement('div');
     div.className = 'item-cadastro';
     div.innerHTML = `
-      <span><strong>${u[1]}</strong><br><small>Senha: ${u[2]}</small></span>
+      <span><strong>${u[1]}</strong><br><small>Senha: ${u[2]} | Veículos: ${qtd}</small></span>
       <button class="btn-excluir" onclick="excluirUsuario('${u[1]}')">🗑️ Excluir</button>
     `;
     listaUsuarios.appendChild(div);
@@ -308,28 +316,15 @@ function renderizarPainelAdm() {
 
 async function criarConta() {
   if (!ehAdm) { alert("Apenas o administrador!"); return; }
-  
   const usuario = document.getElementById('novo-usuario').value.trim();
   const senha = document.getElementById('nova-senha').value;
   const confirma = document.getElementById('confirma-senha').value;
   const erroEl = document.getElementById('erro-cadastro');
   
-  if (!usuario || !senha) {
-    erroEl.textContent = "Preencha todos os campos!";
-    return;
-  }
-  if (senha.length < 4) {
-    erroEl.textContent = "Mínimo 4 caracteres!";
-    return;
-  }
-  if (senha !== confirma) {
-    erroEl.textContent = "As senhas não coincidem!";
-    return;
-  }
-  if (usuario === USUARIO_ADM) {
-    erroEl.textContent = "Nome reservado!";
-    return;
-  }
+  if (!usuario || !senha) { erroEl.textContent = "Preencha todos os campos!"; return; }
+  if (senha.length < 4) { erroEl.textContent = "Mínimo 4 caracteres!"; return; }
+  if (senha !== confirma) { erroEl.textContent = "As senhas não coincidem!"; return; }
+  if (usuario === USUARIO_ADM) { erroEl.textContent = "Nome reservado!"; return; }
   
   try {
     await fetch(URL_SCRIPT, {
@@ -337,16 +332,13 @@ async function criarConta() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ acao: 'criarConta', usuario, senha })
     });
-    
     erroEl.textContent = "✅ Conta criada!";
     erroEl.style.color = '#28a745';
     document.getElementById('novo-usuario').value = '';
     document.getElementById('nova-senha').value = '';
     document.getElementById('confirma-senha').value = '';
-    
     await carregarTodosDados();
     renderizarPainelAdm();
-    
   } catch (erro) {
     erroEl.textContent = "Erro ao criar!";
     erroEl.style.color = '#dc3545';
@@ -355,7 +347,6 @@ async function criarConta() {
 
 async function salvarVeiculo() {
   if (!ehAdm) { alert("Apenas o administrador!"); return; }
-  
   const nome = document.getElementById('campo-nome').value.trim();
   const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
   const imei = document.getElementById('campo-imei').value.trim();
@@ -373,21 +364,22 @@ async function salvarVeiculo() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ 
         acao: 'adicionarVeiculo', 
-        nome, placa, imei, usuario: dono, dados: cor 
+        usuario: dono,
+        placa,
+        imei,
+        nome,
+        cor
       })
     });
-    
     alert("✅ Veículo cadastrado!");
     document.getElementById('campo-nome').value = '';
     document.getElementById('campo-placa').value = '';
     document.getElementById('campo-imei').value = '';
     document.getElementById('campo-cor').value = '';
     document.getElementById('campo-usuario-dono').value = '';
-    
     await carregarTodosDados();
     renderizarPainelAdm();
     renderizarListaVeiculos();
-    
   } catch (erro) {
     alert("Erro ao cadastrar!");
   }
@@ -395,19 +387,16 @@ async function salvarVeiculo() {
 
 async function excluirUsuario(nomeUsuario) {
   if (!confirm(`Excluir "${nomeUsuario}" e TODOS os veículos dele?`)) return;
-  
   try {
     await fetch(URL_SCRIPT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ acao: 'excluirUsuario', usuario: nomeUsuario })
     });
-    
     alert("✅ Excluído!");
     await carregarTodosDados();
     renderizarPainelAdm();
     renderizarListaVeiculos();
-    
   } catch {
     alert("Erro ao excluir!");
   }
@@ -415,19 +404,16 @@ async function excluirUsuario(nomeUsuario) {
 
 async function excluirVeiculo(placa) {
   if (!confirm(`Excluir o veículo "${placa}"?`)) return;
-  
   try {
     await fetch(URL_SCRIPT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ acao: 'excluirVeiculo', placa })
     });
-    
     alert("✅ Excluído!");
     await carregarTodosDados();
     renderizarPainelAdm();
     renderizarListaVeiculos();
-    
   } catch {
     alert("Erro ao excluir!");
   }
