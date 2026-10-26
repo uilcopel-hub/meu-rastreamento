@@ -141,6 +141,87 @@ body {
   font-weight: 600;
   font-size: 14px;
 }
+
+
+/* Painel único no direito */
+.barra-direita {
+  position: absolute;
+  top: 85px;
+  right: 20px;
+  left: auto;
+  z-index: 1000;
+  width: 340px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  max-height: calc(100vh - 105px);
+  overflow-y: auto;
+}
+
+/* Título roxo quando for ADM vendo tudo */
+.barra-direita h3.titulo-adm {
+  color: #9c27b0;
+}
+
+/* Bloco de KM */
+.km-bloco {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.km-item {
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #e9ecef;
+}
+.km-item.diario { background: #d4edda; color: #155724; }
+.km-item.semanal { background: #fff3cd; color: #856404; }
+.km-item.mensal { background: #cce5ff; color: #004085; }
+
+/* Botão Seguir */
+.btn-seguir {
+  width: 100%;
+  padding: 6px;
+  margin-top: 8px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.btn-seguir.seguindo {
+  background: #28a745;
+  font-weight: bold;
+}
+
+/* Nome do dono só aparece no ADM */
+.dono-tag {
+  font-size: 11px;
+  color: #9c27b0;
+  background: #f3e5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* REMOVIDO — BLOCO FLUTUANTE DO MAPA NÃO EXISTE MAIS */
 .botoes-mapa-flutuante {
   display: none !important;

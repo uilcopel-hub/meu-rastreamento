@@ -71,46 +71,18 @@
     </div>
 
    
-
-
-
-
-
- <!-- PAINEL ADMINISTRADOR CENTRAL -->
-    <div id="painel-adm" class="painel-central escondida">
-      <div class="painel-conteudo">
-        <span class="fechar-painel" onclick="abrirFecharPainel()">&times;</span>
-        <h2>👑 Painel de Controle</h2>
-        
-        <div class="secao-adm">
-          <h3>➕ Criar Usuário</h3>
-          <input type="text" id="novo-usuario" placeholder="Nome do usuário">
-          <input type="password" id="nova-senha" placeholder="Senha (mín. 4 caracteres)">
-          <input type="password" id="confirma-senha" placeholder="Repetir senha">
-          <p id="erro-cadastro" class="erro"></p>
-          <button onclick="criarConta()">✅ Criar Conta</button>
-        </div>
-        <div class="secao-adm">
-          <h3>🚙 Cadastrar Veículo</h3>
-          <input type="text" id="campo-nome" placeholder="Nome / Modelo">
-          <input type="text" id="campo-placa" placeholder="Placa">
-          <input type="text" id="campo-imei" placeholder="IMEI do Rastreador">
-          <input type="text" id="campo-cor" placeholder="Cor / Observação">
-          <input type="text" id="campo-usuario-dono" placeholder="Usuário DONO">
-          <button onclick="salvarVeiculo()">💾 Salvar Veículo</button>
-        </div>
-        <div class="secao-adm">
-          <h3>👤 Usuários Cadastrados</h3>
-          <div id="lista-todos-usuarios"></div>
-        </div>
-        <div class="secao-adm">
-          <h3>🚘 Todos os Veículos</h3>
-          <div id="lista-todos-veiculos"></div>
-        </div>
-      </div>
+    <!-- PAINEL DIREITO — ÚNICO PAINEL -->
+    <div class="barra-lateral-flutuante barra-direita" id="painel-principal">
+      <h3 id="titulo-painel">Meus Veículos</h3>
+      <div id="lista-veiculos"></div>
+      <div id="ultima-atualizacao" class="rodape-lista"></div>
     </div>
-  </div>
 
-  <script src="codigo.js?v=10.0"></script>
+
+
+
+
+
+  <script src="codigo.js?v=15.0"></script>
 </body>
 </html>
