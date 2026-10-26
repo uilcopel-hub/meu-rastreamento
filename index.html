@@ -12,6 +12,12 @@
   <div id="tela-login" class="tela-login">
     <div class="caixa-login">
       <h1>🚗 Rastreamento Veicular</h1>
+      
+      <!-- ✅ VERSÃO NA TELA DE LOGIN -->
+      <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+        Versão: 7.2 — Mapa Corrigido 📡
+      </p>
+      
       <form id="form-entrar" onsubmit="event.preventDefault(); fazerLogin();">
         <h2>Acessar Sistema</h2>
         <input type="text" id="usuario" placeholder="Usuário" autocomplete="username" required>
@@ -22,10 +28,8 @@
       </form>
     </div>
   </div>
-
   <div id="tela-principal" class="tela-principal escondida">
     <div id="mapa"></div>
-
     <header class="cabecalho-flutuante">
       <div class="logo">🚗 Rastreamento Veicular</div>
       <div class="info-usuario">
@@ -33,19 +37,16 @@
         <button onclick="sair()" class="btn-sair">Sair</button>
       </div>
     </header>
-
     <div class="botoes-mapa-flutuantes">
       <button id="btnRuas" onclick="trocarMapa('ruas')" class="btn-mapa ativo">🗺️ Ruas</button>
       <button id="btnSat" onclick="trocarMapa('satellite')" class="btn-mapa">🛰️ Satélite</button>
     </div>
-
     <aside class="painel-lateral">
       <button onclick="abrirGerenciador()" id="btn-gerenciar" class="btn-gerenciar escondida">⚙️ Gerenciar</button>
       <h3>Meus Veículos</h3>
       <div id="lista-veiculos" class="lista-veiculos"></div>
       <p id="ultima-atualizacao" class="versao"></p>
     </aside>
-
     <div id="modal-gerenciar" class="modal">
       <div class="modal-conteudo">
         <span class="fechar" onclick="fecharGerenciador()">&times;</span>
@@ -82,7 +83,6 @@
       </div>
     </div>
   </div>
-
   <script src="codigo.js?v=7.2"></script>
 </body>
 </html>
