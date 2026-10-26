@@ -4,16 +4,13 @@
   box-sizing: border-box;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
 html, body {
   height: 100%;
   overflow: hidden;
 }
-
 body {
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
 }
-
 .tela {
   width: 100%;
   height: 100vh;
@@ -21,11 +18,9 @@ body {
   top: 0;
   left: 0;
 }
-
 .escondida {
   display: none !important;
 }
-
 /* TELA DE LOGIN */
 #tela-login {
   display: flex;
@@ -33,7 +28,6 @@ body {
   justify-content: center;
   z-index: 100;
 }
-
 .caixa-login {
   background: white;
   padding: 40px 30px;
@@ -42,21 +36,18 @@ body {
   width: 100%;
   max-width: 400px;
 }
-
 .caixa-login h1 {
   text-align: center;
   color: #1e3c72;
   margin-bottom: 30px;
   font-size: 24px;
 }
-
 .caixa-login h2 {
   text-align: center;
   color: #444;
   margin-bottom: 20px;
   font-size: 18px;
 }
-
 .caixa-login input {
   width: 100%;
   padding: 12px;
@@ -65,7 +56,6 @@ body {
   border-radius: 6px;
   font-size: 15px;
 }
-
 .caixa-login button {
   width: 100%;
   padding: 12px;
@@ -78,11 +68,9 @@ body {
   font-weight: 600;
   transition: background 0.3s;
 }
-
 .caixa-login button:hover {
   background: #218838;
 }
-
 .erro {
   color: #dc3545;
   text-align: center;
@@ -90,8 +78,7 @@ body {
   min-height: 20px;
   font-size: 14px;
 }
-
-/* FAIXA BRANCA NO TOPO — LARGURA TOTAL */
+/* FAIXA BRANCA NO TOPO */
 .faixa-topo {
   position: absolute;
   top: 0;
@@ -106,18 +93,34 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   z-index: 1000;
 }
-
 .faixa-topo h1 {
   color: #1e3c72;
   font-size: 20px;
 }
-
 .faixa-botoes {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
-
+/* BOTÕES DO MAPA — AGORA NA FAIXA DO TOPO */
+.btn-mapa {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  background: #e9ecef;
+  color: #333;
+  transition: all 0.2s;
+}
+.btn-mapa:hover {
+  background: #dee2e6;
+}
+.btn-mapa.ativo {
+  background: #007bff;
+  color: white;
+  font-weight: bold;
+}
 .btn-sair {
   padding: 8px 16px;
   background: #dc3545;
@@ -128,7 +131,6 @@ body {
   font-weight: 600;
   font-size: 14px;
 }
-
 .btn-secundario {
   padding: 8px 16px;
   background: #17a2b8;
@@ -139,42 +141,11 @@ body {
   font-weight: 600;
   font-size: 14px;
 }
-
-/* BOTÕES DO MAPA */
+/* REMOVIDO — BLOCO FLUTUANTE DO MAPA NÃO EXISTE MAIS */
 .botoes-mapa-flutuante {
-  position: absolute;
-  top: 85px;
-  right: 20px;
-  z-index: 1000;
-  display: flex;
-  gap: 8px;
+  display: none !important;
 }
-
-.btn-mapa {
-  padding: 10px 18px;
-  background: white;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  transition: all 0.2s;
-}
-
-.btn-mapa:hover {
-  border-color: #1e3c72;
-}
-
-.btn-mapa.ativo {
-  background: #1e3c72;
-  color: white;
-  border-color: #1e3c72;
-}
-
-
-
-/* MAPA — DEFINITIVO */
+/* MAPA */
 #mapa {
   width: 100%;
   height: calc(100vh - 70px);
@@ -183,19 +154,12 @@ body {
   left: 0;
   z-index: 1;
 }
-
-/* NUNCA deixa o mapa descer */
 #mapa .leaflet-pane,
 #mapa .leaflet-tile-container {
   top: 0 !important;
   margin-top: 0 !important;
   transform-origin: center center !important;
 }
-
-
-
-
-
 /* BARRA LATERAL ESQUERDA */
 .barra-lateral-flutuante {
   position: absolute;
@@ -210,20 +174,37 @@ body {
   max-height: calc(100vh - 105px);
   overflow-y: auto;
 }
-
 .barra-lateral-flutuante h3 {
   color: #1e3c72;
   margin-bottom: 15px;
   font-size: 17px;
 }
-
+/* BARRA LATERAL DIREITA — SÓ ADM VÊ */
+.barra-direita {
+  position: absolute;
+  top: 85px;
+  right: 20px;
+  left: auto;
+  z-index: 1000;
+  width: 320px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  max-height: calc(100vh - 105px);
+  overflow-y: auto;
+}
+.barra-direita h3 {
+  color: #9c27b0;
+  margin-bottom: 15px;
+  font-size: 17px;
+}
 .sem-veiculo {
   color: #888;
   text-align: center;
   padding: 30px 10px;
   font-size: 14px;
 }
-
 .veiculo {
   padding: 12px;
   margin-bottom: 10px;
@@ -233,21 +214,42 @@ body {
   transition: all 0.25s;
   border-left: 4px solid transparent;
 }
-
 .veiculo:hover {
   background: #e9ecef;
   transform: translateX(3px);
 }
-
 .veiculo-selecionado {
   background: #e3f2fd;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-
 .veiculo-sem-sinal {
   opacity: 0.6;
 }
-
+.veiculo-todos {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-left: 4px solid #9c27b0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.veiculo-todos:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+.veiculo-todos .dono {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+#qtd-todos-veiculos {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #9c27b0;
+}
 .rodape-lista {
   margin-top: 20px;
   font-size: 12px;
@@ -255,7 +257,6 @@ body {
   border-top: 1px solid #eee;
   padding-top: 12px;
 }
-
 /* PAINEL CENTRAL — ADMIN */
 .painel-central {
   position: absolute;
@@ -268,7 +269,6 @@ body {
   max-height: 90vh;
   overflow-y: auto;
 }
-
 .painel-central::before {
   content: '';
   position: fixed;
@@ -279,7 +279,6 @@ body {
   background: rgba(0,0,0,0.5);
   z-index: -1;
 }
-
 .painel-conteudo {
   background: white;
   padding: 30px;
@@ -287,7 +286,6 @@ body {
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   position: relative;
 }
-
 .fechar-painel {
   position: absolute;
   top: 15px;
@@ -298,31 +296,26 @@ body {
   line-height: 1;
   transition: color 0.2s;
 }
-
 .fechar-painel:hover {
   color: #dc3545;
 }
-
 .painel-conteudo h2 {
   text-align: center;
   color: #1e3c72;
   margin-bottom: 25px;
   font-size: 20px;
 }
-
 .secao-adm {
   background: #f8f9fa;
   padding: 18px;
   margin-bottom: 15px;
   border-radius: 8px;
 }
-
 .secao-adm h3 {
   color: #444;
   margin-bottom: 12px;
   font-size: 15px;
 }
-
 .secao-adm input {
   width: 100%;
   padding: 11px;
@@ -331,7 +324,6 @@ body {
   border-radius: 6px;
   font-size: 14px;
 }
-
 .secao-adm button {
   width: 100%;
   padding: 11px;
@@ -344,11 +336,9 @@ body {
   font-size: 15px;
   transition: background 0.2s;
 }
-
 .secao-adm button:hover {
   background: #0056b3;
 }
-
 .item-cadastro {
   display: flex;
   justify-content: space-between;
@@ -357,7 +347,6 @@ body {
   border-bottom: 1px solid #ddd;
   font-size: 14px;
 }
-
 .btn-excluir {
   padding: 6px 14px;
   background: #dc3545;
@@ -368,7 +357,6 @@ body {
   font-weight: 600;
   font-size: 13px;
 }
-
 /* RESPONSIVO — CELULAR */
 @media (max-width: 768px) {
   .faixa-topo {
@@ -377,69 +365,19 @@ body {
     padding: 10px 15px;
     gap: 8px;
   }
-
-  .botoes-mapa-flutuante {
-    top: 100px;
-    right: 10px;
-  }
-
   #mapa {
     height: calc(100vh - 100px);
     top: 100px !important;
   }
-
-  .barra-lateral-flutuante {
+  .barra-lateral-flutuante,
+  .barra-direita {
     width: calc(100% - 20px);
     left: 10px;
-    top: 150px;
-    max-height: calc(50vh);
+    right: 10px;
+    top: 160px;
+    max-height: calc(45vh);
   }
-
   .painel-central {
     width: 95%;
   }
 }
-
-
-/* ==============================================
-   BARRA LATERAL DIREITA — SÓ ADMINISTRADOR VÊ
-   ============================================== */
-.barra-direita {
-  right: 15px;
-  left: auto;
-}
-
-.barra-direita h3 {
-  color: #9c27b0;
-}
-
-.veiculo-todos {
-  background: #fff;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 8px;
-  border-left: 4px solid #9c27b0;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.veiculo-todos:hover {
-  transform: translateX(-5px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.veiculo-todos .dono {
-  font-size: 11px;
-  color: #888;
-  margin-top: 4px;
-}
-
-#qtd-todos-veiculos {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
-  color: #9c27b0;
-}
-
-

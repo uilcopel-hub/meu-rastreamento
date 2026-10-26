@@ -25,21 +25,27 @@
 
   <!-- TELA PRINCIPAL -->
   <div id="tela-principal" class="tela escondida">
-    <!-- FAIXA BRANCA NO TOPO -->
+
+
+
+    <!-- FAIXA BRANCA NO TOPO — LARGURA TOTAL -->
     <header class="faixa-topo">
       <h1>🚗 Rastreamento Veicular</h1>
       <div class="faixa-botoes">
         <span id="nome-usuario-logado"></span>
+        
+        <!-- BOTÕES DO MAPA AGORA AQUI NO TOPO -->
+        <button id="btnRuas" class="btn-mapa ativo" onclick="trocarMapa('ruas')">🗺️ Ruas</button>
+        <button id="btnSat" class="btn-mapa" onclick="trocarMapa('satellite')">🛰️ Satélite</button>
+        
         <button id="btn-gerenciar" class="btn-secundario escondida" onclick="abrirFecharPainel()">⚙️ Gerenciar</button>
         <button class="btn-sair" onclick="sair()">Sair</button>
       </div>
     </header>
 
-    <!-- BOTÕES DO MAPA -->
-    <div class="botoes-mapa-flutuante">
-      <button id="btnRuas" class="btn-mapa ativo" onclick="trocarMapa('ruas')">🗺️ Ruas</button>
-      <button id="btnSat" class="btn-mapa" onclick="trocarMapa('satellite')">🛰️ Satélite</button>
-    </div>
+
+
+
 
     <!-- MAPA -->
     <div id="mapa"></div>
