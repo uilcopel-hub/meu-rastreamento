@@ -25,16 +25,13 @@
 
   <!-- TELA PRINCIPAL -->
   <div id="tela-principal" class="tela escondida">
-
-
-
-    <!-- FAIXA BRANCA NO TOPO — LARGURA TOTAL -->
+    <!-- FAIXA BRANCA NO TOPO -->
     <header class="faixa-topo">
       <h1>🚗 Rastreamento Veicular</h1>
       <div class="faixa-botoes">
         <span id="nome-usuario-logado"></span>
         
-        <!-- BOTÕES DO MAPA AGORA AQUI NO TOPO -->
+        <!-- BOTÕES DO MAPA NA FAIXA DO TOPO -->
         <button id="btnRuas" class="btn-mapa ativo" onclick="trocarMapa('ruas')">🗺️ Ruas</button>
         <button id="btnSat" class="btn-mapa" onclick="trocarMapa('satellite')">🛰️ Satélite</button>
         
@@ -43,46 +40,54 @@
       </div>
     </header>
 
-
-
-
-
     <!-- MAPA -->
     <div id="mapa"></div>
 
-  
-
-    <!-- PAINEL ESQUERDA → VAI FICAR VAZIO / REMOVIDO -->
-    
-    <!-- PAINEL DIREITA → Todos veículos aqui (todos veem) -->
-    <div class="barra-lateral-flutuante barra-direita" id="painel-meus-veiculos">
-      <h3 id="titulo-painel-veiculos">Meus Veículos</h3>
-      <div id="lista-veiculos"></div>
-      <div id="ultima-atualizacao" class="rodape-lista"></div>
-    </div>
-    
-    <!-- SÓ ADM VÊ → Painel com TODOS os veículos embaixo -->
-    <div class="barra-lateral-flutuante barra-direita escondida" id="painel-todos-veiculos" style="margin-top: 340px;">
-      <h3>👑 Todos os Veículos do Sistema</h3>
-      <div id="lista-todos-veiculos-mapa"></div>
-      <div class="rodape-lista">
-        <span id="qtd-todos-veiculos"></span>
-      </div>
-    </div>
-
-   
-    <!-- PAINEL DIREITO — ÚNICO PAINEL -->
+    <!-- PAINEL ÚNICO NO DIREITO → Para todos os usuários -->
     <div class="barra-lateral-flutuante barra-direita" id="painel-principal">
       <h3 id="titulo-painel">Meus Veículos</h3>
       <div id="lista-veiculos"></div>
       <div id="ultima-atualizacao" class="rodape-lista"></div>
     </div>
 
+    <!-- PAINEL ADMINISTRADOR CENTRAL -->
+    <div id="painel-adm" class="painel-central escondida">
+      <div class="painel-conteudo">
+        <span class="fechar-painel" onclick="abrirFecharPainel()">&times;</span>
+        <h2>👑 Painel de Controle</h2>
+        
+        <div class="secao-adm">
+          <h3>➕ Criar Usuário</h3>
+          <input type="text" id="novo-usuario" placeholder="Nome do usuário">
+          <input type="password" id="nova-senha" placeholder="Senha (mín. 4 caracteres)">
+          <input type="password" id="confirma-senha" placeholder="Repetir senha">
+          <p id="erro-cadastro" class="erro"></p>
+          <button onclick="criarConta()">✅ Criar Conta</button>
+        </div>
+        
+        <div class="secao-adm">
+          <h3>🚙 Cadastrar Veículo</h3>
+          <input type="text" id="campo-nome" placeholder="Nome / Modelo">
+          <input type="text" id="campo-placa" placeholder="Placa">
+          <input type="text" id="campo-imei" placeholder="IMEI do Rastreador">
+          <input type="text" id="campo-cor" placeholder="Cor / Observação">
+          <input type="text" id="campo-usuario-dono" placeholder="Usuário DONO">
+          <button onclick="salvarVeiculo()">💾 Salvar Veículo</button>
+        </div>
+        
+        <div class="secao-adm">
+          <h3>👤 Usuários Cadastrados</h3>
+          <div id="lista-todos-usuarios"></div>
+        </div>
+        
+        <div class="secao-adm">
+          <h3>🚘 Todos os Veículos</h3>
+          <div id="lista-todos-veiculos"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-
-
-
-
-  <script src="codigo.js?v=15.0"></script>
+  <script src="codigo.js?v=15.1"></script>
 </body>
 </html>
