@@ -1,14 +1,14 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 15.3 ✅
-// LINK CONFIRMADO E FUNCIONANDO
+// SISTEMA RASTREAMENTO — Versão: 15.5 ✅
+// GOOGLE MAPS + ESTRUTURA ATUALIZADA DA PLANILHA
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.3";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.5";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
 
 let mapa = null;
-let camadas = { ruas: null, satelite: null };
+let tipoMapa = 'ruas';
 let veiculosDoUsuario = [];
 let todosVeiculos = [];
 let todosUsuarios = [];
@@ -20,32 +20,29 @@ let veiculoDetalheAberto = null;
 let marcadores = {};
 let ultimaAtualizacao = "--:--";
 
-// ===== INICIALIZAÇÃO DO MAPA =====
+// ===== INICIALIZAÇÃO DO GOOGLE MAPS =====
 function inicializarMapa() {
   if (mapa) return;
   
-  mapa = L.map('mapa', { zoomControl: true }).setView([-24.7, -50.6], 10);
-  
-  camadas.ruas = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
+  const centro = { lat: -24.7, lng: -50.6 }; // Ibaiti / PR
+  mapa = new google.maps.Map(document.getElementById('mapa'), {
+    zoom: 10,
+    center: centro,
+    mapTypeId: 'roadmap',
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false
   });
-  
-  camadas.satelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: '© Esri'
-  });
-  
-  camadas.ruas.addTo(mapa);
 }
 
 function trocarMapa(tipo) {
+  tipoMapa = tipo;
   if (tipo === 'ruas') {
-    mapa.removeLayer(camadas.satelite);
-    mapa.addLayer(camadas.ruas);
+    mapa.setMapTypeId('roadmap');
     document.getElementById('btnRuas').classList.add('ativo');
     document.getElementById('btnSat').classList.remove('ativo');
   } else {
-    mapa.removeLayer(camadas.ruas);
-    mapa.addLayer(camadas.satelite);
+    mapa.setMapTypeId('satellite');
     document.getElementById('btnSat').classList.add('ativo');
     document.getElementById('btnRuas').classList.remove('ativo');
   }
@@ -83,7 +80,7 @@ async function fazerLogin() {
     return;
   }
   
-  // Login Usuário Comum
+  // Login Usuário Comum — adaptado à nova estrutura
   const dados = await buscarDados();
   const conta = dados.dados?.find(linha => 
     linha[0] === 'conta' && linha[1] === usuario && String(linha[2]) === senha
@@ -102,12 +99,13 @@ async function fazerLogin() {
 
 async function carregarDadosUsuario(dados = null) {
   if (!dados) dados = await buscarDados();
+  // Estrutura: tipo | referencia(nome) | valor1=placa | valor2=imei | valor3=...
   veiculosDoUsuario = (dados.dados || [])
     .filter(linha => linha[0] === 'veiculo' && linha[1] === usuarioAtual)
     .map(linha => ({
-      placa: linha[3] || '',
-      nome: linha[4] || linha[3] || '',
-      imei: linha[5] || '',
+      placa: linha[2] || '',
+      nome: linha[4] || linha[2] || '',
+      imei: linha[3] || '',
       usuario: linha[1] || '',
       lat: null, lon: null, velocidade: 0,
       kmHoje: 0, km7dias: 0, km30dias: 0,
@@ -121,9 +119,9 @@ async function carregarTodosDados() {
   todosVeiculos = (dados.dados || [])
     .filter(linha => linha[0] === 'veiculo')
     .map(linha => ({
-      placa: linha[3] || '',
-      nome: linha[4] || linha[3] || '',
-      imei: linha[5] || '',
+      placa: linha[2] || '',
+      nome: linha[4] || linha[2] || '',
+      imei: linha[3] || '',
       usuario: linha[1] || '',
       lat: null, lon: null, velocidade: 0,
       kmHoje: 0, km7dias: 0, km30dias: 0,
@@ -149,7 +147,7 @@ function entrarTelaPrincipal() {
 function sair() {
   usuarioAtual = null; ehAdm = false;
   veiculosDoUsuario = []; todosVeiculos = []; todosUsuarios = [];
-  Object.values(marcadores).forEach(m => mapa?.removeLayer(m));
+  Object.values(marcadores).forEach(m => m.setMap(null));
   marcadores = {};
   
   document.getElementById('tela-login').classList.remove('escondida');
@@ -157,7 +155,7 @@ function sair() {
   document.getElementById('cartao-detalhes').classList.remove('aberto');
 }
 
-// ===== CARTÃO DE DETALHES DO VEÍCULO =====
+// ===== CARTÃO DE DETALHES =====
 function focarNoVeiculo(placa) {
   if (veiculoDetalheAberto === placa) {
     fecharCartao();
@@ -191,8 +189,8 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
   if (marcadores[placa] && mapa) {
-    mapa.setView(marcadores[placa].getLatLng(), 15);
-    marcadores[placa].openPopup();
+    mapa.panTo(marcadores[placa].getPosition());
+    mapa.setZoom(15);
   }
   veiculoSelecionado = placa;
   
@@ -217,7 +215,7 @@ function alternarSeguirAtual() {
   btnSeguir.classList.toggle('seguindo', ehSeguindo);
 }
 
-// ===== RENDERIZA LISTA DE VEÍCULOS =====
+// ===== LISTA DE VEÍCULOS =====
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
   if (!listaEl) return;
@@ -251,7 +249,7 @@ function renderizarListaVeiculos() {
   }
 }
 
-// ===== PAINEL ADMINISTRADOR =====
+// ===== PAINEL ADMIN =====
 function abrirFecharPainel() {
   const painel = document.getElementById('painel-adm');
   painel.classList.toggle('escondida');
@@ -267,7 +265,7 @@ function renderizarPainelAdm() {
   const listaUsuarios = document.getElementById('lista-todos-usuarios');
   listaUsuarios.innerHTML = '';
   todosUsuarios.forEach(u => {
-    if (u[1] === USUARIO_ADM) return; // Não mostra o ADM na lista
+    if (u[1] === USUARIO_ADM) return;
     const div = document.createElement('div');
     div.className = 'item-cadastro';
     div.innerHTML = `
@@ -285,7 +283,7 @@ function renderizarPainelAdm() {
     div.innerHTML = `
       <div>
         <strong>${v.nome || v.placa}</strong><br>
-        <small>Placa: ${v.placa} | Dono: ${v.usuario}</small>
+        <small>Placa: ${v.placa} | IMEI: ${v.imei} | Dono: ${v.usuario}</small>
       </div>
       <button class="btn-excluir" onclick="excluirVeiculo('${v.placa}')">🗑️ Excluir</button>
     `;
@@ -325,7 +323,7 @@ async function criarConta() {
       body: JSON.stringify({ acao: 'criarConta', usuario, senha })
     });
     
-    erroEl.textContent = "✅ Conta criada com sucesso!";
+    erroEl.textContent = "✅ Conta criada!";
     erroEl.style.color = '#28a745';
     document.getElementById('novo-usuario').value = '';
     document.getElementById('nova-senha').value = '';
@@ -335,7 +333,7 @@ async function criarConta() {
     renderizarPainelAdm();
     
   } catch (erro) {
-    erroEl.textContent = "Erro ao criar conta!";
+    erroEl.textContent = "Erro ao criar!";
     erroEl.style.color = '#dc3545';
   }
 }
@@ -363,7 +361,7 @@ async function salvarVeiculo() {
       })
     });
     
-    alert("✅ Veículo cadastrado com sucesso!");
+    alert("✅ Veículo cadastrado!");
     document.getElementById('campo-nome').value = '';
     document.getElementById('campo-placa').value = '';
     document.getElementById('campo-imei').value = '';
@@ -374,12 +372,12 @@ async function salvarVeiculo() {
     renderizarListaVeiculos();
     
   } catch (erro) {
-    alert("Erro ao cadastrar veículo!");
+    alert("Erro ao cadastrar!");
   }
 }
 
 async function excluirUsuario(nomeUsuario) {
-  if (!confirm(`Tem certeza que deseja excluir o usuário "${nomeUsuario}"?\nTodos os veículos dele também serão removidos!`)) return;
+  if (!confirm(`Excluir "${nomeUsuario}" e TODOS os veículos dele?`)) return;
   
   try {
     await fetch(URL_SCRIPT, {
@@ -388,7 +386,7 @@ async function excluirUsuario(nomeUsuario) {
       body: JSON.stringify({ acao: 'excluirUsuario', usuario: nomeUsuario })
     });
     
-    alert("✅ Usuário e veículos excluídos!");
+    alert("✅ Excluído!");
     await carregarTodosDados();
     renderizarPainelAdm();
     renderizarListaVeiculos();
@@ -399,7 +397,7 @@ async function excluirUsuario(nomeUsuario) {
 }
 
 async function excluirVeiculo(placa) {
-  if (!confirm(`Tem certeza que deseja excluir o veículo "${placa}"?`)) return;
+  if (!confirm(`Excluir o veículo "${placa}"?`)) return;
   
   try {
     await fetch(URL_SCRIPT, {
@@ -408,7 +406,7 @@ async function excluirVeiculo(placa) {
       body: JSON.stringify({ acao: 'excluirVeiculo', placa })
     });
     
-    alert("✅ Veículo excluído!");
+    alert("✅ Excluído!");
     await carregarTodosDados();
     renderizarPainelAdm();
     renderizarListaVeiculos();
