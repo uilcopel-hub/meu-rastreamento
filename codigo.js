@@ -1,23 +1,23 @@
 // ==============================================
-// 🔷 VERSÃO: 7.1 — VERIFICAÇÃO DE CARREGAMENTO
+// 🔷 VERSÃO: 7.2 — CAMPO IMEI + PREPARAÇÃO GPS
 // ==============================================
-const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbxdhs27cAFCzgpBhNMxFtxkvloV5hc2OZwDSRS-M9lr_4msAr3cJatVud4zNfDzIMjm/exec`;
+const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbzcOiF47DmQZu15Pnytno7IG3CW__8q0ZExrXFwrXT5wyF4kPQXUjq4H4xo8TIyK2Xc9Q/exec`;
 
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
-const VERSAO_SISTEMA = '7.1 — Estilo Ruhavik ✅';
+const VERSAO_SISTEMA = '7.2 — 3 IMEIs cadastrados 📡';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
-// 🔍 LOG NO CONSOLE — APARECE NO F12 → ABA CONSOLE
 console.log('========================================');
 console.log('✅ SISTEMA CARREGADO — VERSÃO:', VERSAO_SISTEMA);
-console.log('📅 Data carregamento:', new Date().toLocaleString('pt-BR'));
-console.log('🔗 URL AppsScript:', URL_APPSCRIPT.substring(0, 60) + '...');
+console.log('📅 Data:', new Date().toLocaleString('pt-BR'));
+console.log('🚗 IMEIs prontos: 863829078633342 | 863829079607691 | 863829078384698');
 console.log('========================================');
 
 let usuarioAtual = null, ehAdm = false, veiculos = [];
 let todosUsuarios = [], todosVeiculos = [], veiculoSelecionado = null;
 let mapa = null, modoAtual = 'ruas', mapaRuas, mapaSatellite;
+let marcadores = {}, rotas = {};
 
 document.addEventListener('DOMContentLoaded', () => {
   const sessao = sessionStorage.getItem('usuario_logado');
@@ -36,7 +36,7 @@ function fazerLogin() {
   erro.textContent = 'A verificar...';
   
   if (usuario === ADM_USUARIO && senha === ADM_SENHA) {
-    console.log('🔑 Login como ADM detectado');
+    console.log('🔑 Login como ADM');
     ehAdm = true; erro.textContent = '';
     entrarComoUsuario(usuario); return;
   }
@@ -45,15 +45,9 @@ function fazerLogin() {
     let ok = false;
     for (let i = 1; i < dados.dados.length; i++)
       if (dados.dados[i][0] === 'conta' && dados.dados[i][1] === usuario && String(dados.dados[i][2]) === senha) { ok = true; break; }
-    if (ok) { 
-      console.log('👤 Login comum:', usuario);
-      ehAdm = false; erro.textContent = ''; entrarComoUsuario(usuario); 
-    }
+    if (ok) { ehAdm = false; erro.textContent = ''; entrarComoUsuario(usuario); }
     else erro.textContent = '❌ Usuário ou senha incorretos!';
-  }).catch(err => {
-    console.error('❌ Erro de conexão:', err);
-    erro.textContent = '⚠️ Erro de conexão.';
-  });
+  }).catch(() => erro.textContent = '⚠️ Erro de conexão.');
 }
 
 function entrarComoUsuario(usuario) {
@@ -66,8 +60,7 @@ function entrarComoUsuario(usuario) {
   document.getElementById('nome-usuario-logado').textContent = 
     ehAdm ? `👑 Administrador: ${usuario}` : `👤 ${usuario}`;
   
-  const btnGerenciar = document.getElementById('btn-gerenciar');
-  btnGerenciar.classList.toggle('escondida', !ehAdm);
+  document.getElementById('btn-gerenciar').classList.toggle('escondida', !ehAdm);
   
   if (ehAdm) carregarDadosCompletos();
   else carregarVeiculosDaNuvem();
@@ -75,10 +68,7 @@ function entrarComoUsuario(usuario) {
   if (!mapa) inicializarMapa();
 }
 
-function sair() { 
-  console.log('🚪 Sair solicitado');
-  sessionStorage.clear(); location.reload(); 
-}
+function sair() { sessionStorage.clear(); location.reload(); }
 
 async function criarConta() {
   if (!ehAdm) { alert('⚠️ Apenas o ADM!'); return; }
@@ -93,13 +83,11 @@ async function criarConta() {
   if (usuario === ADM_USUARIO) { erro.textContent = 'Reservado!'; return; }
   
   erro.textContent = 'A processar...';
-  console.log('📝 Criando conta:', usuario);
   const res = await fetch(URL_APPSCRIPT, {
     method: 'POST', headers: {'Content-Type': 'text/plain'},
     body: JSON.stringify({ acao: 'criarConta', usuario, senha })
   });
   const r = await res.json();
-  console.log('📬 Resposta criar conta:', r);
   if (r.ok) {
     erro.innerHTML = `✅ Conta criada!<br>👤 ${usuario}<br>🔑 ${senha}`;
     document.getElementById('novo-usuario').value = '';
@@ -113,22 +101,30 @@ async function salvarVeiculo() {
   if (!ehAdm) { alert('⚠️ Apenas o ADM!'); return; }
   const nome = document.getElementById('campo-nome').value.trim();
   const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
+  const imei = document.getElementById('campo-imei').value.trim();
   const cor = document.getElementById('campo-cor').value.trim();
   const dono = document.getElementById('campo-usuario-dono').value.trim();
   
-  if (!nome || !placa || !dono) { alert('Preencha todos os campos!'); return; }
+  if (!nome || !placa || !dono) { alert('Preencha Nome, Placa e Usuário!'); return; }
   
-  console.log('🚙 Salvando veículo:', placa, '→ Dono:', dono);
+  console.log('🚙 Salvando veículo:', placa, 'IMEI:', imei, '→ Dono:', dono);
   const res = await fetch(URL_APPSCRIPT, {
     method: 'POST', headers: {'Content-Type': 'text/plain'},
-    body: JSON.stringify({ acao: 'adicionarVeiculo', usuario: dono, placa, nomeVeiculo: nome, dados: cor })
+    body: JSON.stringify({ 
+      acao: 'adicionarVeiculo', 
+      usuario: dono, 
+      placa, 
+      nomeVeiculo: nome, 
+      imei: imei,
+      dados: cor 
+    })
   });
   const r = await res.json();
-  console.log('📬 Resposta salvar veículo:', r);
   if (r.ok) {
-    alert(`✅ Veículo salvo!\nVinculado a: ${dono}`);
+    alert(`✅ Veículo salvo!\nPlaca: ${placa}\nIMEI: ${imei || 'Não informado'}\nDono: ${dono}`);
     document.getElementById('campo-nome').value = '';
     document.getElementById('campo-placa').value = '';
+    document.getElementById('campo-imei').value = '';
     document.getElementById('campo-cor').value = '';
     document.getElementById('campo-usuario-dono').value = '';
     carregarDadosCompletos();
@@ -154,14 +150,15 @@ async function carregarDadosCompletos() {
           usuario: linhas[i][1],
           placa: linhas[i][3],
           nome: linhas[i][4] || linhas[i][3],
+          imei: linhas[i][6] || '',
           cor: linhas[i][5] || ''
         });
       }
     }
-    console.log('📊 Dados carregados — Usuários:', todosUsuarios.length, 'Veículos:', todosVeiculos.length);
+    console.log('📊 Usuários:', todosUsuarios.length, 'Veículos:', todosVeiculos.length);
     renderizarPainelAdm();
   } catch (err) {
-    console.error('❌ Erro carregar dados:', err);
+    console.error('❌ Erro:', err);
   }
 }
 
@@ -177,15 +174,16 @@ async function carregarVeiculosDaNuvem() {
         veiculos.push({
           placa: linhas[i][3],
           nome: linhas[i][4] || linhas[i][3],
+          imei: linhas[i][6] || '',
           cor: linhas[i][5] || '',
           corMarcador: CORES_PADRAO[veiculos.length % CORES_PADRAO.length],
-          lat: null, lon: null, velocidade: 0
+          lat: null, lon: null, velocidade: 0, rota: []
         });
       }
     }
     renderizarListaVeiculos();
   } catch (err) {
-    console.error('❌ Erro carregar veículos:', err);
+    console.error('❌ Erro:', err);
     veiculos = [];
   }
 }
@@ -194,39 +192,25 @@ async function excluirUsuario(nomeUsuario) {
   if (!ehAdm) return;
   if (!confirm(`Tem certeza que deseja EXCLUIR o usuário "${nomeUsuario}" e TODOS os veículos dele?`)) return;
 
-  console.log('🗑️ Excluindo usuário:', nomeUsuario);
-  try {
-    const res = await fetch(URL_APPSCRIPT, {
-      method: 'POST', headers: {'Content-Type': 'text/plain'},
-      body: JSON.stringify({ acao: 'excluirUsuario', usuario: nomeUsuario })
-    });
-    const r = await res.json();
-    console.log('📬 Resposta excluir usuário:', r);
-    await carregarDadosCompletos();
-    alert(`✅ Usuário "${nomeUsuario}" removido!`);
-  } catch (err) {
-    console.error('❌ Erro excluir usuário:', err);
-    alert('⚠️ Erro ao excluir usuário.');
-  }
+  const res = await fetch(URL_APPSCRIPT, {
+    method: 'POST', headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify({ acao: 'excluirUsuario', usuario: nomeUsuario })
+  });
+  await res.json();
+  await carregarDadosCompletos();
+  alert(`✅ Usuário "${nomeUsuario}" removido!`);
 }
 
 async function excluirVeiculo(placa, usuarioDono) {
   if (!ehAdm) return;
   if (!confirm(`Excluir veículo ${placa} do usuário ${usuarioDono}?`)) return;
 
-  console.log('🗑️ Excluindo veículo:', placa, 'Dono:', usuarioDono);
-  try {
-    const res = await fetch(URL_APPSCRIPT, {
-      method: 'POST', headers: {'Content-Type': 'text/plain'},
-      body: JSON.stringify({ acao: 'excluirVeiculo', usuario: usuarioDono, placa })
-    });
-    const r = await res.json();
-    console.log('📬 Resposta excluir veículo:', r);
-    await carregarDadosCompletos();
-  } catch (err) {
-    console.error('❌ Erro excluir veículo:', err);
-    alert('⚠️ Erro ao excluir veículo.');
-  }
+  const res = await fetch(URL_APPSCRIPT, {
+    method: 'POST', headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify({ acao: 'excluirVeiculo', usuario: usuarioDono, placa })
+  });
+  await res.json();
+  await carregarDadosCompletos();
 }
 
 function abrirGerenciador() {
@@ -278,7 +262,8 @@ function renderizarPainelAdm() {
       div.innerHTML = `
         <div>
           <strong>${v.nome}</strong><br>
-          Placa: ${v.placa} | Dono: <em>${v.usuario}</em>${v.cor?` | ${v.cor}`:''}
+          Placa: ${v.placa}${v.imei?`<br>📡 IMEI: ${v.imei}`:''}<br>
+          Dono: <em>${v.usuario}</em>${v.cor?` | ${v.cor}`:''}
         </div>
         <button class="btn-excluir" onclick="excluirVeiculo('${v.placa}', '${v.usuario}')">🗑️ Excluir</button>
       `;
@@ -306,7 +291,7 @@ function renderizarListaVeiculos() {
       div.className = `veiculo ${semSinal?'veiculo-sem-sinal':''} ${sel?'veiculo-selecionado':''}`;
       div.style.borderLeft = `4px solid ${v.corMarcador}`;
       div.onclick = () => focarNoVeiculo(v.placa);
-      div.innerHTML = `<strong>${sel?'📍 ':''}${v.nome}</strong><br>Placa: ${v.placa}<br>${v.cor?`Cor: ${v.cor}<br>`:''}<span>${status}</span>`;
+      div.innerHTML = `<strong>${sel?'📍 ':''}${v.nome}</strong><br>Placa: ${v.placa}${v.imei?`<br>📡 IMEI: ${v.imei}`:''}<br>${v.cor?`Cor: ${v.cor}<br>`:''}<span>${status}</span>`;
       c.appendChild(div);
     });
   }

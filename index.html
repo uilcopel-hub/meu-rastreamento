@@ -9,7 +9,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-  <!-- TELA DE LOGIN -->
   <div id="tela-login" class="tela-login">
     <div class="caixa-login">
       <h1>🚗 Rastreamento Veicular</h1>
@@ -24,13 +23,9 @@
     </div>
   </div>
 
-  <!-- TELA PRINCIPAL — MAPA EM TELA CHEIA -->
   <div id="tela-principal" class="tela-principal escondida">
-    
-    <!-- MAPA FUNDO TOTAL -->
     <div id="mapa"></div>
 
-    <!-- CABEÇALHO FLUTUANTE -->
     <header class="cabecalho-flutuante">
       <div class="logo">🚗 Rastreamento Veicular</div>
       <div class="info-usuario">
@@ -39,24 +34,18 @@
       </div>
     </header>
 
-    <!-- BOTÕES DE MAPA FLUTUANTES -->
     <div class="botoes-mapa-flutuantes">
       <button id="btnRuas" onclick="trocarMapa('ruas')" class="btn-mapa ativo">🗺️ Ruas</button>
       <button id="btnSat" onclick="trocarMapa('satellite')" class="btn-mapa">🛰️ Satélite</button>
     </div>
 
-    <!-- PAINEL LATERAL FLUTUANTE -->
     <aside class="painel-lateral">
-      <button onclick="abrirGerenciador()" id="btn-gerenciar" class="btn-gerenciar escondida">
-        ⚙️ Gerenciar
-      </button>
-      
+      <button onclick="abrirGerenciador()" id="btn-gerenciar" class="btn-gerenciar escondida">⚙️ Gerenciar</button>
       <h3>Meus Veículos</h3>
       <div id="lista-veiculos" class="lista-veiculos"></div>
       <p id="ultima-atualizacao" class="versao"></p>
     </aside>
 
-    <!-- MODAL GERENCIAMENTO -->
     <div id="modal-gerenciar" class="modal">
       <div class="modal-conteudo">
         <span class="fechar" onclick="fecharGerenciador()">&times;</span>
@@ -75,6 +64,7 @@
           <h3>🚙 Cadastrar Veículo</h3>
           <input type="text" id="campo-nome" placeholder="Nome / Modelo">
           <input type="text" id="campo-placa" placeholder="Placa">
+          <input type="text" id="campo-imei" placeholder="IMEI do Rastreador 📡">
           <input type="text" id="campo-cor" placeholder="Cor / Observação">
           <input type="text" id="campo-usuario-dono" placeholder="Usuário DONO" style="border-color:#28a745;">
           <button onclick="salvarVeiculo()" class="btn-principal">💾 Salvar Veículo</button>
@@ -93,6 +83,6 @@
     </div>
   </div>
 
-  <script src="codigo.js?v=7.1"></script>
+  <script src="codigo.js?v=7.2"></script>
 </body>
 </html>

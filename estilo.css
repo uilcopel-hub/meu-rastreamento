@@ -1,6 +1,7 @@
-/* ========================================
-   RESET E BASE
-======================================== */
+/* ==============================================
+   ESTILO — VERSÃO 7.2
+   ============================================== */
+
 * {
   margin: 0;
   padding: 0;
@@ -10,291 +11,311 @@
 
 body, html {
   height: 100%;
-  width: 100%;
   overflow: hidden;
 }
 
-.escondida {
-  display: none !important;
-}
-
-.erro {
-  color: #dc3545;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-}
-
-/* ========================================
-   TELA DE LOGIN
-======================================== */
-.tela-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-}
-
-.caixa-login {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-  width: 90%;
-  max-width: 400px;
-}
-
-.caixa-login h1 {
-  text-align: center;
-  color: #1e3c72;
-  margin-bottom: 2rem;
-  font-size: 1.6rem;
-}
-
-.caixa-login h2 {
-  font-size: 1.2rem;
-  margin-bottom: 1.5rem;
-  color: #333;
-}
-
-.caixa-login input {
-  width: 100%;
-  padding: 0.9rem;
-  margin-bottom: 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border 0.3s;
-}
-
-.caixa-login input:focus {
-  outline: none;
-  border-color: #1e3c72;
-}
-
-.btn-principal {
-  width: 100%;
-  padding: 0.9rem;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.btn-principal:hover {
-  transform: translateY(-2px);
-}
-
-.aviso-login {
-  margin-top: 1rem;
-  font-size: 0.85rem;
-  color: #666;
-  text-align: center;
-}
-
-/* ========================================
-   TELA PRINCIPAL — MAPA TOTAL
-======================================== */
-.tela-principal {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-}
-
-#mapa {
+/* TELAS */
+.tela {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  transition: opacity 0.3s ease;
+}
+
+.tela.escondida {
+  display: none;
+}
+
+/* TELA DE LOGIN */
+.tela-login {
+  background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.caixa-login {
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.caixa-login h1 {
+  color: #1a73e8;
+  margin-bottom: 30px;
+  font-size: 24px;
+}
+
+.caixa-login h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.caixa-login input {
+  width: 100%;
+  padding: 12px 15px;
+  margin: 8px 0;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.caixa-login input:focus {
+  outline: none;
+  border-color: #1a73e8;
+}
+
+.caixa-login button {
+  width: 100%;
+  padding: 14px;
+  background: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s;
+}
+
+.caixa-login button:hover {
+  background: #1557b0;
+}
+
+.erro {
+  color: #d32f2f;
+  margin: 10px 0;
+  font-size: 14px;
+  min-height: 20px;
+}
+
+.aviso-login {
+  margin-top: 20px;
+  color: #666;
+  font-size: 13px;
+}
+
+/* TELA PRINCIPAL */
+.tela-principal {
+  display: flex;
+  flex-direction: column;
+}
+
+#mapa {
+  flex: 1;
+  width: 100%;
   z-index: 1;
 }
 
-/* ========================================
-   CABEÇALHO FLUTUANTE
-======================================== */
+/* CABEÇALHO */
 .cabecalho-flutuante {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
-  right: 1rem;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255,255,255,0.95);
+  padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 0.8rem 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   z-index: 1000;
 }
 
 .logo {
-  font-size: 1.2rem;
+  font-size: 18px;
   font-weight: 700;
-  color: #1e3c72;
+  color: #1a73e8;
 }
 
 .info-usuario {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 15px;
+}
+
+.info-usuario span {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
 }
 
 .btn-sair {
-  padding: 0.5rem 1rem;
-  background: #dc3545;
-  color: white;
+  padding: 8px 16px;
+  background: #f5f5f5;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
+  font-size: 14px;
   transition: background 0.2s;
 }
 
 .btn-sair:hover {
-  background: #c82333;
+  background: #e0e0e0;
 }
 
-/* ========================================
-   BOTÕES DE MAPA
-======================================== */
+/* BOTÕES DE MAPA */
 .botoes-mapa-flutuantes {
   position: absolute;
-  top: 80px;
-  right: 1rem;
+  top: 70px;
+  right: 15px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
   z-index: 1000;
 }
 
 .btn-mapa {
-  padding: 0.7rem 1rem;
-  background: rgba(255, 255, 255, 0.95);
-  border: 2px solid transparent;
+  padding: 10px 16px;
+  background: white;
+  border: 2px solid #e0e0e0;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .btn-mapa.ativo {
-  background: #1e3c72;
+  background: #1a73e8;
   color: white;
-  border-color: #1e3c72;
+  border-color: #1a73e8;
 }
 
-/* ========================================
-   PAINEL LATERAL
-======================================== */
+.btn-mapa:hover:not(.ativo) {
+  border-color: #1a73e8;
+}
+
+/* PAINEL LATERAL */
 .painel-lateral {
   position: absolute;
-  top: 80px;
-  left: 1rem;
-  width: 320px;
-  max-width: calc(100% - 2rem);
-  background: rgba(255, 255, 255, 0.95);
+  top: 70px;
+  left: 15px;
+  width: 300px;
+  max-height: calc(100% - 90px);
+  background: rgba(255,255,255,0.96);
   border-radius: 12px;
-  padding: 1.2rem;
+  padding: 20px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  z-index: 1000;
-  max-height: calc(100vh - 100px);
   overflow-y: auto;
+  z-index: 1000;
 }
 
 .painel-lateral h3 {
-  color: #1e3c72;
-  margin: 1rem 0 0.8rem;
-  font-size: 1rem;
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 8px;
 }
 
 .btn-gerenciar {
   width: 100%;
-  padding: 0.8rem;
-  background: #ffc107;
-  color: #212529;
+  padding: 12px;
+  background: #1a73e8;
+  color: white;
   border: none;
   border-radius: 8px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  margin-bottom: 1rem;
-  transition: background 0.2s;
+  margin-bottom: 20px;
+  transition: background 0.3s;
+}
+
+.btn-gerenciar.escondida {
+  display: none;
 }
 
 .btn-gerenciar:hover {
-  background: #e0a800;
+  background: #1557b0;
 }
 
+/* LISTA DE VEÍCULOS */
 .lista-veiculos {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 10px;
 }
 
 .veiculo {
-  background: white;
-  padding: 0.9rem;
+  padding: 12px;
+  background: #f9f9f9;
   border-radius: 8px;
-  border-left: 4px solid #28a745;
+  border-left: 4px solid;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.veiculo:hover, .veiculo-selecionado {
-  transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.veiculo:hover {
+  background: #f0f0f0;
+  transform: translateX(3px);
+}
+
+.veiculo.veiculo-selecionado {
+  background: #e8f0fe;
+  box-shadow: 0 2px 8px rgba(26,115,232,0.2);
 }
 
 .veiculo-sem-sinal {
   opacity: 0.7;
-  border-left-color: #ffc107;
 }
 
 .sem-veiculo {
   text-align: center;
   color: #888;
-  font-size: 0.9rem;
-  padding: 1rem;
+  padding: 20px;
+  font-size: 14px;
 }
 
 .versao {
-  margin-top: 1rem;
-  font-size: 0.75rem;
-  color: #999;
+  margin-top: 20px;
+  font-size: 12px;
+  color: #888;
   text-align: center;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
 }
 
-/* ========================================
-   MODAL
-======================================== */
+/* MODAL */
 .modal {
-  display: none;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 2000;
+  background: rgba(0,0,0,0.5);
+  display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 3000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
 }
 
 .modal.modal-ativo {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
 }
 
 .modal-conteudo {
   background: white;
-  padding: 2rem;
+  padding: 30px;
   border-radius: 16px;
   width: 90%;
-  max-width: 500px;
+  max-width: 450px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
@@ -302,11 +323,12 @@ body, html {
 
 .fechar {
   position: absolute;
-  top: 1rem;
-  right: 1.5rem;
-  font-size: 1.5rem;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  color: #888;
   cursor: pointer;
-  color: #999;
+  transition: color 0.2s;
 }
 
 .fechar:hover {
@@ -314,72 +336,98 @@ body, html {
 }
 
 .modal-conteudo h2 {
-  color: #1e3c72;
-  margin-bottom: 1.5rem;
-  padding-right: 2rem;
+  text-align: center;
+  color: #1a73e8;
+  margin-bottom: 25px;
+  font-size: 20px;
 }
 
 .secao {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #eee;
-  padding: 1rem 0;
-}
-
-.secao:last-child {
-  border-bottom: none;
 }
 
 .secao h3 {
-  font-size: 1rem;
-  margin-bottom: 0.8rem;
+  font-size: 15px;
   color: #333;
+  margin-bottom: 12px;
 }
 
 .secao input {
   width: 100%;
-  padding: 0.8rem;
-  margin-bottom: 0.6rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  padding: 10px 12px;
+  margin: 6px 0;
+  border: 2px solid #e8e8e8;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
+.secao input:focus {
+  outline: none;
+  border-color: #1a73e8;
+}
+
+.secao button {
+  width: 100%;
+  padding: 11px;
+  background: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.secao button:hover {
+  background: #1557b0;
+}
+
+/* ITEM CADASTRO */
 .item-cadastro {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
-  padding: 0.8rem;
+  padding: 12px;
+  background: #f9f9f9;
   border-radius: 8px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
 .btn-excluir {
-  padding: 0.5rem 0.8rem;
-  background: #dc3545;
+  padding: 6px 12px;
+  background: #ef5350;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 13px;
+  transition: background 0.2s;
 }
 
-/* ========================================
-   RESPONSIVO — CELULAR
-======================================== */
-@media (max-width: 600px) {
-  .cabecalho-flutuante {
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
-  }
-  
+.btn-excluir:hover {
+  background: #d32f2f;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
   .painel-lateral {
-    width: calc(100% - 2rem);
-    top: 110px;
-    max-height: calc(100vh - 130px);
+    width: calc(100% - 30px);
+    max-height: 250px;
+    top: auto;
+    bottom: 15px;
+    left: 15px;
   }
-  
   .botoes-mapa-flutuantes {
-    top: 110px;
+    top: 65px;
+  }
+  .cabecalho-flutuante {
+    padding: 10px 15px;
+  }
+  .logo {
+    font-size: 15px;
   }
 }
