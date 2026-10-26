@@ -256,17 +256,7 @@ async function atualizarTudo() {
   }
 }
 
-function renderizarListaVeiculos() {
-  const listaEl = document.getElementById('lista-veiculos');
-  if (!listaEl) return;
-  listaEl.innerHTML = '';
 
-  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
-  
-  if (listaDados.length === 0) {
-    listaEl.innerHTML = '<p class="sem-veiculo">Nenhum veículo vinculado.<br>Aguarde o administrador.</p>';
-    return;
-  }
   
   listaDados.forEach(v => {
     const ehSeguindo = veiculoSeguido === v.placa;
@@ -308,15 +298,122 @@ function alternarSeguir(placa) {
   renderizarListaVeiculos();
 }
 
+
+let veiculoDetalheAberto = null;
+
 function focarNoVeiculo(placa) {
-  veiculoSelecionado = veiculoSelecionado === placa ? null : placa;
-  if (veiculoSelecionado && marcadores[placa] && mapa) {
-    const latLng = marcadores[placa].getLatLng();
-    mapa.setView(latLng, 15);
+  // Se clicar de novo → fecha
+  if (veiculoDetalheAberto === placa) {
+    fecharCartao();
+    return;
+  }
+  
+  veiculoDetalheAberto = placa;
+  
+  // Busca os dados do veículo
+  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+  const v = listaDados.find(x => x.placa === placa);
+  if (!v) return;
+  
+  // Preenche o cartão
+  document.getElementById('cartao-nome').textContent = v.nome || v.placa;
+  document.getElementById('cartao-placa').textContent = v.placa;
+  document.getElementById('cartao-imei').textContent = v.imei || 'Não informado';
+  
+  const donoLinha = document.getElementById('cartao-dono-linha');
+  if (ehAdm) {
+    donoLinha.textContent = `👤 Dono: ${v.usuario}`;
+    donoLinha.style.display = 'block';
+  } else {
+    donoLinha.style.display = 'none';
+  }
+  
+  document.getElementById('cartao-km-hoje').textContent = v.kmHoje.toFixed(1) + ' km';
+  document.getElementById('cartao-km-7dias').textContent = v.km7dias.toFixed(1) + ' km';
+  document.getElementById('cartao-km-30dias').textContent = v.km30dias.toFixed(1) + ' km';
+  
+  const semSinal = !v.lat || !v.lon;
+  document.getElementById('cartao-status').textContent = semSinal ? '🔄 Aguardando sinal...' : (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
+  document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : v.velocidade + ' km/h';
+  document.getElementById('cartao-horario').textContent = v.horario || '--:--';
+  
+  // Botão seguir
+  const btnSeguir = document.getElementById('btn-seguir-cartao');
+  const ehSeguindo = veiculoSeguido === placa;
+  btnSeguir.textContent = ehSeguindo ? '📍 Seguindo' : '📍 Seguir no mapa';
+  btnSeguir.classList.toggle('seguindo', ehSeguindo);
+  btnSeguir.dataset.placa = placa;
+  
+  // Centraliza no mapa
+  if (veiculoSelecionado !== placa && marcadores[placa] && mapa) {
+    mapa.setView(marcadores[placa].getLatLng(), 15);
     marcadores[placa].openPopup();
   }
+  veiculoSelecionado = placa;
+  
+  // Mostra o cartão
+  document.getElementById('cartao-detalhes').classList.add('aberto');
+  
   renderizarListaVeiculos();
 }
+
+function fecharCartao() {
+  veiculoDetalheAberto = null;
+  document.getElementById('cartao-detalhes').classList.remove('aberto');
+  veiculoSelecionado = null;
+  renderizarListaVeiculos();
+}
+
+function alternarSeguirAtual() {
+  if (!veiculoDetalheAberto) return;
+  alternarSeguir(veiculoDetalheAberto);
+  
+  // Atualiza texto do botão
+  const btnSeguir = document.getElementById('btn-seguir-cartao');
+  const ehSeguindo = veiculoSeguido === veiculoDetalheAberto;
+  btnSeguir.textContent = ehSeguindo ? '📍 Seguindo' : '📍 Seguir no mapa';
+  btnSeguir.classList.toggle('seguindo', ehSeguindo);
+}
+
+function renderizarListaVeiculos() {
+  const listaEl = document.getElementById('lista-veiculos');
+  if (!listaEl) return;
+  listaEl.innerHTML = '';
+  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+  
+  if (listaDados.length === 0) {
+    listaEl.innerHTML = '<p class="sem-veiculo">Nenhum veículo vinculado.<br>Aguarde o administrador.</p>';
+    return;
+  }
+  
+  listaDados.forEach(v => {
+    const ehSelecionado = veiculoDetalheAberto === v.placa;
+    const semSinal = !v.lat || !v.lon;
+    
+    const div = document.createElement('div');
+    div.className = `veiculo ${semSinal?'veiculo-sem-sinal':''} ${ehSelecionado?'selecionado':''}`;
+    div.style.borderLeft = `4px solid ${v.corMarcador}`;
+    div.onclick = () => focarNoVeiculo(v.placa);
+    
+    div.innerHTML = `
+      <strong>${v.nome || v.placa}</strong>
+      <small style="color:#666; display:block;">${semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado')}</small>
+    `;
+    listaEl.appendChild(div);
+  });
+  
+  const ultEl = document.getElementById('ultima-atualizacao');
+  if (ultEl) {
+    ultEl.innerHTML = `<strong>${VERSAO_SISTEMA}</strong><br>Última: ${ultimaAtualizacao}`;
+  }
+}
+
+
+
+
+
+
+
 
 function inicializarMapa() {
   const mapaEl = document.getElementById('mapa');

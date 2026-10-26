@@ -162,32 +162,32 @@ body {
   font-size: 14px;
 }
 
-/* PAINEL DIREITO */
+/* PAINEL DIREITO — LISTA COMPACTA */
 .barra-direita {
   position: absolute;
   top: 85px;
-  right: 20px;
+  right: 15px;
   z-index: 1000;
-  width: 340px;
+  width: 280px;
   background: white;
-  padding: 20px;
+  padding: 12px;
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  max-height: calc(100vh - 105px);
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
 }
 
 .barra-direita h3 {
   color: #1e3c72;
-  margin-bottom: 15px;
-  font-size: 17px;
+  margin-bottom: 10px;
+  font-size: 16px;
 }
 
 .barra-direita h3.titulo-adm {
   color: #9c27b0;
 }
 
-/* BLOCO DE KM */
+/* BLOCO DE KM — usado só no cartão agora */
 .km-bloco {
   display: flex;
   justify-content: space-between;
@@ -209,19 +209,24 @@ body {
 /* BOTÃO SEGUIR */
 .btn-seguir {
   width: 100%;
-  padding: 6px;
-  margin-top: 8px;
+  padding: 8px;
+  margin-top: 12px;
   background: #007bff;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-seguir:hover {
+  background: #0056b3;
 }
 
 .btn-seguir.seguindo {
   background: #28a745;
-  font-weight: bold;
 }
 
 /* TAG DONO */
@@ -229,10 +234,10 @@ body {
   font-size: 11px;
   color: #9c27b0;
   background: #f3e5f5;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 4px;
   display: inline-block;
-  margin-bottom: 6px;
+  margin: 6px 0;
 }
 
 /* MAPA */
@@ -245,32 +250,27 @@ body {
   z-index: 1;
 }
 
-/* VEÍCULOS LISTA */
+/* LISTA DE VEÍCULOS */
 .sem-veiculo {
   color: #888;
   text-align: center;
-  padding: 30px 10px;
-  font-size: 14px;
+  padding: 20px 10px;
+  font-size: 13px;
 }
 
 .veiculo {
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 10px;
+  margin-bottom: 6px;
   background: #f8f9fa;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: all 0.2s;
   border-left: 4px solid transparent;
 }
 
-.veiculo:hover {
-  background: #e9ecef;
-  transform: translateX(3px);
-}
-
-.veiculo-selecionado {
+.veiculo:hover, .veiculo.selecionado {
   background: #e3f2fd;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transform: translateX(2px);
 }
 
 .veiculo-sem-sinal {
@@ -278,11 +278,70 @@ body {
 }
 
 .rodape-lista {
-  margin-top: 20px;
-  font-size: 12px;
-  color: #666;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #888;
   border-top: 1px solid #eee;
-  padding-top: 12px;
+  padding-top: 8px;
+}
+
+/* === CARTÃO DE DETALHES === */
+.cartao-detalhes {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  z-index: 1500;
+  display: none;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.cartao-detalhes.aberto {
+  display: block;
+}
+
+.cartao-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.cartao-fechar {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.cartao-fechar:hover {
+  color: #dc3545;
+}
+
+.cartao-km {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.cartao-status {
+  margin-top: 10px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 /* PAINEL CENTRAL — ADMIN */
@@ -396,6 +455,11 @@ body {
   cursor: pointer;
   font-weight: 600;
   font-size: 13px;
+  transition: background 0.2s;
+}
+
+.btn-excluir:hover {
+  background: #c82333;
 }
 
 /* RESPONSIVO — CELULAR */
@@ -428,41 +492,26 @@ body {
   }
 
   .barra-direita {
-    width: calc(100% - 20px);
+    width: auto;
     left: 10px;
     right: 10px;
-    top: 120px;
-    max-height: 38vh; /* Menor altura → deixa mais mapa visível */
-    border-radius: 10px;
-    padding: 12px;
+    top: auto;
+    bottom: 90px;
+    max-height: 140px;
   }
 
-  .barra-direita h3 {
-    font-size: 15px;
-    margin-bottom: 10px;
-  }
-
-  .veiculo {
-    padding: 8px;
-    font-size: 13px;
-  }
-
-  .km-bloco {
-    font-size: 10px;
-    gap: 4px;
+  .cartao-detalhes {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    padding: 15px;
   }
 
   .painel-central {
     width: 95%;
-    max-width: 95%;
-    padding: 15px;
   }
 
   .painel-conteudo {
     padding: 20px 15px;
-  }
-
-  .secao-adm {
-    padding: 12px;
   }
 }
