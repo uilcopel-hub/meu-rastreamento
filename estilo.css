@@ -1,12 +1,16 @@
 /* ==============================================
-   ESTILO — VERSÃO 7.2
+   ESTILO — VERSÃO 7.2 CORRIGIDA
    ============================================== */
-
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* 👇 CORREÇÃO: funciona para TODOS os elementos escondidos 👇 */
+.escondida {
+  display: none !important;
 }
 
 body, html {
@@ -24,10 +28,6 @@ body, html {
   transition: opacity 0.3s ease;
 }
 
-.tela.escondida {
-  display: none;
-}
-
 /* TELA DE LOGIN */
 .tela-login {
   background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
@@ -36,7 +36,6 @@ body, html {
   justify-content: center;
   z-index: 2000;
 }
-
 .caixa-login {
   background: #fff;
   padding: 40px 30px;
@@ -46,19 +45,16 @@ body, html {
   max-width: 400px;
   text-align: center;
 }
-
 .caixa-login h1 {
   color: #1a73e8;
   margin-bottom: 30px;
   font-size: 24px;
 }
-
 .caixa-login h2 {
   color: #333;
   margin-bottom: 20px;
   font-size: 20px;
 }
-
 .caixa-login input {
   width: 100%;
   padding: 12px 15px;
@@ -68,12 +64,10 @@ body, html {
   font-size: 16px;
   transition: border-color 0.3s;
 }
-
 .caixa-login input:focus {
   outline: none;
   border-color: #1a73e8;
 }
-
 .caixa-login button {
   width: 100%;
   padding: 14px;
@@ -87,18 +81,15 @@ body, html {
   margin-top: 10px;
   transition: background 0.3s;
 }
-
 .caixa-login button:hover {
   background: #1557b0;
 }
-
 .erro {
   color: #d32f2f;
   margin: 10px 0;
   font-size: 14px;
   min-height: 20px;
 }
-
 .aviso-login {
   margin-top: 20px;
   color: #666;
@@ -110,7 +101,6 @@ body, html {
   display: flex;
   flex-direction: column;
 }
-
 #mapa {
   flex: 1;
   width: 100%;
@@ -131,25 +121,21 @@ body, html {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   z-index: 1000;
 }
-
 .logo {
   font-size: 18px;
   font-weight: 700;
   color: #1a73e8;
 }
-
 .info-usuario {
   display: flex;
   align-items: center;
   gap: 15px;
 }
-
 .info-usuario span {
   font-size: 14px;
   color: #333;
   font-weight: 500;
 }
-
 .btn-sair {
   padding: 8px 16px;
   background: #f5f5f5;
@@ -159,7 +145,6 @@ body, html {
   font-size: 14px;
   transition: background 0.2s;
 }
-
 .btn-sair:hover {
   background: #e0e0e0;
 }
@@ -174,7 +159,6 @@ body, html {
   gap: 8px;
   z-index: 1000;
 }
-
 .btn-mapa {
   padding: 10px 16px;
   background: white;
@@ -186,13 +170,11 @@ body, html {
   transition: all 0.2s;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-
 .btn-mapa.ativo {
   background: #1a73e8;
   color: white;
   border-color: #1a73e8;
 }
-
 .btn-mapa:hover:not(.ativo) {
   border-color: #1a73e8;
 }
@@ -211,7 +193,6 @@ body, html {
   overflow-y: auto;
   z-index: 1000;
 }
-
 .painel-lateral h3 {
   color: #333;
   margin-bottom: 15px;
@@ -219,7 +200,6 @@ body, html {
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 8px;
 }
-
 .btn-gerenciar {
   width: 100%;
   padding: 12px;
@@ -233,11 +213,6 @@ body, html {
   margin-bottom: 20px;
   transition: background 0.3s;
 }
-
-.btn-gerenciar.escondida {
-  display: none;
-}
-
 .btn-gerenciar:hover {
   background: #1557b0;
 }
@@ -248,7 +223,6 @@ body, html {
   flex-direction: column;
   gap: 10px;
 }
-
 .veiculo {
   padding: 12px;
   background: #f9f9f9;
@@ -257,28 +231,23 @@ body, html {
   cursor: pointer;
   transition: all 0.2s;
 }
-
 .veiculo:hover {
   background: #f0f0f0;
   transform: translateX(3px);
 }
-
 .veiculo.veiculo-selecionado {
   background: #e8f0fe;
   box-shadow: 0 2px 8px rgba(26,115,232,0.2);
 }
-
 .veiculo-sem-sinal {
   opacity: 0.7;
 }
-
 .sem-veiculo {
   text-align: center;
   color: #888;
   padding: 20px;
   font-size: 14px;
 }
-
 .versao {
   margin-top: 20px;
   font-size: 12px;
@@ -304,12 +273,10 @@ body, html {
   visibility: hidden;
   transition: all 0.3s;
 }
-
 .modal.modal-ativo {
   opacity: 1;
   visibility: visible;
 }
-
 .modal-conteudo {
   background: white;
   padding: 30px;
@@ -320,7 +287,6 @@ body, html {
   overflow-y: auto;
   position: relative;
 }
-
 .fechar {
   position: absolute;
   top: 15px;
@@ -330,30 +296,25 @@ body, html {
   cursor: pointer;
   transition: color 0.2s;
 }
-
 .fechar:hover {
   color: #333;
 }
-
 .modal-conteudo h2 {
   text-align: center;
   color: #1a73e8;
   margin-bottom: 25px;
   font-size: 20px;
 }
-
 .secao {
   margin-bottom: 25px;
   padding-bottom: 20px;
   border-bottom: 1px solid #eee;
 }
-
 .secao h3 {
   font-size: 15px;
   color: #333;
   margin-bottom: 12px;
 }
-
 .secao input {
   width: 100%;
   padding: 10px 12px;
@@ -362,12 +323,10 @@ body, html {
   border-radius: 6px;
   font-size: 14px;
 }
-
 .secao input:focus {
   outline: none;
   border-color: #1a73e8;
 }
-
 .secao button {
   width: 100%;
   padding: 11px;
@@ -380,7 +339,6 @@ body, html {
   cursor: pointer;
   margin-top: 8px;
 }
-
 .secao button:hover {
   background: #1557b0;
 }
@@ -396,7 +354,6 @@ body, html {
   margin-bottom: 8px;
   font-size: 14px;
 }
-
 .btn-excluir {
   padding: 6px 12px;
   background: #ef5350;
@@ -407,7 +364,6 @@ body, html {
   font-size: 13px;
   transition: background 0.2s;
 }
-
 .btn-excluir:hover {
   background: #d32f2f;
 }
