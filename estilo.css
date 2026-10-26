@@ -172,26 +172,29 @@ body {
   border-color: #1e3c72;
 }
 
-/* MAPA — DEFINITIVO — NUNCA MAIS FICA EM CIMA DA FAIXA */
+
+
+/* MAPA — DEFINITIVO */
 #mapa {
   width: 100%;
   height: calc(100vh - 70px);
-  position: absolute !important;
-  top: 70px !important;
-  left: 0 !important;
+  position: absolute;
+  top: 70px;
+  left: 0;
   z-index: 1;
 }
 
-/* Força todos os elementos do mapa a respeitarem o espaço */
+/* NUNCA deixa o mapa descer */
 #mapa .leaflet-pane,
-#mapa .leaflet-tile-container,
-#mapa .leaflet-marker-pane,
-#mapa .leaflet-top,
-#mapa .leaflet-bottom {
-  transform: none !important;
-  margin-top: 0 !important;
+#mapa .leaflet-tile-container {
   top: 0 !important;
+  margin-top: 0 !important;
+  transform-origin: center center !important;
 }
+
+
+
+
 
 /* BARRA LATERAL ESQUERDA */
 .barra-lateral-flutuante {

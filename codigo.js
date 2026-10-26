@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 9.1 — LAYOUT uil telles ✅
+// 🔷 VERSÃO: 9.2 — LAYOUT uil telles ✅
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec`;
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
-const VERSAO_SISTEMA = '9.1 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
+const VERSAO_SISTEMA = '9.2 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 const INTERVALO_ATUALIZACAO = 30000;
 
@@ -232,11 +232,13 @@ async function atualizarTudo() {
   }
 }
 
+
+
 function inicializarMapa() {
   const mapaEl = document.getElementById('mapa');
   if (!mapaEl) return;
   
-  // Inicializa com posição fixa e estável — sem ajuste automático
+  // Inicialização fixa e estável
   mapa = L.map('mapa', {
     center: [-23.8478, -50.1961],  // Ibaiti - PR
     zoom: 13,
@@ -257,11 +259,17 @@ function inicializarMapa() {
   mapaRuas.addTo(mapa);
   modoAtual = 'ruas';
   
-  // Garante que o mapa se redimensione corretamente
-  setTimeout(() => {
-    if (mapa) mapa.invalidateSize(true);
-  }, 200);
+  // Força ajuste do tamanho — várias vezes para garantir
+  [100, 300, 600].forEach(atraso => {
+    setTimeout(() => {
+      if (mapa) mapa.invalidateSize(true);
+    }, atraso);
+  });
 }
+
+
+
+
 
 function atualizarMarcadorNoMapa(v) {
   if (!mapa || !v.lat || !v.lon) return;
