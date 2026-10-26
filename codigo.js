@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 13 — LAYOUT uil telles ✅
+// 🔷 VERSÃO: 14 — LAYOUT uil telles ✅
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec`;
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
-const VERSAO_SISTEMA = '13 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
+const VERSAO_SISTEMA = '14 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 const INTERVALO_ATUALIZACAO = 30000;
 
@@ -91,6 +91,13 @@ function sair() {
   location.reload();
 }
 
+
+
+
+
+
+
+
 function entrarComoUsuario(usuario) {
   usuarioAtual = usuario;
   sessionStorage.setItem('usuario_logado', usuario);
@@ -112,19 +119,18 @@ function entrarComoUsuario(usuario) {
     btnGerenciar.classList.toggle('escondida', !ehAdm);
   }
 
-  // ✅ MOSTRA/ESCONDE PAINEL DA DIREITA SÓ PARA ADM
-  const painelDireita = document.getElementById('painel-todos-veiculos');
-  if (painelDireita) {
-    painelDireita.classList.toggle('escondida', !ehAdm);
+  // ✅ Só ADM vê o painel de TODOS os veículos
+  const painelTodos = document.getElementById('painel-todos-veiculos');
+  if (painelTodos) {
+    painelTodos.classList.toggle('escondida', !ehAdm);
   }
 
-  // ✅ Usuário comum vê "Meus Veículos" | ADM vê tudo nos dois painéis
+  // ✅ Usuário comum vê só os DELE — ADM vê os DELE também
   if (ehAdm) {
     carregarDadosCompletos();
     carregarTodosVeiculosNoMapa();
-  } else {
-    carregarVeiculosDaNuvem();
   }
+  carregarVeiculosDaNuvem(); // ← SEMPRE carrega (todos veem seus)
   
   if (!mapa) inicializarMapa();
   
@@ -136,6 +142,14 @@ function entrarComoUsuario(usuario) {
   atualizarTudo();
   timerAtualizacao = setInterval(atualizarTudo, INTERVALO_ATUALIZACAO);
 }
+
+
+
+
+
+
+
+
 
 
 // ==============================================

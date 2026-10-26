@@ -160,26 +160,17 @@ body {
   margin-top: 0 !important;
   transform-origin: center center !important;
 }
-/* BARRA LATERAL ESQUERDA */
-.barra-lateral-flutuante {
-  position: absolute;
-  top: 85px;
-  left: 20px;
-  z-index: 1000;
-  width: 320px;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  max-height: calc(100vh - 105px);
-  overflow-y: auto;
+
+
+
+
+
+/* REMOVE o lado ESQUERDO */
+.barra-lateral-flutuante:not(.barra-direita) {
+  display: none;
 }
-.barra-lateral-flutuante h3 {
-  color: #1e3c72;
-  margin-bottom: 15px;
-  font-size: 17px;
-}
-/* BARRA LATERAL DIREITA — SÓ ADM VÊ */
+
+/* PAINEL DIREITO — PADRÃO PARA TODOS */
 .barra-direita {
   position: absolute;
   top: 85px;
@@ -194,11 +185,22 @@ body {
   max-height: calc(100vh - 105px);
   overflow-y: auto;
 }
+
 .barra-direita h3 {
-  color: #9c27b0;
+  color: #1e3c72;
   margin-bottom: 15px;
   font-size: 17px;
 }
+
+/* Painel de todos os veículos (só ADM) */
+#painel-todos-veiculos h3 {
+  color: #9c27b0;
+}
+
+
+
+
+
 .sem-veiculo {
   color: #888;
   text-align: center;

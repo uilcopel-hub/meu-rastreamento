@@ -52,16 +52,31 @@
 
   
 
-    <!-- PAINEL DIREITA → Todos os Veículos (só ADM vê) -->
-    <div class="barra-lateral-flutuante barra-direita escondida" id="painel-todos-veiculos">
-      <h3>👑 Todos os Veículos</h3>
+    <!-- PAINEL ESQUERDA → VAI FICAR VAZIO / REMOVIDO -->
+    
+    <!-- PAINEL DIREITA → Todos veículos aqui (todos veem) -->
+    <div class="barra-lateral-flutuante barra-direita" id="painel-meus-veiculos">
+      <h3 id="titulo-painel-veiculos">Meus Veículos</h3>
+      <div id="lista-veiculos"></div>
+      <div id="ultima-atualizacao" class="rodape-lista"></div>
+    </div>
+    
+    <!-- SÓ ADM VÊ → Painel com TODOS os veículos embaixo -->
+    <div class="barra-lateral-flutuante barra-direita escondida" id="painel-todos-veiculos" style="margin-top: 340px;">
+      <h3>👑 Todos os Veículos do Sistema</h3>
       <div id="lista-todos-veiculos-mapa"></div>
       <div class="rodape-lista">
         <span id="qtd-todos-veiculos"></span>
       </div>
     </div>
 
-    <!-- PAINEL ADMINISTRADOR CENTRAL -->
+   
+
+
+
+
+
+ <!-- PAINEL ADMINISTRADOR CENTRAL -->
     <div id="painel-adm" class="painel-central escondida">
       <div class="painel-conteudo">
         <span class="fechar-painel" onclick="abrirFecharPainel()">&times;</span>
