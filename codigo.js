@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 15.1 — PAINEL ÚNICO + KM + SEGUIR ✅
+// 🔷 VERSÃO: 15.2 — PAINEL ÚNICO + KM + SEGUIR ✅
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec`;
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
-const VERSAO_SISTEMA = '15.1 — LAYOUT uil telles ✅';
+const VERSAO_SISTEMA = '15.2 — LAYOUT uil telles ✅';
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 const INTERVALO_ATUALIZACAO = 30000;
 
