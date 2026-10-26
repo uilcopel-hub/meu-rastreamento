@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 9.7 — LAYOUT uil telles ✅
+// 🔷 VERSÃO: 10 — LAYOUT uil telles ✅
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec`;
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
-const VERSAO_SISTEMA = '9.7 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
+const VERSAO_SISTEMA = '10 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 const INTERVALO_ATUALIZACAO = 30000;
 
@@ -83,6 +83,10 @@ function fazerLogin() {
     });
 }
 
+
+
+
+
 function entrarComoUsuario(usuario) {
   usuarioAtual = usuario;
   sessionStorage.setItem('usuario_logado', usuario);
@@ -103,9 +107,20 @@ function entrarComoUsuario(usuario) {
   if (btnGerenciar) {
     btnGerenciar.classList.toggle('escondida', !ehAdm);
   }
-  
-  if (ehAdm) carregarDadosCompletos();
-  else carregarVeiculosDaNuvem();
+
+  // ✅ MOSTRA/ESCONDE PAINEL DA DIREITA SÓ PARA ADM
+  const painelDireita = document.getElementById('painel-todos-veiculos');
+  if (painelDireita) {
+    painelDireita.classList.toggle('escondida', !ehAdm);
+  }
+
+  // ✅ Usuário comum vê "Meus Veículos" | ADM vê tudo nos dois painéis
+  if (ehAdm) {
+    carregarDadosCompletos();
+    carregarTodosVeiculosNoMapa();
+  } else {
+    carregarVeiculosDaNuvem();
+  }
   
   if (!mapa) inicializarMapa();
   
@@ -118,11 +133,52 @@ function entrarComoUsuario(usuario) {
   timerAtualizacao = setInterval(atualizarTudo, INTERVALO_ATUALIZACAO);
 }
 
-function sair() {
-  if (timerAtualizacao) clearInterval(timerAtualizacao);
-  sessionStorage.clear();
-  location.reload();
+
+// ==============================================
+// 👑 MOSTRA TODOS OS VEÍCULOS NO PAINEL DIREITO
+// ==============================================
+function carregarTodosVeiculosNoMapa() {
+  const lista = document.getElementById('lista-todos-veiculos-mapa');
+  const qtdEl = document.getElementById('qtd-todos-veiculos');
+  if (!lista) return;
+  
+  lista.innerHTML = '';
+  
+  if (todosVeiculos.length === 0) {
+    lista.innerHTML = '<p style="color:#888; font-size:13px;">Nenhum veículo cadastrado.</p>';
+    if (qtdEl) qtdEl.textContent = '';
+    return;
+  }
+  
+  todosVeiculos.forEach(v => {
+    const div = document.createElement('div');
+    div.className = 'veiculo-todos';
+    div.onclick = () => focarVeiculoPorPlaca(v.placa);
+    
+    div.innerHTML = `
+      <strong>${v.nome || v.placa}</strong><br>
+      Placa: ${v.placa}${v.imei?`<br>📡 IMEI: ${v.imei}`:''}
+      <div class="dono">👤 Dono: ${v.usuario}</div>
+    `;
+    lista.appendChild(div);
+  });
+  
+  if (qtdEl) {
+    qtdEl.textContent = `Total: ${todosVeiculos.length} veículo(s)`;
+  }
 }
+
+// Clica → centraliza no mapa
+function focarVeiculoPorPlaca(placa) {
+  const veiculo = todosVeiculos.find(v => v.placa === placa);
+  if (veiculo && marcadores[placa] && mapa) {
+    const latLng = marcadores[placa].getLatLng();
+    mapa.setView(latLng, 15);
+    marcadores[placa].openPopup();
+  }
+}
+
+
 
 async function carregarDadosCompletos() {
   try {
@@ -150,6 +206,7 @@ async function carregarDadosCompletos() {
       }
     }
     renderizarPainelAdm();
+    carregarTodosVeiculosNoMapa(); // ✅ linha nova
   } catch (err) {
     console.error('❌ Erro:', err);
   }
@@ -228,6 +285,7 @@ async function atualizarTudo() {
     ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
     
   } catch (err) {
+     carregarTodosVeiculosNoMapa(); // ✅ atualiza painel direito
     console.error('⚠️ Erro ao atualizar:', err);
   }
 }

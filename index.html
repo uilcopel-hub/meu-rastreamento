@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-9.1">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rastreamento Veicular</title>
   <link rel="stylesheet" href="estilo.css">
@@ -25,7 +25,7 @@
 
   <!-- TELA PRINCIPAL -->
   <div id="tela-principal" class="tela escondida">
-    <!-- FAIXA BRANCA NO TOPO — LARGURA TOTAL -->
+    <!-- FAIXA BRANCA NO TOPO -->
     <header class="faixa-topo">
       <h1>🚗 Rastreamento Veicular</h1>
       <div class="faixa-botoes">
@@ -44,11 +44,20 @@
     <!-- MAPA -->
     <div id="mapa"></div>
 
-    <!-- PAINEL LATERAL ESQUERDA -->
-    <div class="barra-lateral-flutuante">
+    <!-- PAINEL ESQUERDA → Meus Veículos (usuário comum) -->
+    <div class="barra-lateral-flutuante" id="painel-meus-veiculos">
       <h3>Meus Veículos</h3>
       <div id="lista-veiculos"></div>
       <div id="ultima-atualizacao" class="rodape-lista"></div>
+    </div>
+
+    <!-- PAINEL DIREITA → Todos os Veículos (só ADM vê) -->
+    <div class="barra-lateral-flutuante barra-direita escondida" id="painel-todos-veiculos">
+      <h3>👑 Todos os Veículos</h3>
+      <div id="lista-todos-veiculos-mapa"></div>
+      <div class="rodape-lista">
+        <span id="qtd-todos-veiculos"></span>
+      </div>
     </div>
 
     <!-- PAINEL ADMINISTRADOR CENTRAL -->
@@ -65,7 +74,6 @@
           <p id="erro-cadastro" class="erro"></p>
           <button onclick="criarConta()">✅ Criar Conta</button>
         </div>
-
         <div class="secao-adm">
           <h3>🚙 Cadastrar Veículo</h3>
           <input type="text" id="campo-nome" placeholder="Nome / Modelo">
@@ -75,12 +83,10 @@
           <input type="text" id="campo-usuario-dono" placeholder="Usuário DONO">
           <button onclick="salvarVeiculo()">💾 Salvar Veículo</button>
         </div>
-
         <div class="secao-adm">
           <h3>👤 Usuários Cadastrados</h3>
           <div id="lista-todos-usuarios"></div>
         </div>
-
         <div class="secao-adm">
           <h3>🚘 Todos os Veículos</h3>
           <div id="lista-todos-veiculos"></div>
@@ -89,7 +95,6 @@
     </div>
   </div>
 
-
-  <script src="codigo.js?v=9.1"></script>
+  <script src="codigo.js?v=10.0"></script>
 </body>
 </html>

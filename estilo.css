@@ -399,3 +399,47 @@ body {
     width: 95%;
   }
 }
+
+
+/* ==============================================
+   BARRA LATERAL DIREITA — SÓ ADMINISTRADOR VÊ
+   ============================================== */
+.barra-direita {
+  right: 15px;
+  left: auto;
+}
+
+.barra-direita h3 {
+  color: #9c27b0;
+}
+
+.veiculo-todos {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-left: 4px solid #9c27b0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.veiculo-todos:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.veiculo-todos .dono {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+#qtd-todos-veiculos {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #9c27b0;
+}
+
+
