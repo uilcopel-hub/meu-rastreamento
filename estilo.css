@@ -172,14 +172,25 @@ body {
   border-color: #1e3c72;
 }
 
-/* MAPA — TELA INTEIRA ABAIXO DA FAIXA */
+/* MAPA — DEFINITIVO — NUNCA MAIS FICA EM CIMA DA FAIXA */
 #mapa {
   width: 100%;
   height: calc(100vh - 70px);
-  position: absolute;
-  top: 70px;
-  left: 0;
+  position: absolute !important;
+  top: 70px !important;
+  left: 0 !important;
   z-index: 1;
+}
+
+/* Força todos os elementos do mapa a respeitarem o espaço */
+#mapa .leaflet-pane,
+#mapa .leaflet-tile-container,
+#mapa .leaflet-marker-pane,
+#mapa .leaflet-top,
+#mapa .leaflet-bottom {
+  transform: none !important;
+  margin-top: 0 !important;
+  top: 0 !important;
 }
 
 /* BARRA LATERAL ESQUERDA */
@@ -371,7 +382,7 @@ body {
 
   #mapa {
     height: calc(100vh - 100px);
-    top: 100px;
+    top: 100px !important;
   }
 
   .barra-lateral-flutuante {

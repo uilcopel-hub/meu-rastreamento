@@ -236,36 +236,31 @@ function inicializarMapa() {
   const mapaEl = document.getElementById('mapa');
   if (!mapaEl) return;
   
-  mapa = L.map('mapa').setView([-23.8478, -50.1961], 13);
+  // Inicializa com posição fixa e estável — sem ajuste automático
+  mapa = L.map('mapa', {
+    center: [-23.8478, -50.1961],  // Ibaiti - PR
+    zoom: 13,
+    attributionControl: true
+  });
+  
   mapaRuas = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-    maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google'
+    maxZoom: 20, 
+    subdomains: ['mt0','mt1','mt2','mt3'], 
+    attribution: '© Google'
   });
   mapaSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-    maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google'
+    maxZoom: 20, 
+    subdomains: ['mt0','mt1','mt2','mt3'], 
+    attribution: '© Google'
   });
+  
   mapaRuas.addTo(mapa);
   modoAtual = 'ruas';
-}
-
-function trocarMapa(tipo) {
-  if (!mapa) return;
-  const btnRuas = document.getElementById('btnRuas');
-  const btnSat = document.getElementById('btnSat');
   
-  if (tipo === 'ruas' && modoAtual !== 'ruas') {
-    mapa.removeLayer(mapaSatellite); 
-    mapaRuas.addTo(mapa);
-    modoAtual = 'ruas';
-    if (btnRuas) btnRuas.classList.add('ativo');
-    if (btnSat) btnSat.classList.remove('ativo');
-  }
-  if (tipo === 'satellite' && modoAtual !== 'satellite') {
-    mapa.removeLayer(mapaRuas); 
-    mapaSatellite.addTo(mapa);
-    modoAtual = 'satellite';
-    if (btnSat) btnSat.classList.add('ativo');
-    if (btnRuas) btnRuas.classList.remove('ativo');
-  }
+  // Garante que o mapa se redimensione corretamente
+  setTimeout(() => {
+    if (mapa) mapa.invalidateSize(true);
+  }, 200);
 }
 
 function atualizarMarcadorNoMapa(v) {
