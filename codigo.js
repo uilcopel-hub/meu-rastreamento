@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 15.5 ✅
-// GOOGLE MAPS + ESTRUTURA ATUALIZADA DA PLANILHA
+// SISTEMA RASTREAMENTO — Versão: 15.6 ✅
+// CORREÇÃO: google is not defined
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.5";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.6";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -20,10 +20,25 @@ let veiculoDetalheAberto = null;
 let marcadores = {};
 let ultimaAtualizacao = "--:--";
 
+// ===== ESPERA O GOOGLE MAPS CARREGAR =====
+function esperarGoogleMaps() {
+  return new Promise(resolver => {
+    const verificar = () => {
+      if (window.google && window.google.maps) {
+        resolver();
+      } else {
+        setTimeout(verificar, 50);
+      }
+    };
+    verificar();
+  });
+}
+
 // ===== INICIALIZAÇÃO DO GOOGLE MAPS =====
-function inicializarMapa() {
+async function inicializarMapa() {
   if (mapa) return;
-  
+  await esperarGoogleMaps(); // Espera carregar
+
   const centro = { lat: -24.7, lng: -50.6 }; // Ibaiti / PR
   mapa = new google.maps.Map(document.getElementById('mapa'), {
     zoom: 10,
@@ -38,11 +53,11 @@ function inicializarMapa() {
 function trocarMapa(tipo) {
   tipoMapa = tipo;
   if (tipo === 'ruas') {
-    mapa.setMapTypeId('roadmap');
+    mapa?.setMapTypeId('roadmap');
     document.getElementById('btnRuas').classList.add('ativo');
     document.getElementById('btnSat').classList.remove('ativo');
   } else {
-    mapa.setMapTypeId('satellite');
+    mapa?.setMapTypeId('satellite');
     document.getElementById('btnSat').classList.add('ativo');
     document.getElementById('btnRuas').classList.remove('ativo');
   }
@@ -71,7 +86,6 @@ async function fazerLogin() {
     return;
   }
   
-  // Login Administrador
   if (usuario === USUARIO_ADM && senha === SENHA_ADM) {
     usuarioAtual = usuario;
     ehAdm = true;
@@ -80,7 +94,6 @@ async function fazerLogin() {
     return;
   }
   
-  // Login Usuário Comum — adaptado à nova estrutura
   const dados = await buscarDados();
   const conta = dados.dados?.find(linha => 
     linha[0] === 'conta' && linha[1] === usuario && String(linha[2]) === senha
@@ -99,7 +112,6 @@ async function fazerLogin() {
 
 async function carregarDadosUsuario(dados = null) {
   if (!dados) dados = await buscarDados();
-  // Estrutura: tipo | referencia(nome) | valor1=placa | valor2=imei | valor3=...
   veiculosDoUsuario = (dados.dados || [])
     .filter(linha => linha[0] === 'veiculo' && linha[1] === usuarioAtual)
     .map(linha => ({
@@ -130,7 +142,7 @@ async function carregarTodosDados() {
   veiculosDoUsuario = todosVeiculos;
 }
 
-function entrarTelaPrincipal() {
+async function entrarTelaPrincipal() {
   document.getElementById('tela-login').classList.add('escondida');
   document.getElementById('tela-principal').classList.remove('escondida');
   document.getElementById('nome-usuario-logado').textContent = usuarioAtual + (ehAdm ? ' 👑' : '');
@@ -139,7 +151,7 @@ function entrarTelaPrincipal() {
     document.getElementById('btn-gerenciar').classList.remove('escondida');
   }
   
-  inicializarMapa();
+  await inicializarMapa();
   renderizarListaVeiculos();
   if (ehAdm) renderizarPainelAdm();
 }
@@ -147,7 +159,7 @@ function entrarTelaPrincipal() {
 function sair() {
   usuarioAtual = null; ehAdm = false;
   veiculosDoUsuario = []; todosVeiculos = []; todosUsuarios = [];
-  Object.values(marcadores).forEach(m => m.setMap(null));
+  Object.values(marcadores).forEach(m => m?.setMap(null));
   marcadores = {};
   
   document.getElementById('tela-login').classList.remove('escondida');
@@ -155,7 +167,6 @@ function sair() {
   document.getElementById('cartao-detalhes').classList.remove('aberto');
 }
 
-// ===== CARTÃO DE DETALHES =====
 function focarNoVeiculo(placa) {
   if (veiculoDetalheAberto === placa) {
     fecharCartao();
@@ -215,7 +226,6 @@ function alternarSeguirAtual() {
   btnSeguir.classList.toggle('seguindo', ehSeguindo);
 }
 
-// ===== LISTA DE VEÍCULOS =====
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
   if (!listaEl) return;
@@ -249,7 +259,6 @@ function renderizarListaVeiculos() {
   }
 }
 
-// ===== PAINEL ADMIN =====
 function abrirFecharPainel() {
   const painel = document.getElementById('painel-adm');
   painel.classList.toggle('escondida');
@@ -416,7 +425,6 @@ async function excluirVeiculo(placa) {
   }
 }
 
-// ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded', () => {
   console.log(VERSAO_SISTEMA);
 });
