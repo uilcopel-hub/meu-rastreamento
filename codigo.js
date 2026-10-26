@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 9.5 — LAYOUT uil telles ✅
+// 🔷 VERSÃO: 9.6 — LAYOUT uil telles ✅
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec`;
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
-const VERSAO_SISTEMA = '9.5 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
+const VERSAO_SISTEMA = '9.6 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 const INTERVALO_ATUALIZACAO = 30000;
 
@@ -267,7 +267,7 @@ function inicializarMapa() {
   });
 }
 // ==============================================
-// 🔄 TROCAR MAPA — Ruas / Satélite — FINAL ✅
+// 🔄 TROCAR MAPA — Ruas / Satélite — CORRIGIDA ✅
 // ==============================================
 function trocarMapa(tipo) {
   if (!mapa || !mapaRuas || !mapaSatellite) return;
@@ -276,12 +276,12 @@ function trocarMapa(tipo) {
   if (mapa.hasLayer(mapaRuas)) mapa.removeLayer(mapaRuas);
   if (mapa.hasLayer(mapaSatellite)) mapa.removeLayer(mapaSatellite);
 
-  // Adiciona a escolhida
+  // Aceita com ou sem acento para não falhar
   if (tipo === 'ruas') {
     mapaRuas.addTo(mapa);
     modoAtual = 'ruas';
   }
-  if (tipo === 'satelite') {
+  if (tipo === 'satelite' || tipo === 'satélite') {
     mapaSatellite.addTo(mapa);
     modoAtual = 'satelite';
   }
@@ -294,6 +294,9 @@ function trocarMapa(tipo) {
     event.target.classList.add('ativo');
   }
 }
+
+
+
 
 function atualizarMarcadorNoMapa(v) {
   if (!mapa || !v.lat || !v.lon) return;
