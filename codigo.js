@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 9.4 — LAYOUT uil telles ✅
+// 🔷 VERSÃO: 9.5 — LAYOUT uil telles ✅
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec`;
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
-const VERSAO_SISTEMA = '9.4 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
+const VERSAO_SISTEMA = '9.5 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 const INTERVALO_ATUALIZACAO = 30000;
 
@@ -267,16 +267,16 @@ function inicializarMapa() {
   });
 }
 // ==============================================
-// 🔄 TROCAR MAPA — Ruas / Satélite — CORRIGIDA ✅
+// 🔄 TROCAR MAPA — Ruas / Satélite — FINAL ✅
 // ==============================================
 function trocarMapa(tipo) {
   if (!mapa || !mapaRuas || !mapaSatellite) return;
 
-  // Remove qualquer camada que esteja ativa
-  if (modoAtual === 'ruas') mapa.removeLayer(mapaRuas);
-  if (modoAtual === 'satelite') mapa.removeLayer(mapaSatellite);
+  // Força remover AMBAS primeiro para limpar
+  if (mapa.hasLayer(mapaRuas)) mapa.removeLayer(mapaRuas);
+  if (mapa.hasLayer(mapaSatellite)) mapa.removeLayer(mapaSatellite);
 
-  // Adiciona a camada escolhida
+  // Adiciona a escolhida
   if (tipo === 'ruas') {
     mapaRuas.addTo(mapa);
     modoAtual = 'ruas';
@@ -286,13 +286,14 @@ function trocarMapa(tipo) {
     modoAtual = 'satelite';
   }
 
-  // Marca o botão ativo
+  // Marca botão ativo
   document.querySelectorAll('.btn-mapa').forEach(btn => {
     btn.classList.remove('ativo');
   });
-  event.target.classList.add('ativo');
+  if (event && event.target) {
+    event.target.classList.add('ativo');
+  }
 }
-
 
 function atualizarMarcadorNoMapa(v) {
   if (!mapa || !v.lat || !v.lon) return;
