@@ -1,14 +1,23 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 15.8 ✅
-// Google Maps API — Compatível com HTML
+// SISTEMA RASTREAMENTO — Versão: 15.9 ✅
+// Mapa Google via Leaflet + Planilha atual
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.8";
-const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.9";
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzfch45960HgLbsFkisYnqzERWg0SVRHKr3ure4lXVzgY8I-o0IUccuNEgmjhZdX5c0QA/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
+const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
+
+console.log('========================================');
+console.log('✅ SISTEMA CARREGADO — VERSÃO:', VERSAO_SISTEMA);
+console.log('📅 Data:', new Date().toLocaleString('pt-BR'));
+console.log('🔗 Planilha conectada');
+console.log('========================================');
 
 let mapa = null;
-let tipoMapa = 'ruas';
+let modoAtual = 'ruas';
+let mapaRuas = null;
+let mapaSatellite = null;
 let veiculosDoUsuario = [];
 let todosVeiculos = [];
 let todosUsuarios = [];
@@ -20,34 +29,43 @@ let veiculoDetalheAberto = null;
 let marcadores = {};
 let ultimaAtualizacao = "--:--";
 
-// ===== INICIALIZAÇÃO DO GOOGLE MAPS =====
+// ===== MAPA — EXATAMENTE COMO NA VERSÃO 7.2 =====
 function inicializarMapa() {
   if (mapa) return;
 
-  const centro = { lat: -24.7, lng: -50.6 }; // Ibaiti / PR
-  mapa = new google.maps.Map(document.getElementById('mapa'), {
-    zoom: 10,
-    center: centro,
-    mapTypeId: 'roadmap',
-    mapTypeControl: false,
-    streetViewControl: false,
-    fullscreenControl: false
+  const centro = [-24.7, -50.6]; // Ibaiti / PR
+  mapa = L.map('mapa').setView(centro, 10);
+
+  mapaRuas = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+    maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google'
   });
-  console.log('🗺️ Google Maps carregado');
+
+  mapaSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google'
+  });
+
+  mapaRuas.addTo(mapa);
+  modoAtual = 'ruas';
+  console.log('🗺️ Mapa Google carregado — Ruas + Satélite');
 }
 
 function trocarMapa(tipo) {
-  tipoMapa = tipo;
-  if (tipo === 'ruas') {
-    mapa?.setMapTypeId('roadmap');
+  if (!mapa) return;
+  if (tipo === 'ruas' && modoAtual !== 'ruas') {
+    mapa.removeLayer(mapaSatellite);
+    mapaRuas.addTo(mapa);
+    modoAtual = 'ruas';
     document.getElementById('btnRuas').classList.add('ativo');
     document.getElementById('btnSat').classList.remove('ativo');
-  } else {
-    mapa?.setMapTypeId('satellite');
+  }
+  if (tipo === 'satellite' && modoAtual !== 'satellite') {
+    mapa.removeLayer(mapaRuas);
+    mapaSatellite.addTo(mapa);
+    modoAtual = 'satellite';
     document.getElementById('btnSat').classList.add('ativo');
     document.getElementById('btnRuas').classList.remove('ativo');
   }
-  console.log('🗺️ Tipo mapa:', tipoMapa);
+  console.log('🗺️ Tipo mapa:', modoAtual);
 }
 
 // ===== BUSCA DADOS NA PLANILHA =====
@@ -104,11 +122,12 @@ async function carregarDadosUsuario(dados = null) {
     .map(linha => ({
       placa: linha[2] || '',
       nome: linha[4] || linha[2] || '',
-      imei: linha[3] || '',
+      imei: linha[6] || '',
       usuario: linha[1] || '',
+      cor: linha[5] || '',
       lat: null, lon: null, velocidade: 0,
       kmHoje: 0, km7dias: 0, km30dias: 0,
-      corMarcador: '#28a745'
+      corMarcador: CORES_PADRAO[veiculosDoUsuario.length % CORES_PADRAO.length]
     }));
 }
 
@@ -120,11 +139,12 @@ async function carregarTodosDados() {
     .map(linha => ({
       placa: linha[2] || '',
       nome: linha[4] || linha[2] || '',
-      imei: linha[3] || '',
+      imei: linha[6] || '',
       usuario: linha[1] || '',
+      cor: linha[5] || '',
       lat: null, lon: null, velocidade: 0,
       kmHoje: 0, km7dias: 0, km30dias: 0,
-      corMarcador: '#007bff'
+      corMarcador: CORES_PADRAO[todosVeiculos.length % CORES_PADRAO.length]
     }));
   veiculosDoUsuario = todosVeiculos;
 }
@@ -146,7 +166,7 @@ async function entrarTelaPrincipal() {
 function sair() {
   usuarioAtual = null; ehAdm = false;
   veiculosDoUsuario = []; todosVeiculos = []; todosUsuarios = [];
-  Object.values(marcadores).forEach(m => m?.setMap(null));
+  Object.values(marcadores).forEach(m => mapa?.removeLayer(m));
   marcadores = {};
   
   document.getElementById('tela-login').classList.remove('escondida');
@@ -187,8 +207,7 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
   if (marcadores[placa] && mapa) {
-    mapa.panTo(marcadores[placa].getPosition());
-    mapa.setZoom(15);
+    mapa.setView(marcadores[placa].getLatLng(), 15);
   }
   veiculoSelecionado = placa;
   
@@ -315,7 +334,7 @@ async function criarConta() {
   try {
     await fetch(URL_SCRIPT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ acao: 'criarConta', usuario, senha })
     });
     
@@ -340,6 +359,7 @@ async function salvarVeiculo() {
   const nome = document.getElementById('campo-nome').value.trim();
   const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
   const imei = document.getElementById('campo-imei').value.trim();
+  const cor = document.getElementById('campo-cor').value.trim();
   const dono = document.getElementById('campo-usuario-dono').value.trim();
   
   if (!nome || !placa || !dono) {
@@ -350,10 +370,10 @@ async function salvarVeiculo() {
   try {
     await fetch(URL_SCRIPT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ 
         acao: 'adicionarVeiculo', 
-        nome, placa, imei, usuario: dono 
+        nome, placa, imei, usuario: dono, dados: cor 
       })
     });
     
@@ -361,6 +381,7 @@ async function salvarVeiculo() {
     document.getElementById('campo-nome').value = '';
     document.getElementById('campo-placa').value = '';
     document.getElementById('campo-imei').value = '';
+    document.getElementById('campo-cor').value = '';
     document.getElementById('campo-usuario-dono').value = '';
     
     await carregarTodosDados();
@@ -378,7 +399,7 @@ async function excluirUsuario(nomeUsuario) {
   try {
     await fetch(URL_SCRIPT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ acao: 'excluirUsuario', usuario: nomeUsuario })
     });
     
@@ -398,7 +419,7 @@ async function excluirVeiculo(placa) {
   try {
     await fetch(URL_SCRIPT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ acao: 'excluirVeiculo', placa })
     });
     
@@ -414,8 +435,4 @@ async function excluirVeiculo(placa) {
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log(VERSAO_SISTEMA);
-  // Inicializa o mapa quando o Google API estiver carregado
-  if (window.google && window.google.maps) {
-    inicializarMapa();
-  }
 });
