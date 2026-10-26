@@ -23,35 +23,35 @@
     </div>
   </div>
 
-  <!-- TELA PRINCIPAL — MAPA TELA INTEIRA -->
+  <!-- TELA PRINCIPAL -->
   <div id="tela-principal" class="tela escondida">
-    <!-- MAPA FUNDO TOTAL -->
-    <div id="mapa"></div>
+    <!-- FAIXA BRANCA NO TOPO — LARGURA TOTAL -->
+    <header class="faixa-topo">
+      <h1>🚗 Rastreamento Veicular</h1>
+      <div class="faixa-botoes">
+        <span id="nome-usuario-logado"></span>
+        <button id="btn-gerenciar" class="btn-secundario escondida" onclick="abrirFecharPainel()">⚙️ Gerenciar</button>
+        <button class="btn-sair" onclick="sair()">Sair</button>
+      </div>
+    </header>
 
-    <!-- BOTÕES DO MAPA FLUTUANDO -->
+    <!-- BOTÕES DO MAPA -->
     <div class="botoes-mapa-flutuante">
       <button id="btnRuas" class="btn-mapa ativo" onclick="trocarMapa('ruas')">🗺️ Ruas</button>
       <button id="btnSat" class="btn-mapa" onclick="trocarMapa('satellite')">🛰️ Satélite</button>
     </div>
 
-    <!-- CABEÇALHO FLUTUANDO NO CANTO SUPERIOR -->
-    <div class="cabecalho-flutuante">
-      <h1>🚗 Rastreamento Veicular</h1>
-      <div class="cabecalho-direita">
-        <span id="nome-usuario-logado"></span>
-        <button id="btn-gerenciar" class="btn-secundario escondida" onclick="abrirFecharPainel()">⚙️ Gerenciar</button>
-        <button class="btn-sair" onclick="sair()">Sair</button>
-      </div>
-    </div>
+    <!-- MAPA -->
+    <div id="mapa"></div>
 
-    <!-- PAINEL LATERAL ESQUERDA FLUTUANDO -->
+    <!-- PAINEL LATERAL ESQUERDA -->
     <div class="barra-lateral-flutuante">
       <h3>Meus Veículos</h3>
       <div id="lista-veiculos"></div>
       <div id="ultima-atualizacao" class="rodape-lista"></div>
     </div>
 
-    <!-- PAINEL ADMINISTRADOR FLUTUANDO NO CENTRO -->
+    <!-- PAINEL ADMINISTRADOR CENTRAL -->
     <div id="painel-adm" class="painel-central escondida">
       <div class="painel-conteudo">
         <span class="fechar-painel" onclick="abrirFecharPainel()">&times;</span>

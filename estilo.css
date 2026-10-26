@@ -26,7 +26,7 @@ body {
   display: none !important;
 }
 
-/* TELA DE LOGIN — CENTRALIZADA */
+/* TELA DE LOGIN */
 #tela-login {
   display: flex;
   align-items: center;
@@ -91,20 +91,59 @@ body {
   font-size: 14px;
 }
 
-/* MAPA — TELA INTEIRA */
-#mapa {
-  width: 100%;
-  height: 100vh;
+/* FAIXA BRANCA NO TOPO — LARGURA TOTAL */
+.faixa-topo {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1;
+  width: 100%;
+  height: 70px;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 25px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
 }
 
-/* BOTÕES DO MAPA FLUTUANDO */
+.faixa-topo h1 {
+  color: #1e3c72;
+  font-size: 20px;
+}
+
+.faixa-botoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-sair {
+  padding: 8px 16px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.btn-secundario {
+  padding: 8px 16px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* BOTÕES DO MAPA */
 .botoes-mapa-flutuante {
   position: absolute;
-  top: 20px;
+  top: 85px;
   right: 20px;
   z-index: 1000;
   display: flex;
@@ -133,59 +172,20 @@ body {
   border-color: #1e3c72;
 }
 
-/* CABEÇALHO FLUTUANDO NO CANTO */
-.cabecalho-flutuante {
+/* MAPA — TELA INTEIRA ABAIXO DA FAIXA */
+#mapa {
+  width: 100%;
+  height: calc(100vh - 70px);
   position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 1000;
-  background: white;
-  padding: 12px 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  top: 70px;
+  left: 0;
+  z-index: 1;
 }
 
-.cabecalho-flutuante h1 {
-  color: #1e3c72;
-  font-size: 18px;
-  white-space: nowrap;
-}
-
-.cabecalho-direita {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.btn-sair {
-  padding: 8px 16px;
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.btn-secundario {
-  padding: 8px 16px;
-  background: #17a2b8;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-/* BARRA LATERAL ESQUERDA FLUTUANDO */
+/* BARRA LATERAL ESQUERDA */
 .barra-lateral-flutuante {
   position: absolute;
-  top: 90px;
+  top: 85px;
   left: 20px;
   z-index: 1000;
   width: 320px;
@@ -193,7 +193,7 @@ body {
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 105px);
   overflow-y: auto;
 }
 
@@ -242,7 +242,7 @@ body {
   padding-top: 12px;
 }
 
-/* PAINEL CENTRAL FLUTUANDO — ADMIN */
+/* PAINEL CENTRAL — ADMIN */
 .painel-central {
   position: absolute;
   top: 50%;
@@ -357,27 +357,30 @@ body {
 
 /* RESPONSIVO — CELULAR */
 @media (max-width: 768px) {
-  .cabecalho-flutuante {
+  .faixa-topo {
     flex-direction: column;
-    gap: 8px;
+    height: auto;
     padding: 10px 15px;
-    left: 10px;
-    right: 10px;
-    top: 10px;
+    gap: 8px;
   }
-  
+
   .botoes-mapa-flutuante {
-    top: 90px;
+    top: 100px;
     right: 10px;
   }
-  
+
+  #mapa {
+    height: calc(100vh - 100px);
+    top: 100px;
+  }
+
   .barra-lateral-flutuante {
     width: calc(100% - 20px);
     left: 10px;
-    top: 140px;
+    top: 150px;
     max-height: calc(50vh);
   }
-  
+
   .painel-central {
     width: 95%;
   }
