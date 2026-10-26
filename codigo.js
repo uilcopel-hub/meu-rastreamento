@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 15.6 ✅
-// CORREÇÃO: google is not defined
+// SISTEMA RASTREAMENTO — Versão: 15.8 ✅
+// Google Maps API — Compatível com HTML
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.6";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.8";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -20,24 +20,9 @@ let veiculoDetalheAberto = null;
 let marcadores = {};
 let ultimaAtualizacao = "--:--";
 
-// ===== ESPERA O GOOGLE MAPS CARREGAR =====
-function esperarGoogleMaps() {
-  return new Promise(resolver => {
-    const verificar = () => {
-      if (window.google && window.google.maps) {
-        resolver();
-      } else {
-        setTimeout(verificar, 50);
-      }
-    };
-    verificar();
-  });
-}
-
 // ===== INICIALIZAÇÃO DO GOOGLE MAPS =====
-async function inicializarMapa() {
+function inicializarMapa() {
   if (mapa) return;
-  await esperarGoogleMaps(); // Espera carregar
 
   const centro = { lat: -24.7, lng: -50.6 }; // Ibaiti / PR
   mapa = new google.maps.Map(document.getElementById('mapa'), {
@@ -48,6 +33,7 @@ async function inicializarMapa() {
     streetViewControl: false,
     fullscreenControl: false
   });
+  console.log('🗺️ Google Maps carregado');
 }
 
 function trocarMapa(tipo) {
@@ -61,6 +47,7 @@ function trocarMapa(tipo) {
     document.getElementById('btnSat').classList.add('ativo');
     document.getElementById('btnRuas').classList.remove('ativo');
   }
+  console.log('🗺️ Tipo mapa:', tipoMapa);
 }
 
 // ===== BUSCA DADOS NA PLANILHA =====
@@ -151,7 +138,7 @@ async function entrarTelaPrincipal() {
     document.getElementById('btn-gerenciar').classList.remove('escondida');
   }
   
-  await inicializarMapa();
+  inicializarMapa();
   renderizarListaVeiculos();
   if (ehAdm) renderizarPainelAdm();
 }
@@ -427,4 +414,8 @@ async function excluirVeiculo(placa) {
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log(VERSAO_SISTEMA);
+  // Inicializa o mapa quando o Google API estiver carregado
+  if (window.google && window.google.maps) {
+    inicializarMapa();
+  }
 });
