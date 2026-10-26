@@ -1,15 +1,15 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 15.11 ✅
+// SISTEMA RASTREAMENTO — Versão: 15.12 ✅
 // Planilha: tipo | referencia | valor1 | valor2 | valor3 | horario/data | dados extras
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.11";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.12";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
 console.log('========================================');
-console.log('✅ SISTEMA CARREGADO — VERSÃO:', VERSAO_SISTEMA);
+console.log(VERSAO_SISTEMA);
 console.log('📋 Planilha: tipo | ref | placa | imei | nome | cor');
 console.log('🔗 Conectado');
 console.log('========================================');
@@ -27,6 +27,12 @@ let veiculoSelecionado = null;
 let veiculoSeguido = null;
 let veiculoDetalheAberto = null;
 let marcadores = {};
+
+// ===== MOSTRAR VERSÃO NA TELA DE LOGIN =====
+function mostrarVersaoLogin() {
+  const el = document.getElementById('versao-sistema');
+  if (el) el.textContent = VERSAO_SISTEMA;
+}
 
 // ===== MAPA =====
 function inicializarMapa() {
@@ -117,11 +123,11 @@ async function carregarDadosUsuario(dados = null) {
     .filter(linha => linha[0] === 'veiculo' && linha[1] === usuarioAtual)
     .map((linha, idx) => ({
       tipo: linha[0],
-      usuario: linha[1],          // dono
-      placa: linha[2] || '',      // valor1 = placa
-      imei: linha[3] || '',       // valor2 = imei
-      nome: linha[4] || linha[2] || '', // valor3 = nome
-      cor: linha[5] || '',        // horario/data = cor
+      usuario: linha[1],
+      placa: linha[2] || '',
+      imei: linha[3] || '',
+      nome: linha[4] || linha[2] || '',
+      cor: linha[5] || '',
       lat: null, 
       lon: null, 
       velocidade: 0,
@@ -421,4 +427,5 @@ async function excluirVeiculo(placa) {
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log(VERSAO_SISTEMA);
+  mostrarVersaoLogin();
 });
