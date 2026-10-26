@@ -1,36 +1,46 @@
+/* ========================================
+   RESET E BASE
+======================================== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
-body {
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  min-height: 100vh;
+body, html {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
-.tela {
-  min-height: 100vh;
-}
-
-.tela-escondida {
+.escondida {
   display: none !important;
 }
 
-/* LOGIN */
-#tela-login {
+.erro {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* ========================================
+   TELA DE LOGIN
+======================================== */
+.tela-login {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
 }
 
 .caixa-login {
   background: white;
   padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  width: 90%;
   max-width: 400px;
 }
 
@@ -41,219 +51,248 @@ body {
   font-size: 1.6rem;
 }
 
-.form-escondido { display: none; }
-.form-visivel { display: block; }
-
 .caixa-login h2 {
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
   color: #333;
 }
 
 .caixa-login input {
   width: 100%;
   padding: 0.9rem;
-  margin-bottom: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  margin-bottom: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
   font-size: 1rem;
+  transition: border 0.3s;
 }
 
-.caixa-login button {
+.caixa-login input:focus {
+  outline: none;
+  border-color: #1e3c72;
+}
+
+.btn-principal {
   width: 100%;
   padding: 0.9rem;
-  background: #28a745;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
-  margin-top: 0.5rem;
-  transition: background 0.2s;
+  transition: transform 0.2s;
 }
 
-.caixa-login button:hover {
-  background: #218838;
+.btn-principal:hover {
+  transform: translateY(-2px);
 }
 
-.erro {
-  color: #dc3545;
-  min-height: 1.5rem;
-  font-size: 0.9rem;
-  margin: 0.3rem 0;
-}
-
-.troca-form {
+.aviso-login {
   margin-top: 1rem;
-  text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #666;
+  text-align: center;
 }
 
-.troca-form a {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
+/* ========================================
+   TELA PRINCIPAL — MAPA TOTAL
+======================================== */
+.tela-principal {
+  position: relative;
+  width: 100%;
+  height: 100vh;
 }
 
-/* TELA PRINCIPAL */
-.cabecalho {
-  background: white;
-  padding: 1rem 2rem;
+#mapa {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* ========================================
+   CABEÇALHO FLUTUANTE
+======================================== */
+.cabecalho-flutuante {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  z-index: 1000;
 }
 
-.cabecalho h1 {
-  font-size: 1.3rem;
+.logo {
+  font-size: 1.2rem;
+  font-weight: 700;
   color: #1e3c72;
 }
 
-.cabecalho p {
-  color: #666;
-  margin-top: 0.3rem;
+.info-usuario {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .btn-sair {
-  padding: 0.6rem 1.2rem;
+  padding: 0.5rem 1rem;
   background: #dc3545;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  transition: background 0.2s;
 }
 
-.conteudo {
+.btn-sair:hover {
+  background: #c82333;
+}
+
+/* ========================================
+   BOTÕES DE MAPA
+======================================== */
+.botoes-mapa-flutuantes {
+  position: absolute;
+  top: 80px;
+  right: 1rem;
   display: flex;
-  height: calc(100vh - 80px);
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 1000;
 }
 
-.barra-lateral {
+.btn-mapa {
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: all 0.2s;
+}
+
+.btn-mapa.ativo {
+  background: #1e3c72;
+  color: white;
+  border-color: #1e3c72;
+}
+
+/* ========================================
+   PAINEL LATERAL
+======================================== */
+.painel-lateral {
+  position: absolute;
+  top: 80px;
+  left: 1rem;
   width: 320px;
-  background: white;
-  padding: 1.5rem;
+  max-width: calc(100% - 2rem);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  z-index: 1000;
+  max-height: calc(100vh - 100px);
   overflow-y: auto;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+}
+
+.painel-lateral h3 {
+  color: #1e3c72;
+  margin: 1rem 0 0.8rem;
+  font-size: 1rem;
 }
 
 .btn-gerenciar {
   width: 100%;
-  padding: 0.9rem;
-  background: #007bff;
-  color: white;
+  padding: 0.8rem;
+  background: #ffc107;
+  color: #212529;
   border: none;
-  border-radius: 6px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  margin-bottom: 1.5rem;
-  font-weight: bold;
-}
-
-.barra-lateral h3 {
-  font-size: 1rem;
-  color: #333;
   margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #eee;
+  transition: background 0.2s;
 }
 
-.sem-veiculo {
-  color: #888;
-  font-size: 0.9rem;
-  text-align: center;
-  padding: 1rem;
+.btn-gerenciar:hover {
+  background: #e0a800;
+}
+
+.lista-veiculos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
 .veiculo {
+  background: white;
   padding: 0.9rem;
-  margin-bottom: 0.6rem;
-  background: #f8f9fa;
-  border-radius: 6px;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
   cursor: pointer;
   transition: all 0.2s;
-  border-left: 4px solid transparent;
 }
 
-.veiculo:hover {
-  background: #e9ecef;
+.veiculo:hover, .veiculo-selecionado {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .veiculo-sem-sinal {
   opacity: 0.7;
+  border-left-color: #ffc107;
 }
 
-.veiculo-selecionado {
-  background: #e3f2fd;
-  transform: translateX(3px);
-}
-
-.veiculo span {
-  font-size: 0.85rem;
-  color: #555;
-}
-
-.info-versao {
-  margin-top: 1.5rem;
-  font-size: 0.8rem;
+.sem-veiculo {
+  text-align: center;
   color: #888;
+  font-size: 0.9rem;
+  padding: 1rem;
+}
+
+.versao {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #999;
   text-align: center;
 }
 
-.area-mapa {
-  flex: 1;
-  position: relative;
-}
-
-.botoes-mapa {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  z-index: 999;
-  display: flex;
-  gap: 0.5rem;
-}
-
-.botoes-mapa button {
-  padding: 0.6rem 1rem;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-#mapa {
-  width: 100%;
-  height: 100%;
-}
-
-/* MODAL */
+/* ========================================
+   MODAL
+======================================== */
 .modal {
   display: none;
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.6);
-  z-index: 9999;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
   align-items: center;
   justify-content: center;
 }
 
-.modal-ativo {
+.modal.modal-ativo {
   display: flex;
 }
 
 .modal-conteudo {
   background: white;
   padding: 2rem;
-  border-radius: 12px;
+  border-radius: 16px;
   width: 90%;
   max-width: 500px;
   max-height: 90vh;
@@ -265,70 +304,82 @@ body {
   position: absolute;
   top: 1rem;
   right: 1.5rem;
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   cursor: pointer;
-  color: #888;
+  color: #999;
+}
+
+.fechar:hover {
+  color: #333;
 }
 
 .modal-conteudo h2 {
-  margin-bottom: 1.5rem;
   color: #1e3c72;
+  margin-bottom: 1.5rem;
+  padding-right: 2rem;
 }
 
-.cadastro-veiculo {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px solid #eee;
+.secao {
+  border-bottom: 1px solid #eee;
+  padding: 1rem 0;
 }
 
-.cadastro-veiculo input {
+.secao:last-child {
+  border-bottom: none;
+}
+
+.secao h3 {
+  font-size: 1rem;
+  margin-bottom: 0.8rem;
+  color: #333;
+}
+
+.secao input {
   width: 100%;
   padding: 0.8rem;
-  margin-bottom: 0.7rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-}
-
-.cadastro-veiculo button {
-  width: 100%;
-  padding: 0.8rem;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
+  margin-bottom: 0.6rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
 }
 
 .item-cadastro {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem;
   background: #f8f9fa;
-  border-radius: 6px;
-  margin-bottom: 0.6rem;
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .btn-excluir {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.8rem;
   background: #dc3545;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.85rem;
 }
 
-/* RESPONSIVO */
-@media (max-width: 768px) {
-  .conteudo {
+/* ========================================
+   RESPONSIVO — CELULAR
+======================================== */
+@media (max-width: 600px) {
+  .cabecalho-flutuante {
     flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
   }
-  .barra-lateral {
-    width: 100%;
-    max-height: 40%;
+  
+  .painel-lateral {
+    width: calc(100% - 2rem);
+    top: 110px;
+    max-height: calc(100vh - 130px);
   }
-  .area-mapa {
-    height: 60%;
+  
+  .botoes-mapa-flutuantes {
+    top: 110px;
   }
 }

@@ -1,5 +1,5 @@
 // ==============================================
-// 🔷 VERSÃO: 6.0 — CRIAR CONTA DENTRO DO PAINEL ADM
+// 🔷 VERSÃO: 7.0 — CRIAR CONTA DENTRO DO PAINEL ADM
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbxdhs27cAFCzgpBhNMxFtxkvloV5hc2OZwDSRS-M9lr_4msAr3cJatVud4zNfDzIMjm/exec`;
 
