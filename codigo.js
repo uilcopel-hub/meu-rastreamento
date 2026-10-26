@@ -1,8 +1,9 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 15.12 ✅
-// Planilha: tipo | referencia | valor1 | valor2 | valor3 | horario/data | dados extras
+// SISTEMA RASTREAMENTO — Versão: 15.13 ✅
+// CORRIGIDO: Ordem dos campos no cadastro de veículo
+// Planilha: tipo | referencia=dono | valor1=placa | valor2=imei | valor3=nome | horario/data=cor
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.12";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.13";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -10,7 +11,6 @@ const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#0
 
 console.log('========================================');
 console.log(VERSAO_SISTEMA);
-console.log('📋 Planilha: tipo | ref | placa | imei | nome | cor');
 console.log('🔗 Conectado');
 console.log('========================================');
 
@@ -28,16 +28,14 @@ let veiculoSeguido = null;
 let veiculoDetalheAberto = null;
 let marcadores = {};
 
-// ===== MOSTRAR VERSÃO NA TELA DE LOGIN =====
 function mostrarVersaoLogin() {
   const el = document.getElementById('versao-sistema');
   if (el) el.textContent = VERSAO_SISTEMA;
 }
 
-// ===== MAPA =====
 function inicializarMapa() {
   if (mapa) return;
-  const centro = [-24.7, -50.6]; // Ibaiti / PR
+  const centro = [-24.7, -50.6];
   mapa = L.map('mapa').setView(centro, 10);
   mapaRuas = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
     maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'], attribution: '© Google'
@@ -67,7 +65,6 @@ function trocarMapa(tipo) {
   }
 }
 
-// ===== BUSCA DADOS =====
 async function buscarDados() {
   try {
     const resposta = await fetch(URL_SCRIPT + '?t=' + Date.now());
@@ -79,7 +76,6 @@ async function buscarDados() {
   }
 }
 
-// ===== LOGIN =====
 async function fazerLogin() {
   const usuario = document.getElementById('usuario').value.trim();
   const senha = document.getElementById('senha').value;
@@ -114,26 +110,20 @@ async function fazerLogin() {
   entrarTelaPrincipal();
 }
 
-// ✅ CORRIGIDO — MAPEAMENTO EXATO DA PLANILHA:
-// [0]=tipo | [1]=referencia=dono | [2]=valor1=placa | [3]=valor2=imei | [4]=valor3=nome | [5]=horario/data=cor
 async function carregarDadosUsuario(dados = null) {
   if (!dados) dados = await buscarDados();
   
   veiculosDoUsuario = (dados.dados || [])
-    .filter(linha => linha[0] === 'veiculo' && linha[1] === usuarioAtual)
+    .filter(linha => linha[0] === 'veiculo' && String(linha[1]).trim() === usuarioAtual)
     .map((linha, idx) => ({
       tipo: linha[0],
-      usuario: linha[1],
-      placa: linha[2] || '',
-      imei: linha[3] || '',
-      nome: linha[4] || linha[2] || '',
-      cor: linha[5] || '',
-      lat: null, 
-      lon: null, 
-      velocidade: 0,
-      kmHoje: 0, 
-      km7dias: 0, 
-      km30dias: 0,
+      usuario: String(linha[1]).trim(),
+      placa: String(linha[2] || '').trim(),
+      imei: String(linha[3] || '').trim(),
+      nome: String(linha[4] || linha[2] || '').trim(),
+      cor: String(linha[5] || '').trim(),
+      lat: null, lon: null, velocidade: 0,
+      kmHoje: 0, km7dias: 0, km30dias: 0,
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   
@@ -149,17 +139,13 @@ async function carregarTodosDados() {
     .filter(linha => linha[0] === 'veiculo')
     .map((linha, idx) => ({
       tipo: linha[0],
-      usuario: linha[1],
-      placa: linha[2] || '',
-      imei: linha[3] || '',
-      nome: linha[4] || linha[2] || '',
-      cor: linha[5] || '',
-      lat: null, 
-      lon: null, 
-      velocidade: 0,
-      kmHoje: 0, 
-      km7dias: 0, 
-      km30dias: 0,
+      usuario: String(linha[1]).trim(),
+      placa: String(linha[2] || '').trim(),
+      imei: String(linha[3] || '').trim(),
+      nome: String(linha[4] || linha[2] || '').trim(),
+      cor: String(linha[5] || '').trim(),
+      lat: null, lon: null, velocidade: 0,
+      kmHoje: 0, km7dias: 0, km30dias: 0,
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   
@@ -353,11 +339,15 @@ async function criarConta() {
 
 async function salvarVeiculo() {
   if (!ehAdm) { alert("Apenas o administrador!"); return; }
-  const nome = document.getElementById('campo-nome').value.trim();
-  const placa = document.getElementById('campo-placa').value.trim().toUpperCase();
-  const imei = document.getElementById('campo-imei').value.trim();
-  const cor = document.getElementById('campo-cor').value.trim();
-  const dono = document.getElementById('campo-usuario-dono').value.trim();
+  
+  // ✅ ORDEM CORRIGIDA
+  const nome = document.getElementById('campo-nome').value.trim();        // valor3
+  const placa = document.getElementById('campo-placa').value.trim().toUpperCase(); // valor1
+  const imei = document.getElementById('campo-imei').value.trim();        // valor2
+  const cor = document.getElementById('campo-cor').value.trim();          // horario/data
+  const dono = document.getElementById('campo-usuario-dono').value.trim(); // referencia
+  
+  console.log("📤 Enviando veículo:", { nome, placa, imei, cor, dono });
   
   if (!nome || !placa || !dono) {
     alert("Preencha Nome, Placa e Usuário DONO!");
@@ -370,11 +360,11 @@ async function salvarVeiculo() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ 
         acao: 'adicionarVeiculo', 
-        usuario: dono,
-        placa,
-        imei,
-        nome,
-        cor
+        usuario: dono,      // referencia = dono
+        placa: placa,       // valor1 = placa
+        imei: imei,         // valor2 = imei
+        nome: nome,         // valor3 = nome
+        cor: cor            // horario/data = cor
       })
     });
     alert("✅ Veículo cadastrado!");
@@ -387,7 +377,7 @@ async function salvarVeiculo() {
     renderizarPainelAdm();
     renderizarListaVeiculos();
   } catch (erro) {
-    alert("Erro ao cadastrar!");
+    alert("Erro ao cadastrar! " + erro.message);
   }
 }
 
