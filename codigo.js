@@ -3,7 +3,7 @@
 // Mapa Google via Leaflet + Planilha atual
 // ==============================================
 const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.9";
-const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzfch45960HgLbsFkisYnqzERWg0SVRHKr3ure4lXVzgY8I-o0IUccuNEgmjhZdX5c0QA/exec";
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
