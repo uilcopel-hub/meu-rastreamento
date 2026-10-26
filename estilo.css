@@ -222,6 +222,7 @@ header h1 {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
+  border-left: 4px solid transparent;
 }
 
 .veiculo:hover {
@@ -230,7 +231,6 @@ header h1 {
 
 .veiculo-selecionado {
   background: #e3f2fd;
-  border-left-width: 5px !important;
 }
 
 .veiculo-sem-sinal {
