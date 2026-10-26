@@ -1,10 +1,10 @@
 // ==============================================
-// 🔷 VERSÃO: 9.2 — LAYOUT uil telles ✅
+// 🔷 VERSÃO: 9.3 — LAYOUT uil telles ✅
 // ==============================================
 const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec`;
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
-const VERSAO_SISTEMA = '9.2 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
+const VERSAO_SISTEMA = '9.3 — LAYOUT uil telles ✅';  // ← ALTERA AQUI TAMBÉM
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 const INTERVALO_ATUALIZACAO = 30000;
 
@@ -267,7 +267,30 @@ function inicializarMapa() {
   });
 }
 
-
+// ==============================================
+// 🔄 TROCAR MAPA — Ruas / Satélite
+// ==============================================
+function trocarMapa(tipo) {
+  if (!mapa || !mapaRuas || !mapaSatellite) return;
+  
+  if (tipo === 'ruas' && modoAtual !== 'ruas') {
+    mapa.removeLayer(mapaSatellite);
+    mapaRuas.addTo(mapa);
+    modoAtual = 'ruas';
+  }
+  
+  if (tipo === 'satelite' && modoAtual !== 'satelite') {
+    mapa.removeLayer(mapaRuas);
+    mapaSatellite.addTo(mapa);
+    modoAtual = 'satelite';
+  }
+  
+  // Ativa/desativa botão visualmente
+  document.querySelectorAll('.btn-mapa').forEach(btn => {
+    btn.classList.remove('ativo');
+  });
+  event.target.classList.add('ativo');
+}
 
 
 
