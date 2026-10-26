@@ -1,7 +1,7 @@
 // ==============================================
 // 🔷 VERSÃO: 7.2 — CAMPO IMEI + PREPARAÇÃO GPS
 // ==============================================
-const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbzcOiF47DmQZu15Pnytno7IG3CW__8q0ZExrXFwrXT5wyF4kPQXUjq4H4xo8TIyK2Xc9Q/exec`;
+const URL_APPSCRIPT = `https://script.google.com/macros/s/AKfycbzfch45960HgLbsFkisYnqzERWg0SVRHKr3ure4lXVzgY8I-o0IUccuNEgmjhZdX5c0QA/exec`;
 
 const ADM_USUARIO = `adm`;
 const ADM_SENHA = `123456`;
