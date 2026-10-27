@@ -1,9 +1,9 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 22 ✅
+// SISTEMA RASTREAMENTO — Versão: 23 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 22";
-const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzx1fmSnk_WZoMunR0P0-m_J7pjzGPwK9bqK9QFf7w706nCB1IYWjwNKG9VsUxDTHCk/exec";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 23";
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
