@@ -172,8 +172,6 @@ function sair() {
   document.getElementById('cartao-detalhes').classList.remove('aberto');
 }
 
-
-
 function focarNoVeiculo(placa) {
   if (veiculoDetalheAberto === placa) { fecharCartao(); return; }
   veiculoDetalheAberto = placa;
@@ -300,7 +298,7 @@ async function criarConta() {
   
   const resposta = await fetch(URL_SCRIPT, {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
     body: JSON.stringify({acao:'criarConta', usuario, senha})
   });
   const res = await resposta.json();
@@ -330,7 +328,7 @@ async function salvarVeiculo() {
   
   const resposta = await fetch(URL_SCRIPT, {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
     body: JSON.stringify({
       acao: 'adicionarVeiculo',
       usuario,
@@ -363,7 +361,7 @@ async function excluirUsuario(nomeUsuario) {
   
   const resposta = await fetch(URL_SCRIPT, {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
     body: JSON.stringify({
       acao: 'excluirUsuario',
       usuario: nomeUsuario
@@ -387,7 +385,7 @@ async function excluirVeiculo(placa) {
   
   const resposta = await fetch(URL_SCRIPT, {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
     body: JSON.stringify({
       acao: 'excluirVeiculo',
       placa: placa
