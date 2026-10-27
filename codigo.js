@@ -1,7 +1,7 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 15.16 ✅
+// SISTEMA RASTREAMENTO — Versão: 20 ✅
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.16";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 20";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
