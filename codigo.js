@@ -39,7 +39,14 @@ function inicializarMapa() {
   });
   mapaRuas.addTo(mapa);
   modoAtual = 'ruas';
+
+  // 🖱️ TORNA AS JANELAS ARRASTÁVEIS NA TELA
+  tornarArrastavel('cartao-detalhes'); // O cartão inteiro ou cabeçalho
+  tornarArrastavel('painel-principal'); // A lista lateral de veículos
 }
+
+
+
 
 function trocarMapa(tipo) {
   if (!mapa) return;
@@ -58,6 +65,55 @@ function trocarMapa(tipo) {
     document.getElementById('btnRuas').classList.remove('ativo');
   }
 }
+
+
+
+
+// Função para tornar qualquer elemento arrastável pela tela
+function tornarArrastavel(idElemento, idCabecalho) {
+  const el = document.getElementById(idElemento);
+  const handle = document.getElementById(idCabecalho) || el;
+  
+  let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
+
+  handle.onpointerdown = function(e) {
+    // Evita arrastar se clicar em botões de fechar ou interativos dentro do cabeçalho
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+    
+    e.preventDefault();
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    
+    document.onpointerup = fecharArrasto;
+    document.onpointermove = moverElemento;
+  };
+
+  function moverElemento(e) {
+    e.preventDefault();
+    // Calcula a nova distância
+    posX = mouseX - e.clientX;
+    posY = mouseY - e.clientY;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    // Define a nova posição baseada no movimento
+    el.style.top = (el.offsetTop - posY) + "px";
+    el.style.left = (el.offsetLeft - posX) + "px";
+    
+    // Remove restrições de bottom/right para liberar o posicionamento livre
+    el.style.bottom = "auto";
+    el.style.right = "auto";
+  }
+
+  function fecharArrasto() {
+    document.onpointerup = null;
+    document.onpointermove = null;
+  }
+}
+
+
+
+
 
 async function buscarDados() {
   try {

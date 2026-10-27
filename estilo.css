@@ -22,6 +22,16 @@ body {
   left: 0;
 }
 
+
+
+.cartao-cabecalho, .barra-direita h3 {
+  cursor: grab;
+}
+.cartao-cabecalho:active, .barra-direita h3:active {
+  cursor: grabbing;
+}
+
+
 .escondida {
   display: none !important;
 }
