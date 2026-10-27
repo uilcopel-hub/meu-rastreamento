@@ -172,6 +172,8 @@ function sair() {
   document.getElementById('cartao-detalhes').classList.remove('aberto');
 }
 
+
+
 function focarNoVeiculo(placa) {
   if (veiculoDetalheAberto === placa) { fecharCartao(); return; }
   veiculoDetalheAberto = placa;
@@ -313,13 +315,13 @@ async function criarConta() {
   }
 }
 
-async function adicionarVeiculo() {
+async function salvarVeiculo() {
   if (!ehAdm) return;
-  const usuario = document.getElementById('veiculo-usuario').value.trim();
-  const placa = document.getElementById('veiculo-placa').value.trim();
-  const imei = document.getElementById('veiculo-imei').value.trim();
-  const nome = document.getElementById('veiculo-nome').value.trim();
-  const cor = document.getElementById('veiculo-cor').value.trim();
+  const usuario = document.getElementById('campo-usuario-dono').value.trim();
+  const placa = document.getElementById('campo-placa').value.trim();
+  const imei = document.getElementById('campo-imei').value.trim();
+  const nome = document.getElementById('campo-nome').value.trim();
+  const cor = document.getElementById('campo-cor').value.trim();
   
   if (!usuario || !placa || !imei || !nome) {
     alert("Preencha os campos obrigatórios!");
@@ -342,10 +344,11 @@ async function adicionarVeiculo() {
   const res = await resposta.json();
   if (res.ok) {
     alert("✅ Veículo adicionado!");
-    document.getElementById('veiculo-placa').value = '';
-    document.getElementById('veiculo-imei').value = '';
-    document.getElementById('veiculo-nome').value = '';
-    document.getElementById('veiculo-cor').value = '';
+    document.getElementById('campo-placa').value = '';
+    document.getElementById('campo-imei').value = '';
+    document.getElementById('campo-nome').value = '';
+    document.getElementById('campo-cor').value = '';
+    document.getElementById('campo-usuario-dono').value = '';
     carregarTodosDados();
     renderizarPainelAdm();
   } else {
