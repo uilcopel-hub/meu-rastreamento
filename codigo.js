@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 29 ✅
+// SISTEMA RASTREAMENTO — Versão: 30 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 29";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 30";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -23,7 +23,8 @@ let veiculoDetalheAberto = null;
 let marcadores = {};
 let seguindoVeiculo = false;
 let timerAtualizacao = null;
-
+let historicoRotas = {}; // Guarda os pontos de cada placa: { 'ABC-1234': [[lat, lon], [lat, lon], ...] }
+let linhasRotas = {};    // Guarda o objeto da linha azul no mapa para cada placa
 
 function mostrarVersaoLogin() {
   const el = document.getElementById('versao-sistema');
@@ -48,7 +49,27 @@ function inicializarMapa() {
   tornarArrastavel('painel-principal'); // A lista lateral de veículos
 }
 
-
+function atualizarTodosMarcadoresNoMapa() {
+  if (!mapa) return;
+  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+  
+  listaDados.forEach(v => {
+    if (v.lat && v.lon) {
+      // Se o marcador não existe, cria no mapa
+      if (!marcadores[v.placa]) {
+        marcadores[v.placa] = L.marker([v.lat, v.lon]).addTo(mapa);
+        // Ao clicar no marcador de qualquer carro, abre os detalhes dele
+        marcadores[v.placa].on('click', () => focarNoVeiculo(v.placa));
+      } else {
+        // Se já existe, apenas atualiza a posição em tempo real
+        marcadores[v.placa].setLatLng([v.lat, v.lon]);
+      }
+      
+      // Atualiza o texto do pop-up ou tooltip do marcador
+      marcadores[v.placa].bindTooltip(`${v.nome || v.placa} (${v.velocidade} km/h)`, {direction: 'top'});
+    }
+  });
+}
 
 
 function trocarMapa(tipo) {
@@ -225,8 +246,12 @@ async function entrarTelaPrincipal() {
     btnGerenciar.classList.add('escondida');
   }
 
-  inicializarMapa();
+inicializarMapa();
+  atualizarTodosMarcadoresNoMapa(); // <-- Adicione esta linha aqui
   renderizarListaVeiculos();
+
+
+
   if (ehAdm) renderizarPainelAdm();
 
   // 🔄 Inicia o loop automático para atualizar posições a cada 10 segundos
@@ -235,10 +260,15 @@ async function entrarTelaPrincipal() {
 }
 
 
+
+
+
+
+
+
 async function atualizarPosicoesEmTempoReal() {
   if (!usuarioAtual) return;
   
-  // Atualiza os dados conforme o tipo de usuário
   if (ehAdm) {
     await carregarTodosDados();
   } else {
@@ -246,13 +276,15 @@ async function atualizarPosicoesEmTempoReal() {
   }
   
   renderizarListaVeiculos();
+  atualizarTodosMarcadoresNoMapa(); // Atualiza todos os carros no mapa
 
-  // Se houver um veículo com o cartão de detalhes aberto, atualiza as infos e o mapa
+  // Se houver um veículo com o cartão de detalhes aberto
   if (veiculoDetalheAberto) {
     const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
     const v = listaDados.find(x => x.placa === veiculoDetalheAberto);
+    
     if (v) {
-      document.getElementById('cartao-km-hoje').textContent = v.kmHoje.toFixed(1) + ' km';
+      document.getElementById('cartao-km-hoje').textContent = v.kmHoje.vejado ? '' : v.kmHoje.toFixed(1) + ' km';
       document.getElementById('cartao-km-7dias').textContent = v.km7dias.toFixed(1) + ' km';
       document.getElementById('cartao-km-30dias').textContent = v.km30dias.toFixed(1) + ' km';
       
@@ -262,15 +294,38 @@ async function atualizarPosicoesEmTempoReal() {
       document.getElementById('cartao-horario').textContent = v.horario || '--:--';
       
       if (!semSinal && mapa) {
-        if (!marcadores[veiculoDetalheAberto]) {
-          marcadores[veiculoDetalheAberto] = L.marker([v.lat, v.lon]).addTo(mapa);
-        } else {
-          marcadores[veiculoDetalheAberto].setLatLng([v.lat, v.lon]);
+        // 🗺️ GERENCIAR O RASTRO / TRAÇO DO VEÍCULO
+        const placa = v.placa;
+        if (!historicoRotas[placa]) {
+          historicoRotas[placa] = [];
         }
         
-        // Se o botão "Seguir no mapa" estiver ativo, centraliza o mapa no veículo automaticamente
+        // Adiciona a coordenada atual ao histórico se ela mudou
+        const ultimoPonto = historicoRotas[placa][historicoRotas[placa].length - 1];
+        if (!ultimoPonto || ultimoPonto[0] !== v.lat || ultimoPonto[1] !== v.lon) {
+          historicoRotas[placa].push([v.lat, v.lon]);
+        }
+
+        // Se o botão "Seguir no mapa" estiver ativo PARA ESTE VEÍCULO
         if (seguindoVeiculo) {
-          mapa.setView([v.lat, v.lon], mapa.getZoom());
+          mapa.setView([v.lat, v.lon], 16); // Centraliza no carro
+
+          // Desenha ou atualiza a linha azul do trajeto
+          if (!linhasRotas[placa]) {
+            linhasRotas[placa] = L.polyline(historicoRotas[placa], { 
+              color: '#007bff', 
+              weight: 5, 
+              opacity: 0.8 
+            }).addTo(mapa);
+          } else {
+            linhasRotas[placa].setLatLngs(historicoRotas[placa]);
+          }
+        } else {
+          // Se desativou o "Seguir", remove a linha do mapa
+          if (linhasRotas[placa]) {
+            mapa.removeLayer(linhasRotas[placa]);
+            delete linhasRotas[placa];
+          }
         }
       }
     }
