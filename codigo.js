@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 20 ✅
+// SISTEMA RASTREAMENTO — Versão: 21 ✅
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 20";
-const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 21";
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzx1fmSnk_WZoMunR0P0-m_J7pjzGPwK9bqK9QFf7w706nCB1IYWjwNKG9VsUxDTHCk/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
