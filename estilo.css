@@ -198,13 +198,13 @@ body {
 .km-bloco {
   display: flex;
   justify-content: space-between;
-  margin: 8px 0;
-  font-size: 12px;
+  margin: 6px 0;
+  font-size: 11px;
 }
 
 .km-item {
   text-align: center;
-  padding: 4px 8px;
+  padding: 3px 6px;
   border-radius: 4px;
   background: #e9ecef;
 }
@@ -216,14 +216,14 @@ body {
 /* BOTÃO SEGUIR */
 .btn-seguir {
   width: 100%;
-  padding: 8px;
-  margin-top: 12px;
+  padding: 6px;
+  margin-top: 8px;
   background: #007bff;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   transition: background 0.2s;
 }
@@ -241,10 +241,10 @@ body {
   font-size: 11px;
   color: #9c27b0;
   background: #f3e5f5;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
   display: inline-block;
-  margin: 6px 0;
+  margin: 4px 0;
 }
 
 /* MAPA */
@@ -292,21 +292,22 @@ body {
   padding-top: 8px;
 }
 
-/* === CARTÃO DE DETALHES === */
+/* === CARTÃO DE DETALHES (COMPACTO) === */
 .cartao-detalhes {
   position: absolute;
   bottom: 20px;
   left: 20px;
   width: calc(100% - 40px);
-  max-width: 450px;
+  max-width: 300px; /* Reduzido para ficar bem pequeno e compacto */
   background: white;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 10px;
+  padding: 12px 14px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   z-index: 1500;
   display: none;
   max-height: calc(100vh - 120px);
   overflow-y: auto;
+  font-size: 12px; /* Letras levemente mais compactas */
 }
 
 .cartao-detalhes.aberto {
@@ -317,15 +318,19 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 1px solid #eee;
+}
+
+.cartao-cabecalho h2 {
+  font-size: 15px;
 }
 
 .cartao-fechar {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 20px;
   cursor: pointer;
   color: #888;
   padding: 0;
@@ -339,17 +344,17 @@ body {
 
 .cartao-km {
   display: flex;
-  gap: 10px;
-  margin: 12px 0;
+  gap: 6px;
+  margin: 6px 0;
 }
 
 .cartao-status {
-  margin-top: 10px;
-  padding: 12px;
+  margin-top: 6px;
+  padding: 8px;
   background: #f8f9fa;
   border-radius: 6px;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 /* PAINEL CENTRAL — ADMIN */
@@ -513,8 +518,8 @@ body {
     right: 10px;
     width: auto;
     bottom: 10px;
-    padding: 15px;
-    max-height: 60vh;
+    padding: 12px;
+    max-height: 55vh;
   }
 
   .painel-central {
