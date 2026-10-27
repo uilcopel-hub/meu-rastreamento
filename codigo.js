@@ -1,5 +1,6 @@
 // ==============================================
 // SISTEMA RASTREAMENTO — Versão: 21 ✅
+// COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
 const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 21";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzx1fmSnk_WZoMunR0P0-m_J7pjzGPwK9bqK9QFf7w706nCB1IYWjwNKG9VsUxDTHCk/exec";
@@ -111,17 +112,17 @@ async function carregarDadosUsuario(dados = null) {
     .map((linha, idx) => ({
       tipo: linha[0],
       usuario: String(linha[1]).trim(),
-      placa: String(linha[2] || '').trim(),
-      imei: String(linha[3] || '').trim(),
-      nome: String(linha[4] || linha[2] || '').trim(),
-      cor: String(linha[5] || '').trim(),
-      lat: linha[6] || null,
-      lon: linha[7] || null,
-      velocidade: linha[8] || 0,
-      kmHoje: linha[9] || 0,
-      km7dias: linha[10] || 0,
-      km30dias: linha[11] || 0,
-      horario: linha[12] || '--:--',
+      placa: String(linha[3] || '').trim(),
+      imei: String(linha[4] || '').trim(),
+      nome: String(linha[5] || linha[3] || '').trim(),
+      cor: String(linha[6] || '').trim(),
+      lat: linha[7] || null,
+      lon: linha[8] || null,
+      velocidade: linha[9] || 0,
+      kmHoje: linha[10] || 0,
+      km7dias: linha[11] || 0,
+      km30dias: linha[12] || 0,
+      horario: '--:--',
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
 }
@@ -134,17 +135,17 @@ async function carregarTodosDados() {
     .map((linha, idx) => ({
       tipo: linha[0],
       usuario: String(linha[1]).trim(),
-      placa: String(linha[2] || '').trim(),
-      imei: String(linha[3] || '').trim(),
-      nome: String(linha[4] || linha[2] || '').trim(),
-      cor: String(linha[5] || '').trim(),
-      lat: linha[6] || null,
-      lon: linha[7] || null,
-      velocidade: linha[8] || 0,
-      kmHoje: linha[9] || 0,
-      km7dias: linha[10] || 0,
-      km30dias: linha[11] || 0,
-      horario: linha[12] || '--:--',
+      placa: String(linha[3] || '').trim(),
+      imei: String(linha[4] || '').trim(),
+      nome: String(linha[5] || linha[3] || '').trim(),
+      cor: String(linha[6] || '').trim(),
+      lat: linha[7] || null,
+      lon: linha[8] || null,
+      velocidade: linha[9] || 0,
+      kmHoje: linha[10] || 0,
+      km7dias: linha[11] || 0,
+      km30dias: linha[12] || 0,
+      horario: '--:--',
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   veiculosDoUsuario = todosVeiculos;
@@ -403,7 +404,6 @@ async function excluirVeiculo(placa) {
   }
 }
 
-// Inicialização quando a página carrega
 window.onload = function() {
   mostrarVersaoLogin();
 };
