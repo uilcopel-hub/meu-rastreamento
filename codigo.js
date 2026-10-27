@@ -55,22 +55,25 @@ function atualizarTodosMarcadoresNoMapa() {
   
   listaDados.forEach(v => {
     if (v.lat && v.lon) {
+      const lat = parseFloat(v.lat);
+      const lon = parseFloat(v.lon);
+      if (isNaN(lat) || isNaN(lon)) return;
+
       // Se o marcador não existe, cria no mapa
       if (!marcadores[v.placa]) {
-        marcadores[v.placa] = L.marker([v.lat, v.lon]).addTo(mapa);
+        marcadores[v.placa] = L.marker([lat, lon]).addTo(mapa);
         // Ao clicar no marcador de qualquer carro, abre os detalhes dele
         marcadores[v.placa].on('click', () => focarNoVeiculo(v.placa));
       } else {
         // Se já existe, apenas atualiza a posição em tempo real
-        marcadores[v.placa].setLatLng([v.lat, v.lon]);
+        marcadores[v.placa].setLatLng([lat, lon]);
       }
       
       // Atualiza o texto do pop-up ou tooltip do marcador
-      marcadores[v.placa].bindTooltip(`${v.nome || v.placa} (${v.velocidade} km/h)`, {direction: 'top'});
+      marcadores[v.placa].bindTooltip(`${v.nome || v.placa} (${v.velocidade || 0} km/h)`, {direction: 'top'});
     }
   });
 }
-
 
 function trocarMapa(tipo) {
   if (!mapa) return;
@@ -90,18 +93,15 @@ function trocarMapa(tipo) {
   }
 }
 
-
-
-
 // Função para tornar qualquer elemento arrastável pela tela
 function tornarArrastavel(idElemento, idCabecalho) {
   const el = document.getElementById(idElemento);
+  if (!el) return;
   const handle = document.getElementById(idCabecalho) || el;
   
   let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
 
   handle.onpointerdown = function(e) {
-    // Evita arrastar se clicar em botões de fechar ou interativos dentro do cabeçalho
     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
     
     e.preventDefault();
@@ -114,17 +114,13 @@ function tornarArrastavel(idElemento, idCabecalho) {
 
   function moverElemento(e) {
     e.preventDefault();
-    // Calcula a nova distância
     posX = mouseX - e.clientX;
     posY = mouseY - e.clientY;
     mouseX = e.clientX;
     mouseY = e.clientY;
 
-    // Define a nova posição baseada no movimento
     el.style.top = (el.offsetTop - posY) + "px";
     el.style.left = (el.offsetLeft - posX) + "px";
-    
-    // Remove restrições de bottom/right para liberar o posicionamento livre
     el.style.bottom = "auto";
     el.style.right = "auto";
   }
@@ -135,14 +131,10 @@ function tornarArrastavel(idElemento, idCabecalho) {
   }
 }
 
-
-
-
-
 async function buscarDados() {
   try {
     const resposta = await fetch(URL_SCRIPT + '?t=' + Date.now());
-    if (!resposta.ok) throw new Error("Erro");
+    if (!resposta.ok) throw new Error("Erro ao buscar dados");
     return await resposta.json();
   } catch (erro) {
     console.error(erro);
@@ -196,13 +188,13 @@ async function carregarDadosUsuario(dados = null) {
       imei: String(linha[4] || '').trim(),
       nome: String(linha[5] || linha[3] || '').trim(),
       cor: String(linha[6] || '').trim(),
-      lat: linha[7] || null,
-      lon: linha[8] || null,
-      velocidade: linha[9] || 0,
-      kmHoje: linha[10] || 0,
-      km7dias: linha[11] || 0,
-      km30dias: linha[12] || 0,
-      horario: '--:--',
+      lat: linha[7] ? parseFloat(linha[7]) : null,
+      lon: linha[8] ? parseFloat(linha[8]) : null,
+      velocidade: linha[9] ? parseFloat(linha[9]) : 0,
+      kmHoje: linha[10] ? parseFloat(linha[10]) : 0,
+      km7dias: linha[11] ? parseFloat(linha[11]) : 0,
+      km30dias: linha[12] ? parseFloat(linha[12]) : 0,
+      horario: linha[13] || '--:--',
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
 }
@@ -219,20 +211,17 @@ async function carregarTodosDados() {
       imei: String(linha[4] || '').trim(),
       nome: String(linha[5] || linha[3] || '').trim(),
       cor: String(linha[6] || '').trim(),
-      lat: linha[7] || null,
-      lon: linha[8] || null,
-      velocidade: linha[9] || 0,
-      kmHoje: linha[10] || 0,
-      km7dias: linha[11] || 0,
-      km30dias: linha[12] || 0,
-      horario: '--:--',
+      lat: linha[7] ? parseFloat(linha[7]) : null,
+      lon: linha[8] ? parseFloat(linha[8]) : null,
+      velocidade: linha[9] ? parseFloat(linha[9]) : 0,
+      kmHoje: linha[10] ? parseFloat(linha[10]) : 0,
+      km7dias: linha[11] ? parseFloat(linha[11]) : 0,
+      km30dias: linha[12] ? parseFloat(linha[12]) : 0,
+      horario: linha[13] || '--:--',
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   veiculosDoUsuario = todosVeiculos;
 }
-
-
-
 
 async function entrarTelaPrincipal() {
   document.getElementById('tela-login').classList.add('escondida');
@@ -246,11 +235,9 @@ async function entrarTelaPrincipal() {
     btnGerenciar.classList.add('escondida');
   }
 
-inicializarMapa();
-  atualizarTodosMarcadoresNoMapa(); // <-- Adicione esta linha aqui
+  inicializarMapa();
+  atualizarTodosMarcadoresNoMapa();
   renderizarListaVeiculos();
-
-
 
   if (ehAdm) renderizarPainelAdm();
 
@@ -258,13 +245,6 @@ inicializarMapa();
   if (timerAtualizacao) clearInterval(timerAtualizacao);
   timerAtualizacao = setInterval(atualizarPosicoesEmTempoReal, 10000);
 }
-
-
-
-
-
-
-
 
 async function atualizarPosicoesEmTempoReal() {
   if (!usuarioAtual) return;
@@ -276,7 +256,7 @@ async function atualizarPosicoesEmTempoReal() {
   }
   
   renderizarListaVeiculos();
-  atualizarTodosMarcadoresNoMapa(); // Atualiza todos os carros no mapa
+  atualizarTodosMarcadoresNoMapa();
 
   // Se houver um veículo com o cartão de detalhes aberto
   if (veiculoDetalheAberto) {
@@ -284,33 +264,30 @@ async function atualizarPosicoesEmTempoReal() {
     const v = listaDados.find(x => x.placa === veiculoDetalheAberto);
     
     if (v) {
-      document.getElementById('cartao-km-hoje').textContent = v.kmHoje.vejado ? '' : v.kmHoje.toFixed(1) + ' km';
-      document.getElementById('cartao-km-7dias').textContent = v.km7dias.toFixed(1) + ' km';
-      document.getElementById('cartao-km-30dias').textContent = v.km30dias.toFixed(1) + ' km';
+      // 🛡️ CORRIGIDO: Tratamento seguro para toFixed sem quebrar a execução
+      document.getElementById('cartao-km-hoje').textContent = (Number(v.kmHoje) || 0).toFixed(1) + ' km';
+      document.getElementById('cartao-km-7dias').textContent = (Number(v.km7dias) || 0).toFixed(1) + ' km';
+      document.getElementById('cartao-km-30dias').textContent = (Number(v.km30dias) || 0).toFixed(1) + ' km';
       
       const semSinal = !v.lat || !v.lon;
       document.getElementById('cartao-status').textContent = semSinal ? '🔄 Aguardando sinal...' : (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
-      document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : v.velocidade + ' km/h';
+      document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
       document.getElementById('cartao-horario').textContent = v.horario || '--:--';
       
       if (!semSinal && mapa) {
-        // 🗺️ GERENCIAR O RASTRO / TRAÇO DO VEÍCULO
         const placa = v.placa;
         if (!historicoRotas[placa]) {
           historicoRotas[placa] = [];
         }
         
-        // Adiciona a coordenada atual ao histórico se ela mudou
         const ultimoPonto = historicoRotas[placa][historicoRotas[placa].length - 1];
         if (!ultimoPonto || ultimoPonto[0] !== v.lat || ultimoPonto[1] !== v.lon) {
           historicoRotas[placa].push([v.lat, v.lon]);
         }
 
-        // Se o botão "Seguir no mapa" estiver ativo PARA ESTE VEÍCULO
         if (seguindoVeiculo) {
-          mapa.setView([v.lat, v.lon], 16); // Centraliza no carro
+          mapa.setView([v.lat, v.lon], 16);
 
-          // Desenha ou atualiza a linha azul do trajeto
           if (!linhasRotas[placa]) {
             linhasRotas[placa] = L.polyline(historicoRotas[placa], { 
               color: '#007bff', 
@@ -321,7 +298,6 @@ async function atualizarPosicoesEmTempoReal() {
             linhasRotas[placa].setLatLngs(historicoRotas[placa]);
           }
         } else {
-          // Se desativou o "Seguir", remove a linha do mapa
           if (linhasRotas[placa]) {
             mapa.removeLayer(linhasRotas[placa]);
             delete linhasRotas[placa];
@@ -332,14 +308,11 @@ async function atualizarPosicoesEmTempoReal() {
   }
 }
 
-
-
 function sair() {
   usuarioAtual = null; 
   ehAdm = false;
-  seguindoVeiculo = false; // Reseta o modo de seguir no mapa
+  seguindoVeiculo = false;
   
-  // Para o loop de atualização automática em tempo real
   if (timerAtualizacao) {
     clearInterval(timerAtualizacao);
     timerAtualizacao = null;
@@ -357,16 +330,12 @@ function sair() {
   document.getElementById('tela-principal').classList.add('escondida');
   document.getElementById('cartao-detalhes').classList.remove('aberto');
   
-  // Reseta o visual do botão de seguir
   const btn = document.getElementById('btn-seguir-cartao');
   if (btn) {
     btn.classList.remove('seguindo');
     btn.textContent = "📍 Seguir no mapa";
   }
 }
-
-
-
 
 function focarNoVeiculo(placa) {
   if (veiculoDetalheAberto === placa) { fecharCartao(); return; }
@@ -387,13 +356,14 @@ function focarNoVeiculo(placa) {
     donoLinha.style.display = 'none';
   }
   
-  document.getElementById('cartao-km-hoje').textContent = v.kmHoje.toFixed(1) + ' km';
-  document.getElementById('cartao-km-7dias').textContent = v.km7dias.toFixed(1) + ' km';
-  document.getElementById('cartao-km-30dias').textContent = v.km30dias.toFixed(1) + ' km';
+  // 🛡️ CORRIGIDO: Tratamento seguro para toFixed
+  document.getElementById('cartao-km-hoje').textContent = (Number(v.kmHoje) || 0).toFixed(1) + ' km';
+  document.getElementById('cartao-km-7dias').textContent = (Number(v.km7dias) || 0).toFixed(1) + ' km';
+  document.getElementById('cartao-km-30dias').textContent = (Number(v.km30dias) || 0).toFixed(1) + ' km';
   
   const semSinal = !v.lat || !v.lon;
   document.getElementById('cartao-status').textContent = semSinal ? '🔄 Aguardando sinal...' : (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
-  document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : v.velocidade + ' km/h';
+  document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
   if (!semSinal && mapa) {
@@ -424,7 +394,6 @@ function alternarSeguirAtual() {
   if (seguindoVeiculo) {
     btn.classList.add('seguindo');
     btn.textContent = "🛑 Parar de seguir";
-    // Foca imediatamente no veículo selecionado
     focarNoVeiculoECentralizar(veiculoDetalheAberto);
   } else {
     btn.classList.remove('seguindo');
@@ -532,7 +501,6 @@ async function criarConta() {
     document.getElementById('novo-usuario').value = '';
     document.getElementById('nova-senha').value = '';
     
-    // Pausa para sincronização do Google Sheets
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
     renderizarPainelAdm();
@@ -577,7 +545,6 @@ async function salvarVeiculo() {
     document.getElementById('campo-cor').value = '';
     document.getElementById('campo-usuario-dono').value = '';
     
-    // Pausa para sincronização do Google Sheets
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
     renderizarPainelAdm();
@@ -605,7 +572,6 @@ async function excluirUsuario(nomeUsuario) {
   if (res.ok) {
     alert("✅ Usuário e veículos excluídos!");
     
-    // Pausa para sincronização do Google Sheets
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
     renderizarPainelAdm();
@@ -633,7 +599,6 @@ async function excluirVeiculo(placa) {
   if (res.ok) {
     alert("✅ Veículo excluído!");
     
-    // Pausa para sincronização do Google Sheets
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
     renderizarPainelAdm();
