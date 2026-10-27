@@ -290,10 +290,6 @@ function renderizarPainelAdm() {
   });
 }
 
-
-
-
-
 async function criarConta() {
   if (!ehAdm) { alert("Apenas o administrador!"); return; }
   const usuario = document.getElementById('novo-usuario').value.trim();
@@ -311,7 +307,7 @@ async function criarConta() {
     document.getElementById('novo-usuario').value = '';
     document.getElementById('nova-senha').value = '';
     
-    // Pequena pausa para o Google Sheets processar e atualizar os dados
+    // Pausa para sincronização do Google Sheets
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
     renderizarPainelAdm();
@@ -320,12 +316,6 @@ async function criarConta() {
     alert("❌ " + (res.erro || "Erro!"));
   }
 }
-
-
-
-
-
-
 
 async function salvarVeiculo() {
   if (!ehAdm) return;
@@ -353,8 +343,24 @@ async function salvarVeiculo() {
     })
   });
 
-
-
+  const res = await resposta.json();
+  if (res.ok) {
+    alert("✅ Veículo adicionado!");
+    document.getElementById('campo-placa').value = '';
+    document.getElementById('campo-imei').value = '';
+    document.getElementById('campo-nome').value = '';
+    document.getElementById('campo-cor').value = '';
+    document.getElementById('campo-usuario-dono').value = '';
+    
+    // Pausa para sincronização do Google Sheets
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await carregarTodosDados();
+    renderizarPainelAdm();
+    renderizarListaVeiculos();
+  } else {
+    alert("❌ " + (res.erro || "Erro ao adicionar!"));
+  }
+}
 
 async function excluirUsuario(nomeUsuario) {
   if (!confirm(`Tem certeza que deseja excluir o usuário "${nomeUsuario}" e todos os veículos dele?`)) {
@@ -374,7 +380,7 @@ async function excluirUsuario(nomeUsuario) {
   if (res.ok) {
     alert("✅ Usuário e veículos excluídos!");
     
-    // Pequena pausa para o Google Sheets processar e atualizar os dados
+    // Pausa para sincronização do Google Sheets
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
     renderizarPainelAdm();
@@ -383,9 +389,6 @@ async function excluirUsuario(nomeUsuario) {
     alert("❌ " + (res.erro || "Erro ao excluir!"));
   }
 }
-
-
-
 
 async function excluirVeiculo(placa) {
   if (!confirm(`Tem certeza que deseja excluir o veículo com placa "${placa}"?`)) {
@@ -405,7 +408,7 @@ async function excluirVeiculo(placa) {
   if (res.ok) {
     alert("✅ Veículo excluído!");
     
-    // Pequena pausa para o Google Sheets processar e atualizar os dados
+    // Pausa para sincronização do Google Sheets
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
     renderizarPainelAdm();
@@ -418,9 +421,6 @@ async function excluirVeiculo(placa) {
     alert("❌ " + (res.erro || "Erro ao excluir!"));
   }
 }
-
-
-
 
 window.onload = function() {
   mostrarVersaoLogin();
