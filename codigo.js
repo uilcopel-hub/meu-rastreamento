@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 26 ✅
+// SISTEMA RASTREAMENTO — Versão: 27 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 26";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 27";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -155,7 +155,15 @@ async function entrarTelaPrincipal() {
   document.getElementById('tela-login').classList.add('escondida');
   document.getElementById('tela-principal').classList.remove('escondida');
   document.getElementById('nome-usuario-logado').textContent = usuarioAtual + (ehAdm ? ' 👑' : '');
-  if (ehAdm) document.getElementById('btn-gerenciar').classList.remove('escondida');
+  
+  // Controla a visibilidade do botão Gerenciar dependendo se é admin ou não
+  const btnGerenciar = document.getElementById('btn-gerenciar');
+  if (ehAdm) {
+    btnGerenciar.classList.remove('escondida');
+  } else {
+    btnGerenciar.classList.add('escondida');
+  }
+
   inicializarMapa();
   renderizarListaVeiculos();
   if (ehAdm) renderizarPainelAdm();
