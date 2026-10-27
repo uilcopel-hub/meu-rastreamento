@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 31 ✅
+// SISTEMA RASTREAMENTO — Versão: 32  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 31";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 32";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -175,7 +175,6 @@ async function fazerLogin() {
   await carregarDadosUsuario(dados);
   entrarTelaPrincipal();
 }
-
 async function carregarDadosUsuario(dados = null) {
   if (!dados) dados = await buscarDados();
   
@@ -194,7 +193,7 @@ async function carregarDadosUsuario(dados = null) {
       kmHoje: linha[10] ? parseFloat(linha[10]) : 0,
       km7dias: linha[11] ? parseFloat(linha[11]) : 0,
       km30dias: linha[12] ? parseFloat(linha[12]) : 0,
-      horario: linha[13] || '--:--',
+      horario: linha[13] || '--:--', // Lê exatamente da Coluna N (índice 13)
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
 }
@@ -217,7 +216,7 @@ async function carregarTodosDados() {
       kmHoje: linha[10] ? parseFloat(linha[10]) : 0,
       km7dias: linha[11] ? parseFloat(linha[11]) : 0,
       km30dias: linha[12] ? parseFloat(linha[12]) : 0,
-      horario: linha[13] || '--:--',
+      horario: linha[13] || '--:--', // Lê exatamente da Coluna N (índice 13)
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   veiculosDoUsuario = todosVeiculos;
