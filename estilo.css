@@ -1,4 +1,4 @@
-* {
+- {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -22,15 +22,12 @@ body {
   left: 0;
 }
 
-
-
 .cartao-cabecalho, .barra-direita h3 {
   cursor: grab;
 }
 .cartao-cabecalho:active, .barra-direita h3:active {
   cursor: grabbing;
 }
-
 
 .escondida {
   display: none !important;
@@ -197,7 +194,7 @@ body {
   color: #9c27b0;
 }
 
-/* BLOCO DE KM — usado só no cartão agora */
+/* BLOCO DE KM */
 .km-bloco {
   display: flex;
   justify-content: space-between;
@@ -300,15 +297,16 @@ body {
   position: absolute;
   bottom: 20px;
   left: 20px;
-  right: 20px;
+  width: calc(100% - 40px);
+  max-width: 450px;
   background: white;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   z-index: 1500;
   display: none;
-  max-width: 500px;
-  margin: 0 auto;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 
 .cartao-detalhes.aberto {
@@ -506,15 +504,17 @@ body {
     left: 10px;
     right: 10px;
     top: auto;
-    bottom: 90px;
-    max-height: 140px;
+    bottom: 95px;
+    max-height: 130px;
   }
 
   .cartao-detalhes {
     left: 10px;
     right: 10px;
+    width: auto;
     bottom: 10px;
     padding: 15px;
+    max-height: 60vh;
   }
 
   .painel-central {
