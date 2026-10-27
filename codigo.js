@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 25 ✅
+// SISTEMA RASTREAMENTO — Versão: 26 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 25";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 26";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -290,6 +290,10 @@ function renderizarPainelAdm() {
   });
 }
 
+
+
+
+
 async function criarConta() {
   if (!ehAdm) { alert("Apenas o administrador!"); return; }
   const usuario = document.getElementById('novo-usuario').value.trim();
@@ -306,12 +310,22 @@ async function criarConta() {
     alert("✅ Conta criada!");
     document.getElementById('novo-usuario').value = '';
     document.getElementById('nova-senha').value = '';
-    carregarTodosDados();
+    
+    // Pequena pausa para o Google Sheets processar e atualizar os dados
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await carregarTodosDados();
     renderizarPainelAdm();
+    renderizarListaVeiculos();
   } else {
     alert("❌ " + (res.erro || "Erro!"));
   }
 }
+
+
+
+
+
+
 
 async function salvarVeiculo() {
   if (!ehAdm) return;
@@ -338,21 +352,9 @@ async function salvarVeiculo() {
       cor
     })
   });
-  
-  const res = await resposta.json();
-  if (res.ok) {
-    alert("✅ Veículo adicionado!");
-    document.getElementById('campo-placa').value = '';
-    document.getElementById('campo-imei').value = '';
-    document.getElementById('campo-nome').value = '';
-    document.getElementById('campo-cor').value = '';
-    document.getElementById('campo-usuario-dono').value = '';
-    carregarTodosDados();
-    renderizarPainelAdm();
-  } else {
-    alert("❌ " + (res.erro || "Erro ao adicionar!"));
-  }
-}
+
+
+
 
 async function excluirUsuario(nomeUsuario) {
   if (!confirm(`Tem certeza que deseja excluir o usuário "${nomeUsuario}" e todos os veículos dele?`)) {
@@ -371,12 +373,19 @@ async function excluirUsuario(nomeUsuario) {
   const res = await resposta.json();
   if (res.ok) {
     alert("✅ Usuário e veículos excluídos!");
-    carregarTodosDados();
+    
+    // Pequena pausa para o Google Sheets processar e atualizar os dados
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await carregarTodosDados();
     renderizarPainelAdm();
+    renderizarListaVeiculos();
   } else {
     alert("❌ " + (res.erro || "Erro ao excluir!"));
   }
 }
+
+
+
 
 async function excluirVeiculo(placa) {
   if (!confirm(`Tem certeza que deseja excluir o veículo com placa "${placa}"?`)) {
@@ -395,8 +404,13 @@ async function excluirVeiculo(placa) {
   const res = await resposta.json();
   if (res.ok) {
     alert("✅ Veículo excluído!");
-    carregarTodosDados();
+    
+    // Pequena pausa para o Google Sheets processar e atualizar os dados
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await carregarTodosDados();
     renderizarPainelAdm();
+    renderizarListaVeiculos();
+    
     if (veiculoDetalheAberto === placa) {
       fecharCartao();
     }
@@ -404,6 +418,9 @@ async function excluirVeiculo(placa) {
     alert("❌ " + (res.erro || "Erro ao excluir!"));
   }
 }
+
+
+
 
 window.onload = function() {
   mostrarVersaoLogin();
