@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 21 ✅
+// SISTEMA RASTREAMENTO — Versão: 22 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 21";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 22";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzx1fmSnk_WZoMunR0P0-m_J7pjzGPwK9bqK9QFf7w706nCB1IYWjwNKG9VsUxDTHCk/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
