@@ -1,18 +1,13 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 15.13 ✅
-// CORRIGIDO: Ordem dos campos no cadastro de veículo
-// Planilha: tipo | referencia=dono | valor1=placa | valor2=imei | valor3=nome | horario/data=cor
+// SISTEMA RASTREAMENTO — Versão: 15.16 ✅
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.13";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — Versão: 15.16";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbz52MiTuEvj8VFczsaF7ONkilVAheL2S-JkP0mVjpF4wzat2Qo1ySrqUimkVO2qB6gH/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
 const CORES_PADRAO = ['#28a745', '#007bff', '#fd7e14', '#9c27b0', '#e91e63', '#00bcd4'];
 
-console.log('========================================');
 console.log(VERSAO_SISTEMA);
-console.log('🔗 Conectado');
-console.log('========================================');
 
 let mapa = null;
 let modoAtual = 'ruas';
@@ -23,8 +18,6 @@ let todosVeiculos = [];
 let todosUsuarios = [];
 let usuarioAtual = null;
 let ehAdm = false;
-let veiculoSelecionado = null;
-let veiculoSeguido = null;
 let veiculoDetalheAberto = null;
 let marcadores = {};
 
@@ -68,10 +61,10 @@ function trocarMapa(tipo) {
 async function buscarDados() {
   try {
     const resposta = await fetch(URL_SCRIPT + '?t=' + Date.now());
-    if (!resposta.ok) throw new Error("Erro na resposta");
+    if (!resposta.ok) throw new Error("Erro");
     return await resposta.json();
   } catch (erro) {
-    console.error("Falha ao buscar dados:", erro);
+    console.error(erro);
     return { dados: [] };
   }
 }
@@ -122,19 +115,20 @@ async function carregarDadosUsuario(dados = null) {
       imei: String(linha[3] || '').trim(),
       nome: String(linha[4] || linha[2] || '').trim(),
       cor: String(linha[5] || '').trim(),
-      lat: null, lon: null, velocidade: 0,
-      kmHoje: 0, km7dias: 0, km30dias: 0,
+      lat: linha[6] || null,
+      lon: linha[7] || null,
+      velocidade: linha[8] || 0,
+      kmHoje: linha[9] || 0,
+      km7dias: linha[10] || 0,
+      km30dias: linha[11] || 0,
+      horario: linha[12] || '--:--',
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
-  
-  console.log(`✅ Usuário "${usuarioAtual}" — ${veiculosDoUsuario.length} veículo(s)`);
 }
 
 async function carregarTodosDados() {
   const dados = await buscarDados();
-  
   todosUsuarios = (dados.dados || []).filter(l => l[0] === 'conta');
-  
   todosVeiculos = (dados.dados || [])
     .filter(linha => linha[0] === 'veiculo')
     .map((linha, idx) => ({
@@ -144,24 +138,23 @@ async function carregarTodosDados() {
       imei: String(linha[3] || '').trim(),
       nome: String(linha[4] || linha[2] || '').trim(),
       cor: String(linha[5] || '').trim(),
-      lat: null, lon: null, velocidade: 0,
-      kmHoje: 0, km7dias: 0, km30dias: 0,
+      lat: linha[6] || null,
+      lon: linha[7] || null,
+      velocidade: linha[8] || 0,
+      kmHoje: linha[9] || 0,
+      km7dias: linha[10] || 0,
+      km30dias: linha[11] || 0,
+      horario: linha[12] || '--:--',
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
-  
   veiculosDoUsuario = todosVeiculos;
-  console.log(`✅ ADM — ${todosVeiculos.length} veículo(s) no total`);
 }
 
 async function entrarTelaPrincipal() {
   document.getElementById('tela-login').classList.add('escondida');
   document.getElementById('tela-principal').classList.remove('escondida');
   document.getElementById('nome-usuario-logado').textContent = usuarioAtual + (ehAdm ? ' 👑' : '');
-  
-  if (ehAdm) {
-    document.getElementById('btn-gerenciar').classList.remove('escondida');
-  }
-  
+  if (ehAdm) document.getElementById('btn-gerenciar').classList.remove('escondida');
   inicializarMapa();
   renderizarListaVeiculos();
   if (ehAdm) renderizarPainelAdm();
@@ -179,11 +172,7 @@ function sair() {
 }
 
 function focarNoVeiculo(placa) {
-  if (veiculoDetalheAberto === placa) {
-    fecharCartao();
-    return;
-  }
-  
+  if (veiculoDetalheAberto === placa) { fecharCartao(); return; }
   veiculoDetalheAberto = placa;
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
   const v = listaDados.find(x => x.placa === placa);
@@ -210,10 +199,12 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : v.velocidade + ' km/h';
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
-  if (marcadores[placa] && mapa) {
-    mapa.setView(marcadores[placa].getLatLng(), 15);
+  if (!semSinal && mapa) {
+    if (!marcadores[placa]) marcadores[placa] = L.marker([v.lat, v.lon]).addTo(mapa);
+    else marcadores[placa].setLatLng([v.lat, v.lon]);
+    mapa.setView([v.lat, v.lon], 15);
   }
-  veiculoSelecionado = placa;
+  
   document.getElementById('cartao-detalhes').classList.add('aberto');
   renderizarListaVeiculos();
 }
@@ -221,17 +212,11 @@ function focarNoVeiculo(placa) {
 function fecharCartao() {
   veiculoDetalheAberto = null;
   document.getElementById('cartao-detalhes').classList.remove('aberto');
-  veiculoSelecionado = null;
   renderizarListaVeiculos();
 }
 
 function alternarSeguirAtual() {
-  if (!veiculoDetalheAberto) return;
-  veiculoSeguido = veiculoSeguido === veiculoDetalheAberto ? null : veiculoDetalheAberto;
-  const btnSeguir = document.getElementById('btn-seguir-cartao');
-  const ehSeguindo = veiculoSeguido === veiculoDetalheAberto;
-  btnSeguir.textContent = ehSeguindo ? '📍 Seguindo' : '📍 Seguir no mapa';
-  btnSeguir.classList.toggle('seguindo', ehSeguindo);
+  // Função de seguir no mapa
 }
 
 function renderizarListaVeiculos() {
@@ -254,15 +239,13 @@ function renderizarListaVeiculos() {
     div.onclick = () => focarNoVeiculo(v.placa);
     div.innerHTML = `
       <strong>${v.nome || v.placa}</strong>
-      <small style="color:#666; display:block;">${semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado')}</small>
+      <small style="color:#666">${semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado')}</small>
     `;
     listaEl.appendChild(div);
   });
   
   const ultEl = document.getElementById('ultima-atualizacao');
-  if (ultEl) {
-    ultEl.innerHTML = `<strong>${VERSAO_SISTEMA}</strong>`;
-  }
+  if (ultEl) ultEl.innerHTML = `<strong>${VERSAO_SISTEMA}</strong>`;
 }
 
 function abrirFecharPainel() {
@@ -310,112 +293,117 @@ async function criarConta() {
   if (!ehAdm) { alert("Apenas o administrador!"); return; }
   const usuario = document.getElementById('novo-usuario').value.trim();
   const senha = document.getElementById('nova-senha').value;
-  const confirma = document.getElementById('confirma-senha').value;
-  const erroEl = document.getElementById('erro-cadastro');
+  if (!usuario || !senha) { alert("Preencha tudo!"); return; }
   
-  if (!usuario || !senha) { erroEl.textContent = "Preencha todos os campos!"; return; }
-  if (senha.length < 4) { erroEl.textContent = "Mínimo 4 caracteres!"; return; }
-  if (senha !== confirma) { erroEl.textContent = "As senhas não coincidem!"; return; }
-  if (usuario === USUARIO_ADM) { erroEl.textContent = "Nome reservado!"; return; }
-  
-  try {
-    await fetch(URL_SCRIPT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ acao: 'criarConta', usuario, senha })
-    });
-    erroEl.textContent = "✅ Conta criada!";
-    erroEl.style.color = '#28a745';
+  const resposta = await fetch(URL_SCRIPT, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({acao:'criarConta', usuario, senha})
+  });
+  const res = await resposta.json();
+  if (res.ok) {
+    alert("✅ Conta criada!");
     document.getElementById('novo-usuario').value = '';
     document.getElementById('nova-senha').value = '';
-    document.getElementById('confirma-senha').value = '';
-    await carregarTodosDados();
+    carregarTodosDados();
     renderizarPainelAdm();
-  } catch (erro) {
-    erroEl.textContent = "Erro ao criar!";
-    erroEl.style.color = '#dc3545';
+  } else {
+    alert("❌ " + (res.erro || "Erro!"));
   }
 }
 
-async function salvarVeiculo() {
-  if (!ehAdm) { alert("Apenas o administrador!"); return; }
+async function adicionarVeiculo() {
+  if (!ehAdm) return;
+  const usuario = document.getElementById('veiculo-usuario').value.trim();
+  const placa = document.getElementById('veiculo-placa').value.trim();
+  const imei = document.getElementById('veiculo-imei').value.trim();
+  const nome = document.getElementById('veiculo-nome').value.trim();
+  const cor = document.getElementById('veiculo-cor').value.trim();
   
-  // ✅ ORDEM CORRIGIDA
-  const nome = document.getElementById('campo-nome').value.trim();        // valor3
-  const placa = document.getElementById('campo-placa').value.trim().toUpperCase(); // valor1
-  const imei = document.getElementById('campo-imei').value.trim();        // valor2
-  const cor = document.getElementById('campo-cor').value.trim();          // horario/data
-  const dono = document.getElementById('campo-usuario-dono').value.trim(); // referencia
-  
-  console.log("📤 Enviando veículo:", { nome, placa, imei, cor, dono });
-  
-  if (!nome || !placa || !dono) {
-    alert("Preencha Nome, Placa e Usuário DONO!");
+  if (!usuario || !placa || !imei || !nome) {
+    alert("Preencha os campos obrigatórios!");
     return;
   }
   
-  try {
-    await fetch(URL_SCRIPT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ 
-        acao: 'adicionarVeiculo', 
-        usuario: dono,      // referencia = dono
-        placa: placa,       // valor1 = placa
-        imei: imei,         // valor2 = imei
-        nome: nome,         // valor3 = nome
-        cor: cor            // horario/data = cor
-      })
-    });
-    alert("✅ Veículo cadastrado!");
-    document.getElementById('campo-nome').value = '';
-    document.getElementById('campo-placa').value = '';
-    document.getElementById('campo-imei').value = '';
-    document.getElementById('campo-cor').value = '';
-    document.getElementById('campo-usuario-dono').value = '';
-    await carregarTodosDados();
+  const resposta = await fetch(URL_SCRIPT, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      acao: 'adicionarVeiculo',
+      usuario,
+      placa,
+      imei,
+      nome,
+      cor
+    })
+  });
+  
+  const res = await resposta.json();
+  if (res.ok) {
+    alert("✅ Veículo adicionado!");
+    document.getElementById('veiculo-placa').value = '';
+    document.getElementById('veiculo-imei').value = '';
+    document.getElementById('veiculo-nome').value = '';
+    document.getElementById('veiculo-cor').value = '';
+    carregarTodosDados();
     renderizarPainelAdm();
-    renderizarListaVeiculos();
-  } catch (erro) {
-    alert("Erro ao cadastrar! " + erro.message);
+  } else {
+    alert("❌ " + (res.erro || "Erro ao adicionar!"));
   }
 }
 
 async function excluirUsuario(nomeUsuario) {
-  if (!confirm(`Excluir "${nomeUsuario}" e TODOS os veículos dele?`)) return;
-  try {
-    await fetch(URL_SCRIPT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ acao: 'excluirUsuario', usuario: nomeUsuario })
-    });
-    alert("✅ Excluído!");
-    await carregarTodosDados();
+  if (!confirm(`Tem certeza que deseja excluir o usuário "${nomeUsuario}" e todos os veículos dele?`)) {
+    return;
+  }
+  
+  const resposta = await fetch(URL_SCRIPT, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      acao: 'excluirUsuario',
+      usuario: nomeUsuario
+    })
+  });
+  
+  const res = await resposta.json();
+  if (res.ok) {
+    alert("✅ Usuário e veículos excluídos!");
+    carregarTodosDados();
     renderizarPainelAdm();
-    renderizarListaVeiculos();
-  } catch {
-    alert("Erro ao excluir!");
+  } else {
+    alert("❌ " + (res.erro || "Erro ao excluir!"));
   }
 }
 
 async function excluirVeiculo(placa) {
-  if (!confirm(`Excluir o veículo "${placa}"?`)) return;
-  try {
-    await fetch(URL_SCRIPT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ acao: 'excluirVeiculo', placa })
-    });
-    alert("✅ Excluído!");
-    await carregarTodosDados();
+  if (!confirm(`Tem certeza que deseja excluir o veículo com placa "${placa}"?`)) {
+    return;
+  }
+  
+  const resposta = await fetch(URL_SCRIPT, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      acao: 'excluirVeiculo',
+      placa: placa
+    })
+  });
+  
+  const res = await resposta.json();
+  if (res.ok) {
+    alert("✅ Veículo excluído!");
+    carregarTodosDados();
     renderizarPainelAdm();
-    renderizarListaVeiculos();
-  } catch {
-    alert("Erro ao excluir!");
+    if (veiculoDetalheAberto === placa) {
+      fecharCartao();
+    }
+  } else {
+    alert("❌ " + (res.erro || "Erro ao excluir!"));
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log(VERSAO_SISTEMA);
+// Inicialização quando a página carrega
+window.onload = function() {
   mostrarVersaoLogin();
-});
+};
