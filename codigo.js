@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 48  ✅
+// SISTEMA RASTREAMENTO — Versão: 51  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 48";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 51";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -54,14 +54,34 @@ function inicializarMapa() {
   tornarArrastavel('painel-principal'); 
 }
 
+// 🚗 Ícone personalizado limpo com o emoji de carro em um círculo colorido
+function criarIconeCarroSimples(cor = '#007bff') {
+  const htmlIcono = `
+    <div style="background-color: ${cor}; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 2px solid white;">
+      <span style="font-size: 16px; line-height: 1;">🚗</span>
+    </div>
+  `;
+
+  return L.divIcon({
+    className: '', // Remove qualquer estilo padrão do Leaflet
+    html: htmlIcono,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17]
+  });
+}
+
 function focarNoVeiculoECentralizar(placa) {
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
   const v = listaDados.find(x => x.placa === placa);
   if (v && v.lat && v.lon && mapa) {
+    const corVeiculo = v.cor || v.corMarcador || '#007bff';
+    const icone = criarIconeCarroSimples(corVeiculo);
+
     if (!marcadores[placa]) {
-      marcadores[placa] = L.marker([v.lat, v.lon]).addTo(mapa);
+      marcadores[placa] = L.marker([v.lat, v.lon], { icon: icone }).addTo(mapa);
     } else {
       marcadores[placa].setLatLng([v.lat, v.lon]);
+      marcadores[placa].setIcon(icone);
     }
     mapa.setView([v.lat, v.lon], 16);
   }
@@ -77,11 +97,15 @@ function atualizarTodosMarcadoresNoMapa() {
       const lon = parseFloat(v.lon);
       if (isNaN(lat) || isNaN(lon)) return;
 
+      const corVeiculo = v.cor || v.corMarcador || '#007bff';
+      const icone = criarIconeCarroSimples(corVeiculo);
+
       if (!marcadores[v.placa]) {
-        marcadores[v.placa] = L.marker([lat, lon]).addTo(mapa);
+        marcadores[v.placa] = L.marker([lat, lon], { icon: icone }).addTo(mapa);
         marcadores[v.placa].on('click', () => focarNoVeiculo(v.placa));
       } else {
         marcadores[v.placa].setLatLng([lat, lon]);
+        marcadores[v.placa].setIcon(icone);
       }
       
       marcadores[v.placa].bindTooltip(`${v.nome || v.placa} (${v.velocidade || 0} km/h)`, {direction: 'top'});
@@ -487,8 +511,14 @@ function focarNoVeiculo(placa) {
   atualizarEstadoBotaoCerca(placa);
 
   if (!semSinal && mapa) {
-    if (!marcadores[placa]) marcadores[placa] = L.marker([v.lat, v.lon]).addTo(mapa);
-    else marcadores[placa].setLatLng([v.lat, v.lon]);
+    const corVeiculo = v.cor || v.corMarcador || '#007bff';
+    const icone = criarIconeCarroSimples(corVeiculo);
+
+    if (!marcadores[placa]) marcadores[placa] = L.marker([v.lat, v.lon], { icon: icone }).addTo(mapa);
+    else {
+      marcadores[placa].setLatLng([v.lat, v.lon]);
+      marcadores[placa].setIcon(icone);
+    }
     mapa.setView([v.lat, v.lon], 15);
   }
   
