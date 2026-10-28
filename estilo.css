@@ -321,7 +321,7 @@ body {
 .status-verde { background: #d4edda; color: #155724; }
 .status-amarelo { background: #fff3cd; color: #856404; }
 .status-cinza { background: #e9ecef; color: #6c757d; }
-
+.status-laranja { background: #ffeeba; color: #856404; }
 .rodape-lista {
   margin-top: 12px;
   font-size: 11px;
