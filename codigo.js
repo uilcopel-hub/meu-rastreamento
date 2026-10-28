@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 45  ✅
+// SISTEMA RASTREAMENTO — Versão: 47  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 45";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 47";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -26,6 +26,11 @@ let timerAtualizacao = null;
 let historicoRotas = {}; 
 let linhasRotas = {};    
 let cercasVirtuais = {}; // Guarda o estado e o círculo de cada veículo { placa: { ativo: true, lat: 0, lon: 0, raio: 200, violado: false, horarioViolacao: '', objetoCirculo: null } }
+
+// Variáveis para guardar o histórico carregado no mapa (Versão 45)
+let camadaRotaHistorico = null;
+let marcadoresParadasHistorico = [];
+let dadosHistoricoCarregados = [];
 
 
 function mostrarVersaoLogin() {
@@ -444,6 +449,8 @@ function sair() {
   marcadores = {};
   sessionStorage.clear();
   
+  limparHistoricoMapa();
+
   document.getElementById('tela-login').classList.remove('escondida');
   document.getElementById('tela-principal').classList.add('escondida');
   document.getElementById('cartao-detalhes').classList.remove('aberto');
@@ -498,6 +505,7 @@ function focarNoVeiculo(placa) {
 
 function fecharCartao() {
   veiculoDetalheAberto = null;
+  limparHistoricoMapa();
   document.getElementById('cartao-detalhes').classList.remove('aberto');
   renderizarListaVeiculos();
 }
@@ -869,6 +877,152 @@ function limparAlertaCerca() {
     }
   }
   document.getElementById('aviso-cerca-container').style.display = 'none';
+}
+
+// ==========================================
+// 📊 NOVAS FUNÇÕES DE HISTÓRICO, ROTAS E PARADAS (VERSÃO 45)
+// ==========================================
+
+async function buscarEdesenharHistorico() {
+  if (!veiculoDetalheAberto) {
+    alert("Selecione um veículo primeiro!");
+    return;
+  }
+  
+  const dataInput = document.getElementById('data-historico').value;
+  if (!dataInput) {
+    alert("Por favor, selecione uma data para consultar a rota!");
+    return;
+  }
+  
+  const placa = veiculoDetalheAberto;
+  limparHistoricoMapa();
+
+  try {
+    const urlBusca = `${URL_SCRIPT}?acao=buscarHistorico&placa=${encodeURIComponent(placa)}&data=${encodeURIComponent(dataInput)}`;
+    const resposta = await fetch(urlBusca);
+    const res = await resposta.json();
+
+    if (!res.ok || !res.pontos || res.pontos.length === 0) {
+      alert("⚠️ Nenhum registo de rota encontrado para esta data.");
+      return;
+    }
+
+    dadosHistoricoCarregados = res.pontos;
+    const coordenadas = [];
+    let pontosParada = [];
+
+    // Analisa os pontos para traçado e paradas
+    for (let i = 0; i < res.pontos.length; i++) {
+      const p = res.pontos[i];
+      coordenadas.push([p.lat, p.lon]);
+
+      // Detecção simples de parada: velocidade 0 ou muito baixa
+      if (p.velocidade <= 1) {
+        pontosParada.push(p);
+      }
+    }
+
+    // Desenha a linha azul do trajeto no mapa
+    camadaRotaHistorico = L.polyline(coordenadas, {
+      color: '#007bff',
+      weight: 5,
+      opacity: 0.85
+    }).addTo(mapa);
+
+    // Centraliza o mapa na rota
+    mapa.fitBounds(camadaRotaHistorico.getBounds(), { padding: [50, 50] });
+
+    // Agrupa e cria os marcadores de parada (🅿️) se ficou parado por tempo relevante
+    analisarEmarcarParadas(pontosParada);
+
+    alert(`✅ Rota carregada com sucesso! (${res.pontos.length} pontos encontrados).`);
+
+  } catch (erro) {
+    console.error(erro);
+    alert("❌ Erro ao buscar histórico no servidor.");
+  }
+}
+
+function analisarEmarcarParadas(pontosParada) {
+  if (pontosParada.length === 0) return;
+
+  // Cria ícone personalizado 🅿️
+  const iconeParada = L.divIcon({
+    className: 'marcador-parada',
+    html: '<div style="background: #ffc107; color: #000; border: 2px solid #333; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">🅿️</div>',
+    iconSize: [26, 26],
+    iconAnchor: [13, 13]
+  });
+
+  // Agrupa pontos consecutivos parados no mesmo local
+  let gruposParadas = [];
+  let atualGrupo = [pontosParada[0]];
+
+  for (let i = 1; i < pontosParada.length; i++) {
+    const pAnt = pontosParada[i - 1];
+    const pAtual = pontosParada[i];
+    const distancia = calcularDistanciaMetros(pAnt.lat, pAnt.lon, pAtual.lat, pAtual.lon);
+
+    // Se estiver a menos de 15 metros do ponto anterior, considera o mesmo local de paragem
+    if (distancia < 15) {
+      atualGrupo.push(pAtual);
+    } else {
+      if (atualGrupo.length >= 3) { // Pelo menos 3 leituras no mesmo sítio (aprox. 30 a 45 seg)
+        gruposParadas.push(atualGrupo);
+      }
+      atualGrupo = [pAtual];
+    }
+  }
+  if (atualGrupo.length >= 3) {
+    gruposParadas.push(atualGrupo);
+  }
+
+  // Adiciona os marcadores 🅿️ no mapa
+  gruposParadas.forEach(grupo => {
+    const inicio = grupo[0].horario;
+    const fim = grupo[grupo.length - 1].horario;
+    const lat = grupo[0].lat;
+    const lon = grupo[0].lon;
+
+    const marcadorP = L.marker([lat, lon], { icon: iconeParada }).addTo(mapa);
+    marcadorP.bindPopup(`<b>🅿️ Veículo Estacionado</b><br>Início: ${inicio}<br>Fim: ${fim}`);
+    marcadoresParadasHistorico.push(marcadorP);
+  });
+}
+
+function limparHistoricoMapa() {
+  if (camadaRotaHistorico && mapa) {
+    mapa.removeLayer(camadaRotaHistorico);
+    camadaRotaHistorico = null;
+  }
+  
+  marcadoresParadasHistorico.forEach(m => {
+    if (mapa) mapa.removeLayer(m);
+  });
+  marcadoresParadasHistorico = [];
+  dadosHistoricoCarregados = [];
+}
+
+function exportarRelatorioCSV() {
+  if (!dadosHistoricoCarregados || dadosHistoricoCarregados.length === 0) {
+    alert("⚠️ Nenhum dado de histórico carregado para exportar. Clique primeiro em '🔍 Ver Rota'.");
+    return;
+  }
+
+  let csvContent = "data:text/csv;charset=utf-8,Placa;Data;Horario;Latitude;Longitude;Velocidade(km/h);IMEI\n";
+
+  dadosHistoricoCarregados.forEach(p => {
+    csvContent += `${p.placa};${p.data};${p.horario};${p.lat};${p.lon};${p.velocidade};${p.imei}\n`;
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `relatorio_rota_${veiculoDetalheAberto}_${document.getElementById('data-historico').value}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 window.onload = function() {

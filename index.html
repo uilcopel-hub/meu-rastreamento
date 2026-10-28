@@ -90,6 +90,19 @@
         <br>
         <button onclick="limparAlertaCerca()" style="margin-top: 6px; background: #721c24; color: #fff; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Limpar / Rearmar</button>
       </div>
+
+      <!-- SECÇÃO DE HISTÓRICO DE ROTAS E PARADAS (VERSÃO 45) -->
+      <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid #ddd;">
+        <h4 style="font-size: 13px; margin-bottom: 6px; color: #333;">📊 Histórico de Rota e Paradas</h4>
+        <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
+          <input type="date" id="data-historico" style="flex: 1; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px;">
+          <button onclick="buscarEdesenharHistorico()" style="background: #007bff; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">🔍 Ver Rota</button>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button onclick="limparHistoricoMapa()" style="flex: 1; background: #6c757d; color: #fff; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px;">❌ Limpar Rota</button>
+          <button onclick="exportarRelatorioCSV()" style="flex: 1; background: #28a745; color: #fff; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px;">📥 Exportar CSV</button>
+        </div>
+      </div>
     </div>
 
     <!-- PAINEL ADMINISTRADOR CENTRAL -->
@@ -130,6 +143,6 @@
     </div>
   </div>
 
-  <script src="codigo.js?v=15.13"></script>
+  <script src="codigo.js?v=45.0"></script>
 </body>
 </html>
