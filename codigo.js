@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 44  ✅
+// SISTEMA RASTREAMENTO — Versão: 45  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 44";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 45";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -84,7 +84,7 @@ function atualizarTodosMarcadoresNoMapa() {
     }
   });
 
-  // SINCRONIZAR CERCAS VIRTUAIS PERSISTIDAS DO SERVIDOR NO MAPA
+  // SINCRONIZAR CERCAS VIRTUAIS PERSISTIDAS DO SERVIDOR NO MAPA E BOTÕES
   sincronizarCercasNoMapa(listaDados);
 }
 
@@ -131,6 +131,33 @@ function sincronizarCercasNoMapa(listaDados) {
       }
     }
   });
+
+  // Atualiza o botão do cartão se o veículo estiver aberto no momento
+  if (veiculoDetalheAberto) {
+    atualizarEstadoBotaoCerca(veiculoDetalheAberto);
+  }
+}
+
+function atualizarEstadoBotaoCerca(placa) {
+  const btnCerca = document.getElementById('btn-cerca-cartao');
+  const avisoContainer = document.getElementById('aviso-cerca-container');
+  const textoAviso = document.getElementById('texto-aviso-cerca');
+  
+  if (!btnCerca) return;
+
+  if (cercasVirtuais[placa] && cercasVirtuais[placa].ativo) {
+    btnCerca.style.background = "#dc3545";
+    btnCerca.textContent = "🛡️ Desativar Cerca";
+    
+    if (cercasVirtuais[placa].violado && avisoContainer) {
+      textoAviso.textContent = `Cerca violada às ${cercasVirtuais[placa].horarioViolacao}`;
+      avisoContainer.style.display = 'block';
+    }
+  } else {
+    btnCerca.style.background = "#6c757d";
+    btnCerca.textContent = "🛡️ Ativar Cerca";
+    if (avisoContainer) avisoContainer.style.display = 'none';
+  }
 }
 
 function trocarMapa(tipo) {
@@ -456,26 +483,8 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
-  // ATUALIZAR ESTADO DO BOTÃO E AVISO DA CERCA AO ABRIR O CARTÃO DO VEÍCULOS
-  const btnCerca = document.getElementById('btn-cerca-cartao');
-  const avisoContainer = document.getElementById('aviso-cerca-container');
-  const textoAviso = document.getElementById('texto-aviso-cerca');
-
-  if (cercasVirtuais[placa] && cercasVirtuais[placa].ativo) {
-    btnCerca.textContent = "🛡️ Desativar Cerca";
-    btnCerca.style.background = "#dc3545";
-    
-    if (cercasVirtuais[placa].violado) {
-      textoAviso.textContent = `Cerca violada às ${cercasVirtuais[placa].horarioViolacao}`;
-      avisoContainer.style.display = 'block';
-    } else {
-      avisoContainer.style.display = 'none';
-    }
-  } else {
-    btnCerca.textContent = "🛡️ Ativar Cerca";
-    btnCerca.style.background = "#6c757d";
-    avisoContainer.style.display = 'none';
-  }
+  // Atualiza botão e aviso ao abrir o cartão
+  atualizarEstadoBotaoCerca(placa);
 
   if (!semSinal && mapa) {
     if (!marcadores[placa]) marcadores[placa] = L.marker([v.lat, v.lon]).addTo(mapa);
@@ -785,43 +794,19 @@ async function alternarCercaVirtual() {
       return;
     }
 
-    if (ativarNovoEstado) {
-      let circulo = L.circle([v.lat, v.lon], {
-        color: '#007bff',
-        fillColor: '#007bff',
-        fillOpacity: 0.15,
-        radius: raioMetros
-      }).addTo(mapa);
-      
-      cercasVirtuais[placa] = {
-        ativo: true,
-        latCentro: v.lat,
-        lonCentro: v.lon,
-        raio: raioMetros,
-        violado: false,
-        horarioViolacao: '',
-        objetoCirculo: circulo
-      };
-      
-      btnCerca.style.background = "#dc3545";
-      btnCerca.textContent = "🛡️ Desativar Cerca";
-      alert(`✅ Cerca virtual ativada e persistida para o veículo ${v.nome || placa}!`);
-      
-    } else {
-      if (cercasVirtuais[placa] && cercasVirtuais[placa].objetoCirculo) {
-        mapa.removeLayer(cercasVirtuais[placa].objetoCirculo);
-      }
-      delete cercasVirtuais[placa];
-      
-      btnCerca.style.background = "#6c757d";
-      btnCerca.textContent = "🛡️ Ativar Cerca";
-      document.getElementById('aviso-cerca-container').style.display = 'none';
-      alert("🛡️ Cerca virtual desativada.");
-    }
-
-    // Atualiza os dados locais para refletir a mudança
+    // Atualiza os dados locais de imediato
     if (ehAdm) await carregarTodosDados();
     else await carregarDadosUsuario();
+
+    // Sincroniza visualmente o mapa e o botão
+    const listaAtualizada = ehAdm ? todosVeiculos : veiculosDoUsuario;
+    sincronizarCercasNoMapa(listaAtualizada);
+
+    if (ativarNovoEstado) {
+      alert(`✅ Cerca virtual ativada e persistida para o veículo ${v.nome || placa}!`);
+    } else {
+      alert("🛡️ Cerca virtual desativada.");
+    }
 
   } catch (erro) {
     console.error(erro);
