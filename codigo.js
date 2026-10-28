@@ -159,28 +159,56 @@ async function fazerLogin() {
     return;
   }
   
-  if (usuario === USUARIO_ADM && senha === SENHA_ADM) {
+  // Limpa erros anteriores e dá feedback visual de carregamento
+  erroEl.textContent = "";
+  const btnEntrar = document.querySelector('#tela-login button'); // ou o seletor do seu botão de entrar
+  const textoOriginal = btnEntrar ? btnEntrar.textContent : "Entrar";
+  
+  if (btnEntrar) {
+    btnEntrar.disabled = true;
+    btnEntrar.textContent = "⏳ A entrar, aguarde...";
+    btnEntrar.style.opacity = "0.7";
+  }
+
+  try {
+    if (usuario === USUARIO_ADM && senha === SENHA_ADM) {
+      usuarioAtual = usuario;
+      ehAdm = true;
+      await carregarTodosDados();
+      entrarTelaPrincipal();
+      return;
+    }
+    
+    const dados = await buscarDados();
+    const conta = dados.dados?.find(linha => 
+      linha[0] === 'conta' && linha[1] === usuario && String(linha[2]) === senha
+    );
+    
+    if (!conta) {
+      erroEl.textContent = "Usuário ou senha incorretos!";
+      // Restaura o botão caso haja erro de login
+      if (btnEntrar) {
+        btnEntrar.disabled = false;
+        btnEntrar.textContent = textoOriginal;
+        btnEntrar.style.opacity = "1";
+      }
+      return;
+    }
+    
     usuarioAtual = usuario;
-    ehAdm = true;
-    await carregarTodosDados();
+    ehAdm = false;
+    await carregarDadosUsuario(dados);
     entrarTelaPrincipal();
-    return;
+    
+  } catch (erro) {
+    console.error(erro);
+    erroEl.textContent = "Erro ao conectar ao servidor.";
+    if (btnEntrar) {
+      btnEntrar.disabled = false;
+      btnEntrar.textContent = textoOriginal;
+      btnEntrar.style.opacity = "1";
+    }
   }
-  
-  const dados = await buscarDados();
-  const conta = dados.dados?.find(linha => 
-    linha[0] === 'conta' && linha[1] === usuario && String(linha[2]) === senha
-  );
-  
-  if (!conta) {
-    erroEl.textContent = "Usuário ou senha incorretos!";
-    return;
-  }
-  
-  usuarioAtual = usuario;
-  ehAdm = false;
-  await carregarDadosUsuario(dados);
-  entrarTelaPrincipal();
 }
 
 async function carregarDadosUsuario(dados = null) {
