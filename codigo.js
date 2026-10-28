@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 37  ✅
+// SISTEMA RASTREAMENTO — Versão: 38  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 37";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 38";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -23,8 +23,8 @@ let veiculoDetalheAberto = null;
 let marcadores = {};
 let seguindoVeiculo = false;
 let timerAtualizacao = null;
-let historicoRotas = {}; // Guarda os pontos de cada placa: { 'ABC-1234': [[lat, lon], [lat, lon], ...] }
-let linhasRotas = {};    // Guarda o objeto da linha azul no mapa para cada placa
+let historicoRotas = {}; 
+let linhasRotas = {};    
 
 function mostrarVersaoLogin() {
   const el = document.getElementById('versao-sistema');
@@ -44,13 +44,9 @@ function inicializarMapa() {
   mapaRuas.addTo(mapa);
   modoAtual = 'ruas';
 
-  // 🖱️ TORNA AS JANELAS ARRASTÁVEIS NA TELA
-  tornarArrastavel('cartao-detalhes'); // O cartão inteiro ou cabeçalho
-  tornarArrastavel('painel-principal'); // A lista lateral de veículos
+  tornarArrastavel('cartao-detalhes'); 
+  tornarArrastavel('painel-principal'); 
 }
-
-
-
 
 function focarNoVeiculoECentralizar(placa) {
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
@@ -65,7 +61,6 @@ function focarNoVeiculoECentralizar(placa) {
   }
 }
 
-
 function atualizarTodosMarcadoresNoMapa() {
   if (!mapa) return;
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
@@ -76,17 +71,13 @@ function atualizarTodosMarcadoresNoMapa() {
       const lon = parseFloat(v.lon);
       if (isNaN(lat) || isNaN(lon)) return;
 
-      // Se o marcador não existe, cria no mapa
       if (!marcadores[v.placa]) {
         marcadores[v.placa] = L.marker([lat, lon]).addTo(mapa);
-        // Ao clicar no marcador de qualquer carro, abre os detalhes dele
         marcadores[v.placa].on('click', () => focarNoVeiculo(v.placa));
       } else {
-        // Se já existe, apenas atualiza a posição em tempo real
         marcadores[v.placa].setLatLng([lat, lon]);
       }
       
-      // Atualiza o texto do pop-up ou tooltip do marcador
       marcadores[v.placa].bindTooltip(`${v.nome || v.placa} (${v.velocidade || 0} km/h)`, {direction: 'top'});
     }
   });
@@ -110,7 +101,6 @@ function trocarMapa(tipo) {
   }
 }
 
-// Função para tornar qualquer elemento arrastável pela tela
 function tornarArrastavel(idElemento, idCabecalho) {
   const el = document.getElementById(idElemento);
   if (!el) return;
@@ -192,6 +182,7 @@ async function fazerLogin() {
   await carregarDadosUsuario(dados);
   entrarTelaPrincipal();
 }
+
 async function carregarDadosUsuario(dados = null) {
   if (!dados) dados = await buscarDados();
   
@@ -210,7 +201,7 @@ async function carregarDadosUsuario(dados = null) {
       kmHoje: linha[10] ? parseFloat(linha[10]) : 0,
       km7dias: linha[11] ? parseFloat(linha[11]) : 0,
       km30dias: linha[12] ? parseFloat(linha[12]) : 0,
-      horario: linha[13] || '--:--', // Lê exatamente da Coluna N (índice 13)
+      horario: linha[13] || '--:--', 
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
 }
@@ -233,7 +224,7 @@ async function carregarTodosDados() {
       kmHoje: linha[10] ? parseFloat(linha[10]) : 0,
       km7dias: linha[11] ? parseFloat(linha[11]) : 0,
       km30dias: linha[12] ? parseFloat(linha[12]) : 0,
-      horario: linha[13] || '--:--', // Lê exatamente da Coluna N (índice 13)
+      horario: linha[13] || '--:--', 
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   veiculosDoUsuario = todosVeiculos;
@@ -257,7 +248,6 @@ async function entrarTelaPrincipal() {
 
   if (ehAdm) renderizarPainelAdm();
 
-  // 🔄 Inicia o loop automático para atualizar posições a cada 10 segundos
   if (timerAtualizacao) clearInterval(timerAtualizacao);
   timerAtualizacao = setInterval(atualizarPosicoesEmTempoReal, 10000);
 }
@@ -274,13 +264,11 @@ async function atualizarPosicoesEmTempoReal() {
   renderizarListaVeiculos();
   atualizarTodosMarcadoresNoMapa();
 
-  // Se houver um veículo com o cartão de detalhes aberto
   if (veiculoDetalheAberto) {
     const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
     const v = listaDados.find(x => x.placa === veiculoDetalheAberto);
     
     if (v) {
-      // 🛡️ CORRIGIDO: Tratamento seguro para toFixed sem quebrar a execução
       document.getElementById('cartao-km-hoje').textContent = (Number(v.kmHoje) || 0).toFixed(1) + ' km';
       document.getElementById('cartao-km-7dias').textContent = (Number(v.km7dias) || 0).toFixed(1) + ' km';
       document.getElementById('cartao-km-30dias').textContent = (Number(v.km30dias) || 0).toFixed(1) + ' km';
@@ -372,7 +360,6 @@ function focarNoVeiculo(placa) {
     donoLinha.style.display = 'none';
   }
   
-  // 🛡️ CORRIGIDO: Tratamento seguro para toFixed
   document.getElementById('cartao-km-hoje').textContent = (Number(v.kmHoje) || 0).toFixed(1) + ' km';
   document.getElementById('cartao-km-7dias').textContent = (Number(v.km7dias) || 0).toFixed(1) + ' km';
   document.getElementById('cartao-km-30dias').textContent = (Number(v.km30dias) || 0).toFixed(1) + ' km';
@@ -417,10 +404,7 @@ function alternarSeguirAtual() {
   }
 }
 
-
-
-
-
+// Única função renderizarListaVeiculos correta com os ícones e badges
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
   if (!listaEl) return;
@@ -440,7 +424,6 @@ function renderizarListaVeiculos() {
     div.style.borderLeft = `4px solid ${v.corMarcador || '#007bff'}`;
     div.onclick = () => focarNoVeiculo(v.placa);
     
-    // Ícone dinâmico baseado no tipo ou padrão de veículo
     const iconeVeiculo = '🚗'; 
     const statusTexto = semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado');
     const classeStatus = semSinal ? 'status-cinza' : (v.velocidade > 0 ? 'status-verde' : 'status-amarelo');
@@ -457,40 +440,6 @@ function renderizarListaVeiculos() {
         <span>Placa: <b>${v.placa}</b></span>
         <span>Hoje: <b>${(Number(v.kmHoje) || 0).toFixed(1)} km</b></span>
       </div>
-    `;
-    listaEl.appendChild(div);
-  });
-  
-  const ultEl = document.getElementById('ultima-atualizacao');
-  if (ultEl) ultEl.innerHTML = `<strong>${VERSAO_SISTEMA}</strong>`;
-}
-
-
-
-
-
-
-function renderizarListaVeiculos() {
-  const listaEl = document.getElementById('lista-veiculos');
-  if (!listaEl) return;
-  listaEl.innerHTML = '';
-  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
-  
-  if (listaDados.length === 0) {
-    listaEl.innerHTML = '<p class="sem-veiculo">Nenhum veículo vinculado.<br>Aguarde o administrador cadastrar.</p>';
-    return;
-  }
-  
-  listaDados.forEach(v => {
-    const ehSelecionado = veiculoDetalheAberto === v.placa;
-    const semSinal = !v.lat || !v.lon;
-    const div = document.createElement('div');
-    div.className = `veiculo ${semSinal?'veiculo-sem-sinal':''} ${ehSelecionado?'selecionado':''}`;
-    div.style.borderLeft = `4px solid ${v.corMarcador}`;
-    div.onclick = () => focarNoVeiculo(v.placa);
-    div.innerHTML = `
-      <strong>${v.nome || v.placa}</strong>
-      <small style="color:#666">${semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado')}</small>
     `;
     listaEl.appendChild(div);
   });
