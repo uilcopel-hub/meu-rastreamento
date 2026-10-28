@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 51  ✅
+// SISTEMA RASTREAMENTO — Versão: 52  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 51";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 52";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -54,16 +54,39 @@ function inicializarMapa() {
   tornarArrastavel('painel-principal'); 
 }
 
+// 🎨 Traduz nomes de cores em português para códigos hexadecimais compatíveis
+function traduzirCor(corStr) {
+  if (!corStr) return '#007bff';
+  const cor = String(corStr).trim().toLowerCase();
+  
+  const mapaCores = {
+    'azul': '#007bff',
+    'vermelho': '#dc3545',
+    'verde': '#28a745',
+    'amarelo': '#ffc107',
+    'laranja': '#fd7e14',
+    'roxo': '#6f42c1',
+    'rosa': '#e83e8c',
+    'cinza': '#6c757d',
+    'preto': '#343a40',
+    'branco': '#ffffff'
+  };
+
+  if (mapaCores[cor]) return mapaCores[cor];
+  return corStr; // Se for código hex ou inglês direto, mantém
+}
+
 // 🚗 Ícone personalizado limpo com o emoji de carro em um círculo colorido
 function criarIconeCarroSimples(cor = '#007bff') {
+  const corFinal = traduzirCor(cor);
   const htmlIcono = `
-    <div style="background-color: ${cor}; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 2px solid white;">
+    <div style="background-color: ${corFinal}; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 2px solid white;">
       <span style="font-size: 16px; line-height: 1;">🚗</span>
     </div>
   `;
 
   return L.divIcon({
-    className: '', // Remove qualquer estilo padrão do Leaflet
+    className: '', 
     html: htmlIcono,
     iconSize: [34, 34],
     iconAnchor: [17, 17]
