@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 48  ✅
+// SISTEMA RASTREAMENTO — Versão: 49  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 48";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 49";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -27,7 +27,7 @@ let historicoRotas = {};
 let linhasRotas = {};    
 let cercasVirtuais = {}; // Guarda o estado e o círculo de cada veículo { placa: { ativo: true, lat: 0, lon: 0, raio: 200, violado: false, horarioViolacao: '', objetoCirculo: null } }
 
-// Variáveis para guardar o histórico carregado no mapa (Versão 45)
+// Variáveis para guardar o histórico carregado no mapa
 let camadaRotaHistorico = null;
 let marcadoresParadasHistorico = [];
 let dadosHistoricoCarregados = [];
@@ -60,12 +60,34 @@ function focarNoVeiculoECentralizar(placa) {
   const v = listaDados.find(x => x.placa === placa);
   if (v && v.lat && v.lon && mapa) {
     if (!marcadores[placa]) {
-      marcadores[placa] = L.marker([v.lat, v.lon]).addTo(mapa);
+      const icone = criarIconeVeiculoComSeta(v.cor || v.corMarcador || '#007bff', v.direcao || v.heading || 0);
+      marcadores[placa] = L.marker([v.lat, v.lon], { icon: icone }).addTo(mapa);
     } else {
       marcadores[placa].setLatLng([v.lat, v.lon]);
     }
     mapa.setView([v.lat, v.lon], 16);
   }
+}
+
+// 🏎️ Ícone personalizado com o carro e a seta rotativa
+function criarIconeVeiculoComSeta(cor = '#007bff', direcao = 0) {
+  const htmlIcono = `
+    <div style="position: relative; text-align: center; transform: rotate(${direcao}deg); transform-origin: center center;">
+      <!-- Ícone do Carro -->
+      <div style="background-color: ${cor}; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 2px solid white;">
+        <span style="font-size: 16px; line-height: 1;">🚗</span>
+      </div>
+      <!-- Seta indicativa de direção logo abaixo -->
+      <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 9px solid ${cor}; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));"></div>
+    </div>
+  `;
+
+  return L.divIcon({
+    className: 'marcador-veiculo-direcional',
+    html: htmlIcono,
+    iconSize: [34, 42],
+    iconAnchor: [17, 21]
+  });
 }
 
 function atualizarTodosMarcadoresNoMapa() {
@@ -78,18 +100,22 @@ function atualizarTodosMarcadoresNoMapa() {
       const lon = parseFloat(v.lon);
       if (isNaN(lat) || isNaN(lon)) return;
 
+      const corVeiculo = v.cor || v.corMarcador || '#007bff';
+      const direcaoVeiculo = v.direcao || v.heading || 0;
+      const iconePersonalizado = criarIconeVeiculoComSeta(corVeiculo, direcaoVeiculo);
+
       if (!marcadores[v.placa]) {
-        marcadores[v.placa] = L.marker([lat, lon]).addTo(mapa);
+        marcadores[v.placa] = L.marker([lat, lon], { icon: iconePersonalizado }).addTo(mapa);
         marcadores[v.placa].on('click', () => focarNoVeiculo(v.placa));
       } else {
         marcadores[v.placa].setLatLng([lat, lon]);
+        marcadores[v.placa].setIcon(iconePersonalizado);
       }
       
       marcadores[v.placa].bindTooltip(`${v.nome || v.placa} (${v.velocidade || 0} km/h)`, {direction: 'top'});
     }
   });
 
-  // SINCRONIZAR CERCAS VIRTUAIS PERSISTIDAS DO SERVIDOR NO MAPA E BOTÕES
   sincronizarCercasNoMapa(listaDados);
 }
 
@@ -106,7 +132,6 @@ function sincronizarCercasNoMapa(listaDados) {
         const lonCentro = parseFloat(partes[1]);
         const raio = v.cercaRaio || 200;
 
-        // Se a cerca ainda não existe na memória local, cria no mapa
         if (!cercasVirtuais[placa] || !cercasVirtuais[placa].ativo) {
           let circulo = L.circle([latCentro, lonCentro], {
             color: '#007bff',
@@ -127,7 +152,6 @@ function sincronizarCercasNoMapa(listaDados) {
         }
       }
     } else {
-      // Se veio desativada do servidor mas está ativa localmente, remove
       if (cercasVirtuais[placa] && cercasVirtuais[placa].ativo) {
         if (cercasVirtuais[placa].objetoCirculo) {
           mapa.removeLayer(cercasVirtuais[placa].objetoCirculo);
@@ -137,7 +161,6 @@ function sincronizarCercasNoMapa(listaDados) {
     }
   });
 
-  // Atualiza o botão do cartão se o veículo estiver aberto no momento
   if (veiculoDetalheAberto) {
     atualizarEstadoBotaoCerca(veiculoDetalheAberto);
   }
@@ -262,7 +285,7 @@ async function fazerLogin() {
     
     const dados = await buscarDados();
     const conta = dados.dados?.find(linha => 
-      linha[0] === 'conta' && linha[1] === usuario && String(linha[2]) === senha
+      linha && linha[0] === 'conta' && String(linha[1]).trim() === usuario && String(linha[2]) === senha
     );
     
     if (!conta) {
@@ -295,52 +318,58 @@ async function carregarDadosUsuario(dados = null) {
   if (!dados) dados = await buscarDados();
   
   veiculosDoUsuario = (dados.dados || [])
-    .filter(linha => linha && linha[0] === 'veiculo' && String(linha[1]).trim() === usuarioAtual)
-    .map((linha, idx) => ({
-      tipo: linha[0],
-      usuario: String(linha[1] || '').trim(),
-      placa: String(linha[3] || '').trim(),
-      imei: String(linha[4] || '').trim(),
-      nome: String(linha[5] || linha[3] || '').trim(),
-      cor: String(linha[6] || '').trim(),
-      lat: linha[7] ? parseFloat(linha[7]) : null,
-      lon: linha[8] ? parseFloat(linha[8]) : null,
-      velocidade: linha[9] ? parseFloat(linha[9]) : 0,
-      kmHoje: linha[10] ? parseFloat(linha[10]) : 0,
-      km7dias: linha[11] ? parseFloat(linha[11]) : 0,
-      km30dias: linha[12] ? parseFloat(linha[12]) : 0,
-      horario: linha[13] || '--:--', 
-      cercaAtiva: linha[14] === true || linha[14] === 'true',
-      cercaLatLon: String(linha[15] || '').trim(),
-      cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
-      corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
-    }));
+    .filter(linha => linha && linha.length > 3 && (linha[0] === 'veiculo' || linha[3]) && String(linha[1]).trim() === usuarioAtual)
+    .map((linha, idx) => {
+      const placa = String(linha[3] || linha[2] || '').trim();
+      return {
+        tipo: String(linha[0] || '').trim(),
+        usuario: String(linha[1] || '').trim(),
+        placa: placa,
+        imei: String(linha[4] || '').trim(),
+        nome: String(linha[5] || placa).trim(),
+        cor: String(linha[6] || '').trim(),
+        lat: linha[7] ? parseFloat(String(linha[7]).replace(',', '.')) : null,
+        lon: linha[8] ? parseFloat(String(linha[8]).replace(',', '.')) : null,
+        velocidade: linha[9] ? parseFloat(String(linha[9]).replace(',', '.')) : 0,
+        kmHoje: linha[10] ? parseFloat(String(linha[10]).replace(',', '.')) : 0,
+        km7dias: linha[11] ? parseFloat(String(linha[11]).replace(',', '.')) : 0,
+        km30dias: linha[12] ? parseFloat(String(linha[12]).replace(',', '.')) : 0,
+        horario: linha[13] || '--:--', 
+        cercaAtiva: linha[14] === true || linha[14] === 'true',
+        cercaLatLon: String(linha[15] || '').trim(),
+        cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
+        corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
+      };
+    }).filter(v => v.placa);
 }
 
 async function carregarTodosDados() {
   const dados = await buscarDados();
   todosUsuarios = (dados.dados || []).filter(l => l && l[0] === 'conta');
   todosVeiculos = (dados.dados || [])
-    .filter(linha => linha && linha[0] === 'veiculo')
-    .map((linha, idx) => ({
-      tipo: linha[0],
-      usuario: String(linha[1] || '').trim(),
-      placa: String(linha[3] || '').trim(),
-      imei: String(linha[4] || '').trim(),
-      nome: String(linha[5] || linha[3] || '').trim(),
-      cor: String(linha[6] || '').trim(),
-      lat: linha[7] ? parseFloat(linha[7]) : null,
-      lon: linha[8] ? parseFloat(linha[8]) : null,
-      velocidade: linha[9] ? parseFloat(linha[9]) : 0,
-      kmHoje: linha[10] ? parseFloat(linha[10]) : 0,
-      km7dias: linha[11] ? parseFloat(linha[11]) : 0,
-      km30dias: linha[12] ? parseFloat(linha[12]) : 0,
-      horario: linha[13] || '--:--', 
-      cercaAtiva: linha[14] === true || linha[14] === 'true',
-      cercaLatLon: String(linha[15] || '').trim(),
-      cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
-      corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
-    }));
+    .filter(linha => linha && linha.length > 3 && (linha[0] === 'veiculo' || linha[3]))
+    .map((linha, idx) => {
+      const placa = String(linha[3] || linha[2] || '').trim();
+      return {
+        tipo: String(linha[0] || '').trim(),
+        usuario: String(linha[1] || '').trim(),
+        placa: placa,
+        imei: String(linha[4] || '').trim(),
+        nome: String(linha[5] || placa).trim(),
+        cor: String(linha[6] || '').trim(),
+        lat: linha[7] ? parseFloat(String(linha[7]).replace(',', '.')) : null,
+        lon: linha[8] ? parseFloat(String(linha[8]).replace(',', '.')) : null,
+        velocidade: linha[9] ? parseFloat(String(linha[9]).replace(',', '.')) : 0,
+        kmHoje: linha[10] ? parseFloat(String(linha[10]).replace(',', '.')) : 0,
+        km7dias: linha[11] ? parseFloat(String(linha[11]).replace(',', '.')) : 0,
+        km30dias: linha[12] ? parseFloat(String(linha[12]).replace(',', '.')) : 0,
+        horario: linha[13] || '--:--', 
+        cercaAtiva: linha[14] === true || linha[14] === 'true',
+        cercaLatLon: String(linha[15] || '').trim(),
+        cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
+        corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
+      };
+    }).filter(v => v.placa);
   veiculosDoUsuario = todosVeiculos;
 }
 
@@ -392,7 +421,6 @@ async function atualizarPosicoesEmTempoReal() {
       document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
       document.getElementById('cartao-horario').textContent = v.horario || '--:--';
       
-      // VERIFICAR CERCA VIRTUAL A CADA ATUALIZAÇÃO EM TEMPO REAL
       if (!semSinal) {
         verificarCercaVirtual(v);
       }
@@ -490,12 +518,15 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
-  // Atualiza botão e aviso ao abrir o cartão
   atualizarEstadoBotaoCerca(placa);
 
   if (!semSinal && mapa) {
-    if (!marcadores[placa]) marcadores[placa] = L.marker([v.lat, v.lon]).addTo(mapa);
-    else marcadores[placa].setLatLng([v.lat, v.lon]);
+    const icone = criarIconeVeiculoComSeta(v.cor || v.corMarcador || '#007bff', v.direcao || v.heading || 0);
+    if (!marcadores[placa]) marcadores[placa] = L.marker([v.lat, v.lon], { icon: icone }).addTo(mapa);
+    else {
+      marcadores[placa].setLatLng([v.lat, v.lon]);
+      marcadores[placa].setIcon(icone);
+    }
     mapa.setView([v.lat, v.lon], 15);
   }
   
@@ -529,7 +560,6 @@ function alternarSeguirAtual() {
   }
 }
 
-// Renderização com Alerta de Inatividade Automático
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
   if (!listaEl) return;
@@ -758,7 +788,6 @@ async function excluirVeiculo(placa) {
   }
 }
 
-// Ativar ou desativar a Cerca Virtual Persistida no Servidor
 async function alternarCercaVirtual() {
   if (!veiculoDetalheAberto) {
     alert("Selecione um veículo primeiro!");
@@ -802,11 +831,9 @@ async function alternarCercaVirtual() {
       return;
     }
 
-    // Atualiza os dados locais de imediato
     if (ehAdm) await carregarTodosDados();
     else await carregarDadosUsuario();
 
-    // Sincroniza visualmente o mapa e o botão
     const listaAtualizada = ehAdm ? todosVeiculos : veiculosDoUsuario;
     sincronizarCercasNoMapa(listaAtualizada);
 
@@ -824,9 +851,8 @@ async function alternarCercaVirtual() {
   }
 }
 
-// Fórmula matemática para calcular a distância em metros entre duas coordenadas GPS (Haversine)
 function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
-  const R = 6371e3; // Raio da Terra em metros
+  const R = 6371e3;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -836,7 +862,6 @@ function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// Verificar violação da cerca a cada atualização em tempo real
 function verificarCercaVirtual(v) {
   const placa = v.placa;
   if (!cercasVirtuais[placa] || !cercasVirtuais[placa].ativo) return;
@@ -848,18 +873,15 @@ function verificarCercaVirtual(v) {
   const textoAviso = document.getElementById('texto-aviso-cerca');
   
   if (distancia > cerca.raio) {
-    // Veículo saiu do raio!
     if (!cerca.violado) {
       cerca.violado = true;
       cerca.horarioViolacao = v.horario || new Date().toLocaleTimeString();
       
-      // Mudar a cor do círculo no mapa para vermelho de alerta
       if (cerca.objetoCirculo) {
         cerca.objetoCirculo.setStyle({ color: '#dc3545', fillColor: '#dc3545' });
       }
     }
     
-    // Se o cartão deste veículo estiver aberto, mostra o aviso visual
     if (veiculoDetalheAberto === placa && avisoContainer) {
       textoAviso.textContent = `Cerca violada às ${cerca.horarioViolacao} (Distância: ${Math.round(distancia)}m)`;
       avisoContainer.style.display = 'block';
@@ -880,7 +902,7 @@ function limparAlertaCerca() {
 }
 
 // ==========================================
-// 📊 NOVAS FUNÇÕES DE HISTÓRICO, ROTAS E PARADAS (VERSÃO 45)
+// 📊 HISTÓRICO, ROTAS E PARADAS
 // ==========================================
 
 async function buscarEdesenharHistorico() {
@@ -912,28 +934,23 @@ async function buscarEdesenharHistorico() {
     const coordenadas = [];
     let pontosParada = [];
 
-    // Analisa os pontos para traçado e paradas
     for (let i = 0; i < res.pontos.length; i++) {
       const p = res.pontos[i];
       coordenadas.push([p.lat, p.lon]);
 
-      // Detecção simples de parada: velocidade 0 ou muito baixa
       if (p.velocidade <= 1) {
         pontosParada.push(p);
       }
     }
 
-    // Desenha a linha azul do trajeto no mapa
     camadaRotaHistorico = L.polyline(coordenadas, {
       color: '#007bff',
       weight: 5,
       opacity: 0.85
     }).addTo(mapa);
 
-    // Centraliza o mapa na rota
     mapa.fitBounds(camadaRotaHistorico.getBounds(), { padding: [50, 50] });
 
-    // Agrupa e cria os marcadores de parada (🅿️) se ficou parado por tempo relevante
     analisarEmarcarParadas(pontosParada);
 
     alert(`✅ Rota carregada com sucesso! (${res.pontos.length} pontos encontrados).`);
@@ -947,7 +964,6 @@ async function buscarEdesenharHistorico() {
 function analisarEmarcarParadas(pontosParada) {
   if (pontosParada.length === 0) return;
 
-  // Cria ícone personalizado 🅿️
   const iconeParada = L.divIcon({
     className: 'marcador-parada',
     html: '<div style="background: #ffc107; color: #000; border: 2px solid #333; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">🅿️</div>',
@@ -955,7 +971,6 @@ function analisarEmarcarParadas(pontosParada) {
     iconAnchor: [13, 13]
   });
 
-  // Agrupa pontos consecutivos parados no mesmo local
   let gruposParadas = [];
   let atualGrupo = [pontosParada[0]];
 
@@ -964,11 +979,10 @@ function analisarEmarcarParadas(pontosParada) {
     const pAtual = pontosParada[i];
     const distancia = calcularDistanciaMetros(pAnt.lat, pAnt.lon, pAtual.lat, pAtual.lon);
 
-    // Se estiver a menos de 15 metros do ponto anterior, considera o mesmo local de paragem
     if (distancia < 15) {
       atualGrupo.push(pAtual);
     } else {
-      if (atualGrupo.length >= 3) { // Pelo menos 3 leituras no mesmo sítio (aprox. 30 a 45 seg)
+      if (atualGrupo.length >= 3) {
         gruposParadas.push(atualGrupo);
       }
       atualGrupo = [pAtual];
@@ -978,7 +992,6 @@ function analisarEmarcarParadas(pontosParada) {
     gruposParadas.push(atualGrupo);
   }
 
-  // Adiciona os marcadores 🅿️ no mapa
   gruposParadas.forEach(grupo => {
     const inicio = grupo[0].horario;
     const fim = grupo[grupo.length - 1].horario;
