@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 40  ✅
+// SISTEMA RASTREAMENTO — Versão: 41  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 40";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 41";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -430,9 +430,9 @@ function renderizarListaVeiculos() {
         dataMsg.setHours(parseInt(partes[0]), parseInt(partes[1]), parseInt(partes[2] || 0));
         const diffMinutos = (new Date() - dataMsg) / 1000 / 60;
         
-        if (diffMinutos > 15 && diffMinutos < 1440) {
+    if (diffMinutos > 30 && diffMinutos < 1440) {
           statusTexto = '⚠️ Inativo';
-          classeStatus = 'status-laranja';
+          classeStatus = 'status-vermelho';
         }
       } catch (e) {}
     }
