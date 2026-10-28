@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 41  ✅
+// SISTEMA RASTREAMENTO — Versão: 43  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 41";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 43";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -25,6 +25,8 @@ let seguindoVeiculo = false;
 let timerAtualizacao = null;
 let historicoRotas = {}; 
 let linhasRotas = {};    
+let cercasVirtuais = {}; // Guarda o estado e o círculo de cada veículo { placa: { ativo: true, lat: 0, lon: 0, raio: 200, violado: false, horarioViolacao: '', objetoCirculo: null } }
+
 
 function mostrarVersaoLogin() {
   const el = document.getElementById('versao-sistema');
@@ -159,9 +161,8 @@ async function fazerLogin() {
     return;
   }
   
-  // Limpa erros anteriores e dá feedback visual de carregamento
   erroEl.textContent = "";
-  const btnEntrar = document.querySelector('#tela-login button'); // ou o seletor do seu botão de entrar
+  const btnEntrar = document.querySelector('#tela-login button'); 
   const textoOriginal = btnEntrar ? btnEntrar.textContent : "Entrar";
   
   if (btnEntrar) {
@@ -186,7 +187,6 @@ async function fazerLogin() {
     
     if (!conta) {
       erroEl.textContent = "Usuário ou senha incorretos!";
-      // Restaura o botão caso haja erro de login
       if (btnEntrar) {
         btnEntrar.disabled = false;
         btnEntrar.textContent = textoOriginal;
@@ -306,6 +306,11 @@ async function atualizarPosicoesEmTempoReal() {
       document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
       document.getElementById('cartao-horario').textContent = v.horario || '--:--';
       
+      // VERIFICAR CERCA VIRTUAL A CADA ATUALIZAÇÃO EM TEMPO REAL
+      if (!semSinal) {
+        verificarCercaVirtual(v);
+      }
+      
       if (!semSinal && mapa) {
         const placa = v.placa;
         if (!historicoRotas[placa]) {
@@ -397,6 +402,27 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
+  // ATUALIZAR ESTADO DO BOTÃO E AVISO DA CERCA AO ABRIR O CARTÃO DO VEÍCULOS
+  const btnCerca = document.getElementById('btn-cerca-cartao');
+  const avisoContainer = document.getElementById('aviso-cerca-container');
+  const textoAviso = document.getElementById('texto-aviso-cerca');
+
+  if (cercasVirtuais[placa] && cercasVirtuais[placa].ativo) {
+    btnCerca.textContent = "🛡️ Desativar Cerca";
+    btnCerca.style.background = "#dc3545";
+    
+    if (cercasVirtuais[placa].violado) {
+      textoAviso.textContent = `Cerca violada às ${cercasVirtuais[placa].horarioViolacao}`;
+      avisoContainer.style.display = 'block';
+    } else {
+      avisoContainer.style.display = 'none';
+    }
+  } else {
+    btnCerca.textContent = "🛡️ Ativar Cerca";
+    btnCerca.style.background = "#6c757d";
+    avisoContainer.style.display = 'none';
+  }
+
   if (!semSinal && mapa) {
     if (!marcadores[placa]) marcadores[placa] = L.marker([v.lat, v.lon]).addTo(mapa);
     else marcadores[placa].setLatLng([v.lat, v.lon]);
@@ -458,7 +484,7 @@ function renderizarListaVeiculos() {
         dataMsg.setHours(parseInt(partes[0]), parseInt(partes[1]), parseInt(partes[2] || 0));
         const diffMinutos = (new Date() - dataMsg) / 1000 / 60;
         
-    if (diffMinutos > 30 && diffMinutos < 1440) {
+        if (diffMinutos > 30 && diffMinutos < 1440) {
           statusTexto = '⚠️ Inativo';
           classeStatus = 'status-vermelho';
         }
@@ -659,6 +685,118 @@ async function excluirVeiculo(placa) {
   } else {
     alert("❌ " + (res.erro || "Erro ao excluir!"));
   }
+}
+
+// Ativar ou desativar a Cerca Virtual para o veículo selecionado atualmente
+function alternarCercaVirtual() {
+  if (!veiculoDetalheAberto) {
+    alert("Selecione um veículo primeiro!");
+    return;
+  }
+  
+  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+  const v = listaDados.find(x => x.placa === veiculoDetalheAberto);
+  if (!v || !v.lat || !v.lon) {
+    alert("O veículo precisa de ter uma posição válida no mapa para ativar a cerca!");
+    return;
+  }
+  
+  const placa = v.placa;
+  const btnCerca = document.getElementById('btn-cerca-cartao');
+  
+  if (!cercasVirtuais[placa] || !cercasVirtuais[placa].ativo) {
+    // Criar cerca virtual (Raio padrão de 200 metros)
+    const raioMetros = 200;
+    
+    let circulo = L.circle([v.lat, v.lon], {
+      color: '#007bff',
+      fillColor: '#007bff',
+      fillOpacity: 0.15,
+      radius: raioMetros
+    }).addTo(mapa);
+    
+    cercasVirtuais[placa] = {
+      ativo: true,
+      latCentro: v.lat,
+      lonCentro: v.lon,
+      raio: raioMetros,
+      violado: false,
+      horarioViolacao: '',
+      objetoCirculo: circulo
+    };
+    
+    btnCerca.style.background = "#dc3545";
+    btnCerca.textContent = "🛡️ Desativar Cerca";
+    alert(`✅ Cerca virtual ativada com raio de ${raioMetros}m para o veículo ${v.nome || placa}!`);
+    
+  } else {
+    // Desativar e remover cerca
+    if (cercasVirtuais[placa].objetoCirculo) {
+      mapa.removeLayer(cercasVirtuais[placa].objetoCirculo);
+    }
+    delete cercasVirtuais[placa];
+    
+    btnCerca.style.background = "#6c757d";
+    btnCerca.textContent = "🛡️ Ativar Cerca";
+    
+    document.getElementById('aviso-cerca-container').style.display = 'none';
+    alert("🛡️ Cerca virtual desativada.");
+  }
+}
+
+// Fórmula matemática para calcular a distância em metros entre duas coordenadas GPS (Haversine)
+function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Raio da Terra em metros
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+// Verificar violação da cerca a cada atualização em tempo real
+function verificarCercaVirtual(v) {
+  const placa = v.placa;
+  if (!cercasVirtuais[placa] || !cercasVirtuais[placa].ativo) return;
+  
+  const cerca = cercasVirtuais[placa];
+  const distancia = calcularDistanciaMetros(cerca.latCentro, cerca.lonCentro, v.lat, v.lon);
+  
+  const avisoContainer = document.getElementById('aviso-cerca-container');
+  const textoAviso = document.getElementById('texto-aviso-cerca');
+  
+  if (distancia > cerca.raio) {
+    // Veículo saiu do raio!
+    if (!cerca.violado) {
+      cerca.violado = true;
+      cerca.horarioViolacao = v.horario || new Date().toLocaleTimeString();
+      
+      // Mudar a cor do círculo no mapa para vermelho de alerta
+      if (cerca.objetoCirculo) {
+        cerca.objetoCirculo.setStyle({ color: '#dc3545', fillColor: '#dc3545' });
+      }
+    }
+    
+    // Se o cartão deste veículo estiver aberto, mostra o aviso visual
+    if (veiculoDetalheAberto === placa && avisoContainer) {
+      textoAviso.textContent = `Cerca violada às ${cerca.horarioViolacao} (Distância: ${Math.round(distancia)}m)`;
+      avisoContainer.style.display = 'block';
+    }
+  }
+}
+
+function limparAlertaCerca() {
+  if (!veiculoDetalheAberto) return;
+  const placa = veiculoDetalheAberto;
+  if (cercasVirtuais[placa]) {
+    cercasVirtuais[placa].violado = false;
+    if (cercasVirtuais[placa].objetoCirculo) {
+      cercasVirtuais[placa].objetoCirculo.setStyle({ color: '#007bff', fillColor: '#007bff' });
+    }
+  }
+  document.getElementById('aviso-cerca-container').style.display = 'none';
 }
 
 window.onload = function() {
