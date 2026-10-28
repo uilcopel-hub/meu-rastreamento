@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 39  ✅
+// SISTEMA RASTREAMENTO — Versão: 40  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 39";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 40";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -420,11 +420,9 @@ function renderizarListaVeiculos() {
     const ehSelecionado = veiculoDetalheAberto === v.placa;
     const semSinal = !v.lat || !v.lon;
     
-    // Verifica se está inativo com base no horário (ex: se tiver horário e passarem mais de 30 min, ou se não houver sinal)
     let statusTexto = semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado');
     let classeStatus = semSinal ? 'status-cinza' : (v.velocidade > 0 ? 'status-verde' : 'status-amarelo');
 
-    // Lógica simples de verificação de inatividade por tempo se houver horário registado
     if (v.horario && v.horario !== '--:--') {
       try {
         const partes = v.horario.split(':');
@@ -432,8 +430,7 @@ function renderizarListaVeiculos() {
         dataMsg.setHours(parseInt(partes[0]), parseInt(partes[1]), parseInt(partes[2] || 0));
         const diffMinutos = (new Date() - dataMsg) / 1000 / 60;
         
-        // Se passar de  30 minutos sem atualizar, muda para alerta de inatividade
-        if (diffMinutos > 30 && diffMinutos < 1440) {
+        if (diffMinutos > 15 && diffMinutos < 1440) {
           statusTexto = '⚠️ Inativo';
           classeStatus = 'status-laranja';
         }
@@ -619,7 +616,7 @@ async function excluirVeiculo(placa) {
     })
   });
   
-  const res = await respirarJSON = await resposta.json();
+  const res = await resposta.json();
   if (res.ok) {
     alert("✅ Veículo excluído!");
     
