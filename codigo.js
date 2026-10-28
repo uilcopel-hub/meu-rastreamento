@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 43  ✅
-// COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
+// SISTEMA RASTREAMENTO — Versão: 44  ✅
+// COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 43";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 44";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -81,6 +81,54 @@ function atualizarTodosMarcadoresNoMapa() {
       }
       
       marcadores[v.placa].bindTooltip(`${v.nome || v.placa} (${v.velocidade || 0} km/h)`, {direction: 'top'});
+    }
+  });
+
+  // SINCRONIZAR CERCAS VIRTUAIS PERSISTIDAS DO SERVIDOR NO MAPA
+  sincronizarCercasNoMapa(listaDados);
+}
+
+function sincronizarCercasNoMapa(listaDados) {
+  if (!mapa) return;
+
+  listaDados.forEach(v => {
+    const placa = v.placa;
+
+    if (v.cercaAtiva && v.cercaLatLon) {
+      const partes = v.cercaLatLon.split(',');
+      if (partes.length === 2) {
+        const latCentro = parseFloat(partes[0]);
+        const lonCentro = parseFloat(partes[1]);
+        const raio = v.cercaRaio || 200;
+
+        // Se a cerca ainda não existe na memória local, cria no mapa
+        if (!cercasVirtuais[placa] || !cercasVirtuais[placa].ativo) {
+          let circulo = L.circle([latCentro, lonCentro], {
+            color: '#007bff',
+            fillColor: '#007bff',
+            fillOpacity: 0.15,
+            radius: raio
+          }).addTo(mapa);
+
+          cercasVirtuais[placa] = {
+            ativo: true,
+            latCentro: latCentro,
+            lonCentro: lonCentro,
+            raio: raio,
+            violado: false,
+            horarioViolacao: '',
+            objetoCirculo: circulo
+          };
+        }
+      }
+    } else {
+      // Se veio desativada do servidor mas está ativa localmente, remove
+      if (cercasVirtuais[placa] && cercasVirtuais[placa].ativo) {
+        if (cercasVirtuais[placa].objetoCirculo) {
+          mapa.removeLayer(cercasVirtuais[placa].objetoCirculo);
+        }
+        delete cercasVirtuais[placa];
+      }
     }
   });
 }
@@ -230,6 +278,9 @@ async function carregarDadosUsuario(dados = null) {
       km7dias: linha[11] ? parseFloat(linha[11]) : 0,
       km30dias: linha[12] ? parseFloat(linha[12]) : 0,
       horario: linha[13] || '--:--', 
+      cercaAtiva: linha[14] === true || linha[14] === 'true',
+      cercaLatLon: String(linha[15] || '').trim(),
+      cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
 }
@@ -253,6 +304,9 @@ async function carregarTodosDados() {
       km7dias: linha[11] ? parseFloat(linha[11]) : 0,
       km30dias: linha[12] ? parseFloat(linha[12]) : 0,
       horario: linha[13] || '--:--', 
+      cercaAtiva: linha[14] === true || linha[14] === 'true',
+      cercaLatLon: String(linha[15] || '').trim(),
+      cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   veiculosDoUsuario = todosVeiculos;
@@ -687,8 +741,8 @@ async function excluirVeiculo(placa) {
   }
 }
 
-// Ativar ou desativar a Cerca Virtual para o veículo selecionado atualmente
-function alternarCercaVirtual() {
+// Ativar ou desativar a Cerca Virtual Persistida no Servidor
+async function alternarCercaVirtual() {
   if (!veiculoDetalheAberto) {
     alert("Selecione um veículo primeiro!");
     return;
@@ -704,43 +758,76 @@ function alternarCercaVirtual() {
   const placa = v.placa;
   const btnCerca = document.getElementById('btn-cerca-cartao');
   
-  if (!cercasVirtuais[placa] || !cercasVirtuais[placa].ativo) {
-    // Criar cerca virtual (Raio padrão de 200 metros)
-    const raioMetros = 200;
+  const ativarNovoEstado = !cercasVirtuais[placa] || !cercasVirtuais[placa].ativo;
+  const latLonStr = `${v.lat},${v.lon}`;
+  const raioMetros = 200;
+
+  btnCerca.disabled = true;
+  btnCerca.textContent = "⏳ A gravar...";
+
+  try {
+    const resposta = await fetch(URL_SCRIPT, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({
+        acao: 'salvarCercaVirtual',
+        placa: placa,
+        ativa: ativarNovoEstado,
+        latLon: ativarNovoEstado ? latLonStr : '',
+        raio: raioMetros
+      })
+    });
     
-    let circulo = L.circle([v.lat, v.lon], {
-      color: '#007bff',
-      fillColor: '#007bff',
-      fillOpacity: 0.15,
-      radius: raioMetros
-    }).addTo(mapa);
-    
-    cercasVirtuais[placa] = {
-      ativo: true,
-      latCentro: v.lat,
-      lonCentro: v.lon,
-      raio: raioMetros,
-      violado: false,
-      horarioViolacao: '',
-      objetoCirculo: circulo
-    };
-    
-    btnCerca.style.background = "#dc3545";
-    btnCerca.textContent = "🛡️ Desativar Cerca";
-    alert(`✅ Cerca virtual ativada com raio de ${raioMetros}m para o veículo ${v.nome || placa}!`);
-    
-  } else {
-    // Desativar e remover cerca
-    if (cercasVirtuais[placa].objetoCirculo) {
-      mapa.removeLayer(cercasVirtuais[placa].objetoCirculo);
+    const res = await resposta.json();
+    if (!res.ok) {
+      alert("❌ Erro ao salvar cerca no servidor!");
+      btnCerca.disabled = false;
+      return;
     }
-    delete cercasVirtuais[placa];
-    
-    btnCerca.style.background = "#6c757d";
-    btnCerca.textContent = "🛡️ Ativar Cerca";
-    
-    document.getElementById('aviso-cerca-container').style.display = 'none';
-    alert("🛡️ Cerca virtual desativada.");
+
+    if (ativarNovoEstado) {
+      let circulo = L.circle([v.lat, v.lon], {
+        color: '#007bff',
+        fillColor: '#007bff',
+        fillOpacity: 0.15,
+        radius: raioMetros
+      }).addTo(mapa);
+      
+      cercasVirtuais[placa] = {
+        ativo: true,
+        latCentro: v.lat,
+        lonCentro: v.lon,
+        raio: raioMetros,
+        violado: false,
+        horarioViolacao: '',
+        objetoCirculo: circulo
+      };
+      
+      btnCerca.style.background = "#dc3545";
+      btnCerca.textContent = "🛡️ Desativar Cerca";
+      alert(`✅ Cerca virtual ativada e persistida para o veículo ${v.nome || placa}!`);
+      
+    } else {
+      if (cercasVirtuais[placa] && cercasVirtuais[placa].objetoCirculo) {
+        mapa.removeLayer(cercasVirtuais[placa].objetoCirculo);
+      }
+      delete cercasVirtuais[placa];
+      
+      btnCerca.style.background = "#6c757d";
+      btnCerca.textContent = "🛡️ Ativar Cerca";
+      document.getElementById('aviso-cerca-container').style.display = 'none';
+      alert("🛡️ Cerca virtual desativada.");
+    }
+
+    // Atualiza os dados locais para refletir a mudança
+    if (ehAdm) await carregarTodosDados();
+    else await carregarDadosUsuario();
+
+  } catch (erro) {
+    console.error(erro);
+    alert("❌ Erro de comunicação com o servidor.");
+  } finally {
+    btnCerca.disabled = false;
   }
 }
 
