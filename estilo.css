@@ -1,3 +1,6 @@
+/* ==============================================
+   ESTILOS GLOBAIS
+   ============================================== */
 * {
   margin: 0;
   padding: 0;
@@ -33,7 +36,9 @@ body {
   display: none !important;
 }
 
-/* TELA DE LOGIN */
+/* ==============================================
+   TELA DE LOGIN
+   ============================================== */
 #tela-login {
   display: flex;
   align-items: center;
@@ -98,7 +103,9 @@ body {
   font-size: 14px;
 }
 
-/* FAIXA BRANCA NO TOPO — Ajustada para nunca cortar os botões */
+/* ==============================================
+   FAIXA BRANCA NO TOPO
+   ============================================== */
 .faixa-topo {
   position: absolute;
   top: 0;
@@ -177,7 +184,9 @@ body {
   white-space: nowrap;
 }
 
-/* PAINEL DIREITO — LISTA COMPACTA */
+/* ==============================================
+   PAINEL DIREITO — LISTA DE VEÍCULOS
+   ============================================== */
 .barra-direita {
   position: absolute;
   top: 75px;
@@ -255,7 +264,9 @@ body {
   margin: 4px 0;
 }
 
-/* MAPA */
+/* ==============================================
+   MAPA
+   ============================================== */
 #mapa {
   width: 100%;
   height: calc(100vh - 60px);
@@ -265,7 +276,9 @@ body {
   z-index: 1;
 }
 
-/* LISTA DE VEÍCULOS */
+/* ==============================================
+   LISTA DE VEÍCULOS E BADGES (ATUALIZADO)
+   ============================================== */
 .sem-veiculo {
   color: #888;
   text-align: center;
@@ -274,23 +287,40 @@ body {
 }
 
 .veiculo {
-  padding: 10px;
-  margin-bottom: 6px;
-  background: #f8f9fa;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #ffffff;
   border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.04);
   cursor: pointer;
-  transition: all 0.2s;
-  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+  border-left: 4px solid #007bff;
 }
 
-.veiculo:hover, .veiculo.selecionado {
+.veiculo:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+.veiculo.selecionado {
   background: #e3f2fd;
-  transform: translateX(2px);
+  border-color: #007bff;
 }
 
 .veiculo-sem-sinal {
   opacity: 0.6;
 }
+
+/* Badges de Status Modernos nos Cards */
+.badge-status {
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.status-verde { background: #d4edda; color: #155724; }
+.status-amarelo { background: #fff3cd; color: #856404; }
+.status-cinza { background: #e9ecef; color: #6c757d; }
 
 .rodape-lista {
   margin-top: 12px;
@@ -300,7 +330,9 @@ body {
   padding-top: 8px;
 }
 
-/* === CARTÃO DE DETALHES (COMPACTO) === */
+/* ==============================================
+   CARTÃO DE DETALHES (COMPACTO)
+   ============================================== */
 .cartao-detalhes {
   position: absolute;
   bottom: 20px;
@@ -365,7 +397,9 @@ body {
   line-height: 1.4;
 }
 
-/* PAINEL CENTRAL — ADMIN */
+/* ==============================================
+   PAINEL CENTRAL — ADMIN
+   ============================================== */
 .painel-central {
   position: absolute;
   top: 50%;
@@ -483,7 +517,9 @@ body {
   background: #c82333;
 }
 
-/* RESPONSIVO — CELULAR */
+/* ==============================================
+   RESPONSIVO — CELULAR
+   ============================================== */
 @media (max-width: 768px) {
   .faixa-topo {
     height: auto;

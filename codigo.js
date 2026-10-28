@@ -400,18 +400,58 @@ function alternarSeguirAtual() {
   }
 }
 
-function focarNoVeiculoECentralizar(placa) {
+
+
+
+
+function renderizarListaVeiculos() {
+  const listaEl = document.getElementById('lista-veiculos');
+  if (!listaEl) return;
+  listaEl.innerHTML = '';
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
-  const v = listaDados.find(x => x.placa === placa);
-  if (v && v.lat && v.lon && mapa) {
-    if (!marcadores[placa]) {
-      marcadores[placa] = L.marker([v.lat, v.lon]).addTo(mapa);
-    } else {
-      marcadores[placa].setLatLng([v.lat, v.lon]);
-    }
-    mapa.setView([v.lat, v.lon], 16);
+  
+  if (listaDados.length === 0) {
+    listaEl.innerHTML = '<p class="sem-veiculo">Nenhum veículo vinculado.<br>Aguarde o administrador cadastrar.</p>';
+    return;
   }
+  
+  listaDados.forEach(v => {
+    const ehSelecionado = veiculoDetalheAberto === v.placa;
+    const semSinal = !v.lat || !v.lon;
+    const div = document.createElement('div');
+    div.className = `veiculo ${semSinal?'veiculo-sem-sinal':''} ${ehSelecionado?'selecionado':''}`;
+    div.style.borderLeft = `4px solid ${v.corMarcador || '#007bff'}`;
+    div.onclick = () => focarNoVeiculo(v.placa);
+    
+    // Ícone dinâmico baseado no tipo ou padrão de veículo
+    const iconeVeiculo = '🚗'; 
+    const statusTexto = semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado');
+    const classeStatus = semSinal ? 'status-cinza' : (v.velocidade > 0 ? 'status-verde' : 'status-amarelo');
+
+    div.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 16px; margin-right: 6px;">${iconeVeiculo}</span>
+          <strong>${v.nome || v.placa}</strong>
+        </div>
+        <small class="badge-status ${classeStatus}">${statusTexto}</small>
+      </div>
+      <div style="font-size: 11px; color: #666; margin-top: 4px; display: flex; justify-content: space-between;">
+        <span>Placa: <b>${v.placa}</b></span>
+        <span>Hoje: <b>${(Number(v.kmHoje) || 0).toFixed(1)} km</b></span>
+      </div>
+    `;
+    listaEl.appendChild(div);
+  });
+  
+  const ultEl = document.getElementById('ultima-atualizacao');
+  if (ultEl) ultEl.innerHTML = `<strong>${VERSAO_SISTEMA}</strong>`;
 }
+
+
+
+
+
 
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
