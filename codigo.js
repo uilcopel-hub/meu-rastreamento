@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 36  ✅
+// SISTEMA RASTREAMENTO — Versão: 37  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 36";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 37";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -48,6 +48,23 @@ function inicializarMapa() {
   tornarArrastavel('cartao-detalhes'); // O cartão inteiro ou cabeçalho
   tornarArrastavel('painel-principal'); // A lista lateral de veículos
 }
+
+
+
+
+function focarNoVeiculoECentralizar(placa) {
+  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+  const v = listaDados.find(x => x.placa === placa);
+  if (v && v.lat && v.lon && mapa) {
+    if (!marcadores[placa]) {
+      marcadores[placa] = L.marker([v.lat, v.lon]).addTo(mapa);
+    } else {
+      marcadores[placa].setLatLng([v.lat, v.lon]);
+    }
+    mapa.setView([v.lat, v.lon], 16);
+  }
+}
+
 
 function atualizarTodosMarcadoresNoMapa() {
   if (!mapa) return;
