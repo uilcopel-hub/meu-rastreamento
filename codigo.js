@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 49  ✅
+// SISTEMA RASTREAMENTO — Versão: 50  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 49";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 50";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -69,26 +69,33 @@ function focarNoVeiculoECentralizar(placa) {
   }
 }
 
-// 🏎️ Ícone personalizado com o carro e a seta rotativa
+
+
+
+// 🏎️ Ícone personalizado com o carro e a seta sempre visível para teste
 function criarIconeVeiculoComSeta(cor = '#007bff', direcao = 0) {
   const htmlIcono = `
-    <div style="position: relative; text-align: center; transform: rotate(${direcao}deg); transform-origin: center center;">
-      <!-- Ícone do Carro -->
-      <div style="background-color: ${cor}; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 2px solid white;">
+    <div style="position: relative; text-align: center; transform: rotate(${direcao}deg); transform-origin: center center; width: 36px; height: 36px;">
+      <!-- Círculo Colorido com o Carro -->
+      <div style="background-color: ${cor}; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 2px solid white;">
         <span style="font-size: 16px; line-height: 1;">🚗</span>
       </div>
-      <!-- Seta indicativa de direção logo abaixo -->
-      <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 9px solid ${cor}; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));"></div>
+      <!-- Seta indicativa de direção sempre visível -->
+      <div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 9px solid ${cor}; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));"></div>
     </div>
   `;
 
   return L.divIcon({
-    className: 'marcador-veiculo-direcional',
+    className: '', // Remove qualquer estilo padrão do Leaflet
     html: htmlIcono,
-    iconSize: [34, 42],
-    iconAnchor: [17, 21]
+    iconSize: [36, 44],
+    iconAnchor: [18, 22]
   });
 }
+
+
+
+
 
 function atualizarTodosMarcadoresNoMapa() {
   if (!mapa) return;
