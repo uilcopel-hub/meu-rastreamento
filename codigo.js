@@ -295,10 +295,10 @@ async function carregarDadosUsuario(dados = null) {
   if (!dados) dados = await buscarDados();
   
   veiculosDoUsuario = (dados.dados || [])
-    .filter(linha => linha[0] === 'veiculo' && String(linha[1]).trim() === usuarioAtual)
+    .filter(linha => linha && linha[0] === 'veiculo' && String(linha[1]).trim() === usuarioAtual)
     .map((linha, idx) => ({
       tipo: linha[0],
-      usuario: String(linha[1]).trim(),
+      usuario: String(linha[1] || '').trim(),
       placa: String(linha[3] || '').trim(),
       imei: String(linha[4] || '').trim(),
       nome: String(linha[5] || linha[3] || '').trim(),
@@ -319,12 +319,12 @@ async function carregarDadosUsuario(dados = null) {
 
 async function carregarTodosDados() {
   const dados = await buscarDados();
-  todosUsuarios = (dados.dados || []).filter(l => l[0] === 'conta');
+  todosUsuarios = (dados.dados || []).filter(l => l && l[0] === 'conta');
   todosVeiculos = (dados.dados || [])
-    .filter(linha => linha[0] === 'veiculo')
+    .filter(linha => linha && linha[0] === 'veiculo')
     .map((linha, idx) => ({
       tipo: linha[0],
-      usuario: String(linha[1]).trim(),
+      usuario: String(linha[1] || '').trim(),
       placa: String(linha[3] || '').trim(),
       imei: String(linha[4] || '').trim(),
       nome: String(linha[5] || linha[3] || '').trim(),
