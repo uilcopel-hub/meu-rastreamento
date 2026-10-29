@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 57  ✅
+// SISTEMA RASTREAMENTO — Versão: 58  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 57";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 58";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -21,7 +21,7 @@ let usuarioAtual = null;
 let ehAdm = false;
 let veiculoDetalheAberto = null;
 let marcadores = {};
-let seguindoVeiculo = false;
+let veiculosSeguidos = {}; // ✅ Agora independente por veículo (placa)
 let timerAtualizacao = null;
 let historicoRotas = {}; 
 let linhasRotas = {};    
@@ -92,6 +92,7 @@ function criarIconeCarroSimples(cor = '#007bff') {
     iconAnchor: [17, 17]
   });
 }
+
 function abrirGoogleMapsVeiculo() {
   if (!veiculoDetalheAberto) {
     alert("Selecione um veículo primeiro!");
@@ -106,14 +107,11 @@ function abrirGoogleMapsVeiculo() {
     return;
   }
   
-  // Nome que vai aparecer no balão do Google Maps
   const nomeVeiculo = encodeURIComponent(`${v.nome || 'Veículo'} (${v.placa})`);
-  
-  // URL oficial do Google Maps com pino de pesquisa (q=lat,lon) para abrir o balão e o endereço
   const urlMaps = `https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lon}&query_place_id=${nomeVeiculo}`;
-  
   window.open(urlMaps, '_blank');
 }
+
 function focarNoVeiculoECentralizar(placa) {
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
   const v = listaDados.find(x => x.placa === placa);
@@ -127,7 +125,6 @@ function focarNoVeiculoECentralizar(placa) {
       marcadores[placa].setLatLng([v.lat, v.lon]);
       marcadores[placa].setIcon(icone);
     }
-    // Zoom 18 para detalhar perfeitamente a rua
     mapa.setView([v.lat, v.lon], 18);
   }
 }
@@ -153,7 +150,6 @@ function atualizarTodosMarcadoresNoMapa() {
         marcadores[v.placa].setIcon(icone);
       }
       
-      // ✅ Tooltip atualizado para mostrar nome, dono e velocidade ao passar o rato
       const textoTooltip = `🚗 ${v.nome || v.placa} (Dono: ${v.usuario || 'N/A'}) — ${v.velocidade || 0} km/h`;
       marcadores[v.placa].bindTooltip(textoTooltip, {direction: 'top'});
     }
@@ -228,6 +224,22 @@ function atualizarEstadoBotaoCerca(placa) {
     btnCerca.style.background = "#6c757d";
     btnCerca.textContent = "🛡️ Ativar Cerca";
     if (avisoContainer) avisoContainer.style.display = 'none';
+  }
+}
+
+// ✅ Atualiza o estado visual do botão de seguir individualmente por placa
+function atualizarEstadoBotaoSeguir(placa) {
+  const btn = document.getElementById('btn-seguir-cartao');
+  if (!btn) return;
+  
+  if (veiculosSeguidos[placa]) {
+    btn.classList.add('seguindo');
+    btn.style.background = "#dc3545";
+    btn.textContent = "🛑 Parar de seguir";
+  } else {
+    btn.classList.remove('seguindo');
+    btn.style.background = "";
+    btn.textContent = "📍 Seguir no mapa";
   }
 }
 
@@ -478,7 +490,8 @@ async function atualizarPosicoesEmTempoReal() {
           historicoRotas[placa].push([v.lat, v.lon]);
         }
 
-        if (seguindoVeiculo) {
+        // ✅ Verifica seguimento individual para esta placa específica
+        if (veiculosSeguidos[placa]) {
           mapa.setView([v.lat, v.lon], 18);
 
           if (!linhasRotas[placa]) {
@@ -504,7 +517,7 @@ async function atualizarPosicoesEmTempoReal() {
 function sair() {
   usuarioAtual = null; 
   ehAdm = false;
-  seguindoVeiculo = false;
+  veiculosSeguidos = {}; // Limpa estados de seguimento
   
   if (timerAtualizacao) {
     clearInterval(timerAtualizacao);
@@ -539,12 +552,6 @@ function sair() {
   document.getElementById('tela-login').classList.remove('escondida');
   document.getElementById('tela-principal').classList.add('escondida');
   document.getElementById('cartao-detalhes').classList.remove('aberto');
-  
-  const btnSeguir = document.getElementById('btn-seguir-cartao');
-  if (btnSeguir) {
-    btnSeguir.classList.remove('seguindo');
-    btnSeguir.textContent = "📍 Seguir no mapa";
-  }
 }
 
 function focarNoVeiculo(placa) {
@@ -574,6 +581,7 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
   atualizarEstadoBotaoCerca(placa);
+  atualizarEstadoBotaoSeguir(placa); // Sincroniza o botão de seguir para o veículo selecionado
 
   if (!semSinal && mapa) {
     const corVeiculo = v.cor || v.corMarcador || '#007bff';
@@ -584,7 +592,6 @@ function focarNoVeiculo(placa) {
       marcadores[placa].setLatLng([v.lat, v.lon]);
       marcadores[placa].setIcon(icone);
     }
-    // Zoom 18: aproxima o máximo possível da rua do carro ao clicar
     mapa.setView([v.lat, v.lon], 18);
   }
   
@@ -599,22 +606,20 @@ function fecharCartao() {
   renderizarListaVeiculos();
 }
 
+// ✅ Alterna o seguimento de forma independente para o carro aberto no cartão
 function alternarSeguirAtual() {
   if (!veiculoDetalheAberto) {
     alert("Selecione um veículo primeiro!");
     return;
   }
   
-  seguindoVeiculo = !seguindoVeiculo;
-  const btn = document.getElementById('btn-seguir-cartao');
+  const placa = veiculoDetalheAberto;
+  veiculosSeguidos[placa] = !veiculosSeguidos[placa];
   
-  if (seguindoVeiculo) {
-    btn.classList.add('seguindo');
-    btn.textContent = "🛑 Parar de seguir";
-    focarNoVeiculoECentralizar(veiculoDetalheAberto);
-  } else {
-    btn.classList.remove('seguindo');
-    btn.textContent = "📍 Seguir no mapa";
+  atualizarEstadoBotaoSeguir(placa);
+  
+  if (veiculosSeguidos[placa]) {
+    focarNoVeiculoECentralizar(placa);
   }
 }
 
@@ -640,22 +645,16 @@ function renderizarListaVeiculos() {
       try {
         const partes = v.horario.split(':');
         const agora = new Date();
-        
-        // Cria um objeto Date para o horário da mensagem no dia de hoje
         const dataMsg = new Date();
         dataMsg.setHours(parseInt(partes[0]), parseInt(partes[1]), parseInt(partes[2] || 0), 0);
         
         let diffMs = agora - dataMsg;
-        
-        // Se a diferença for negativa, significa que a hora da mensagem é "maior" que a hora atual,
-        // logo o sinal foi enviado no dia anterior (passou da meia-noite). Subtraímos 24 horas em ms.
         if (diffMs < 0) {
           diffMs += 24 * 60 * 60 * 1000;
         }
         
         const diffMinutos = diffMs / 1000 / 60;
         
-        // Se estiver inativo há mais de 30 minutos
         if (diffMinutos > 30) {
           const dias = Math.floor(diffMinutos / 1440);
           const horas = Math.floor((diffMinutos % 1440) / 60);
@@ -697,7 +696,7 @@ function renderizarListaVeiculos() {
   });
   
   const ultEl = document.getElementById('ultima-atualizacao');
-  if (ultEl) ultEl.innerHTML = `<strong>${VERSAO_SISTEMA}</strong>`;
+  if (ultEl) ultEl.innerHTML = `<strong>✅ SISTEMA RASTREAMENTO — UIL TELLES: 58</strong>`;
 }
 
 function abrirFecharPainel() {
