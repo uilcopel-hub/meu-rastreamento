@@ -106,10 +106,12 @@ function abrirGoogleMapsVeiculo() {
     return;
   }
   
-  // Cria o link oficial do Google Maps com a latitude, longitude e zoom 18
-  const urlMaps = `https://www.google.com/maps/@${v.lat},${v.lon},18z`;
+  // Nome que vai aparecer no balão do Google Maps
+  const nomeVeiculo = encodeURIComponent(`${v.nome || 'Veículo'} (${v.placa})`);
   
-  // Abre o Google Maps numa nova aba do navegador
+  // URL oficial do Google Maps com pino de pesquisa (q=lat,lon) para abrir o balão e o endereço
+  const urlMaps = `https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lon}&query_place_id=${nomeVeiculo}`;
+  
   window.open(urlMaps, '_blank');
 }
 function focarNoVeiculoECentralizar(placa) {
