@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 59  ✅
+// SISTEMA RASTREAMENTO — Versão: 60  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 59";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 60";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -30,6 +30,10 @@ let cercasVirtuais = {};
 let camadaRotaHistorico = null;
 let marcadoresParadasHistorico = [];
 let dadosHistoricoCarregados = [];
+
+// ✅ Variáveis de controlo para saber se estamos a editar
+let usuarioEditandoOriginal = null;
+let placaEditandoOriginal = null;
 
 
 function mostrarVersaoLogin() {
@@ -703,7 +707,7 @@ function abrirFecharPainel() {
   }
 }
 
-// ✅ RENDERIZA OS PAINÉIS DE ADMINISTRAÇÃO COM OS BOTÕES DE EDITAR
+// ✅ RENDERIZA OS PAINÉIS DE ADMINISTRAÇÃO COM BOTÕES DINÂMICOS
 function renderizarPainelAdm() {
   if (!ehAdm) return;
   const listaUsuarios = document.getElementById('lista-todos-usuarios');
@@ -742,21 +746,27 @@ function renderizarPainelAdm() {
   });
 }
 
-// ✏️ PREENCHE OS CAMPOS DE USUÁRIO PARA EDITAR
+// ✏️ PREENCHE OS CAMPOS DE USUÁRIO PARA EDITAR E MUDA O TEXTO DO BOTÃO PARA SALVAR
 function preencherEdicaoUsuario(usuario, senha) {
+  usuarioEditandoOriginal = usuario; // Guarda quem estamos a editar
   document.getElementById('novo-usuario').value = usuario;
   document.getElementById('nova-senha').value = senha;
   const confSenha = document.getElementById('confirma-senha');
   if (confSenha) confSenha.value = senha;
   
+  // Muda o texto do botão de criar para salvar conta
+  const btnCriar = document.querySelector("button[onclick='criarConta()']");
+  if (btnCriar) btnCriar.textContent = "💾 Salvar Conta";
+
   document.getElementById('novo-usuario').focus();
-  alert(`✏️ Formulário preenchido com os dados do usuário "${usuario}". Altere os dados e clique em "✅ Criar Conta" para salvar as alterações.`);
 }
 
-// ✏️ PREENCHE OS CAMPOS DO VEÍCULO PARA EDITAR
+// ✏️ PREENCHE OS CAMPOS DO VEÍCULO PARA EDITAR E MUDA O TEXTO DO BOTÃO PARA SALVAR
 function preencherEdicaoVeiculo(placa) {
   const v = todosVeiculos.find(item => item.placa === placa);
   if (!v) return;
+
+  placaEditandoOriginal = placa; // Guarda a placa original para atualizar corretamente
 
   document.getElementById('campo-nome').value = v.nome || '';
   document.getElementById('campo-placa').value = v.placa || '';
@@ -764,8 +774,11 @@ function preencherEdicaoVeiculo(placa) {
   document.getElementById('campo-cor').value = v.cor || '';
   document.getElementById('campo-usuario-dono').value = v.usuario || '';
 
+  // Muda o texto do botão para Salvar Veículo
+  const btnSalvar = document.querySelector("button[onclick='salvarVeiculo()']");
+  if (btnSalvar) btnSalvar.textContent = "💾 Salvar Veículo";
+
   document.getElementById('campo-nome').focus();
-  alert(`✏️ Formulário preenchido com os dados do veículo "${v.nome || v.placa}". Altere as informações desejadas e clique em "💾 Salvar Veículo".`);
 }
 
 async function criarConta() {
@@ -774,6 +787,15 @@ async function criarConta() {
   const senha = document.getElementById('nova-senha').value;
   if (!usuario || !senha) { alert("Preencha tudo!"); return; }
   
+  // Se estamos a editar, exclui o registo antigo primeiro para não duplicar
+  if (usuarioEditandoOriginal && usuarioEditandoOriginal !== usuario) {
+    await fetch(URL_SCRIPT, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({acao:'excluirUsuario', usuario: usuarioEditandoOriginal})
+    });
+  }
+
   const resposta = await fetch(URL_SCRIPT, {
     method: 'POST',
     headers: {'Content-Type': 'text/plain;charset=utf-8'},
@@ -781,12 +803,18 @@ async function criarConta() {
   });
   const res = await resposta.json();
   if (res.ok) {
-    alert("✅ Conta salva com sucesso!");
+    alert(usuarioEditandoOriginal ? "✅ Conta atualizada com sucesso!" : "✅ Conta criada com sucesso!");
+    
+    // Reseta o modo de edição
+    usuarioEditandoOriginal = null;
     document.getElementById('novo-usuario').value = '';
     document.getElementById('nova-senha').value = '';
     const confSenha = document.getElementById('confirma-senha');
     if (confSenha) confSenha.value = '';
     
+    const btnCriar = document.querySelector("button[onclick='criarConta()']");
+    if (btnCriar) btnCriar.textContent = "✅ Criar Conta";
+
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
     renderizarPainelAdm();
@@ -809,6 +837,15 @@ async function salvarVeiculo() {
     return;
   }
   
+  // Se estivermos a editar e a placa mudou (ou mantiver), removemos a antiga primeiro para atualizar sem duplicar
+  if (placaEditandoOriginal) {
+    await fetch(URL_SCRIPT, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({acao:'excluirVeiculo', placa: placaEditandoOriginal})
+    });
+  }
+
   const resposta = await fetch(URL_SCRIPT, {
     method: 'POST',
     headers: {'Content-Type': 'text/plain;charset=utf-8'},
@@ -824,19 +861,25 @@ async function salvarVeiculo() {
 
   const res = await resposta.json();
   if (res.ok) {
-    alert("✅ Veículo salvo com sucesso!");
+    alert(placaEditandoOriginal ? "✅ Veículo atualizado com sucesso!" : "✅ Veículo adicionado com sucesso!");
+    
+    // Reseta o modo de edição
+    placaEditandoOriginal = null;
     document.getElementById('campo-placa').value = '';
     document.getElementById('campo-imei').value = '';
     document.getElementById('campo-nome').value = '';
     document.getElementById('campo-cor').value = '';
     document.getElementById('campo-usuario-dono').value = '';
     
+    const btnSalvar = document.querySelector("button[onclick='salvarVeiculo()']");
+    if (btnSalvar) btnSalvar.textContent = "💾 Salvar Veículo";
+
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
     renderizarPainelAdm();
     renderizarListaVeiculos();
   } else {
-    alert("❌ " + (res.erro || "Erro ao adicionar!"));
+    alert("❌ " + (res.erro || "Erro ao salvar!"));
   }
 }
 
