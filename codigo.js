@@ -73,7 +73,7 @@ function traduzirCor(corStr) {
   };
 
   if (mapaCores[cor]) return mapaCores[cor];
-  return corStr; // Se for código hex ou inglês direto, mantém
+  return corStr; 
 }
 
 // 🚗 Ícone personalizado limpo com o emoji de carro em um círculo colorido
@@ -399,12 +399,9 @@ async function entrarTelaPrincipal() {
   }
 
   inicializarMapa();
-  
-  // ✅ CORREÇÃO: Garante que os marcadores aparecem imediatamente no mapa ao entrar
   atualizarTodosMarcadoresNoMapa();
   renderizarListaVeiculos();
 
-  // Se houver veículos, centraliza o mapa no primeiro veículo para dar foco automático
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
   if (listaDados.length > 0 && listaDados[0].lat && listaDados[0].lon) {
     mapa.setView([listaDados[0].lat, listaDados[0].lon], 13);
@@ -500,7 +497,6 @@ function sair() {
   
   limparHistoricoMapa();
 
-  // Restaura perfeitamente a tela de login
   const campoUsuario = document.getElementById('usuario');
   const campoSenha = document.getElementById('senha');
   if (campoUsuario) campoUsuario.value = '';
@@ -534,16 +530,15 @@ function focarNoVeiculo(placa) {
   const v = listaDados.find(x => x.placa === placa);
   if (!v) return;
   
+  // Exibe nome e dono no cartão flutuante
   document.getElementById('cartao-nome').textContent = v.nome || v.placa;
   document.getElementById('cartao-placa').textContent = v.placa;
   document.getElementById('cartao-imei').textContent = v.imei || 'Não informado';
   
   const donoLinha = document.getElementById('cartao-dono-linha');
-  if (ehAdm) {
-    donoLinha.textContent = `👤 Dono: ${v.usuario}`;
+  if (donoLinha) {
+    donoLinha.innerHTML = `👤 <b>Dono/Usuário:</b> ${v.usuario || 'Não informado'}`;
     donoLinha.style.display = 'block';
-  } else {
-    donoLinha.style.display = 'none';
   }
   
   document.getElementById('cartao-km-hoje').textContent = (Number(v.kmHoje) || 0).toFixed(1) + ' km';
@@ -648,7 +643,7 @@ function renderizarListaVeiculos() {
       </div>
       <div style="font-size: 11px; color: #666; margin-top: 4px; display: flex; justify-content: space-between;">
         <span>Placa: <b>${v.placa}</b></span>
-        <span>Hoje: <b>${(Number(v.kmHoje) || 0).toFixed(1)} km</b></span>
+        <span>Dono: <b>${v.usuario || 'N/A'}</b></span>
       </div>
     `;
     listaEl.appendChild(div);
