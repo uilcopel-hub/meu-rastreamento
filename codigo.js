@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 52  ✅
+// SISTEMA RASTREAMENTO — Versão: 53  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 52";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 53";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -492,14 +492,30 @@ function sair() {
   
   limparHistoricoMapa();
 
+  // Limpa os campos de texto do login e restaura o botão
+  const campoUsuario = document.getElementById('usuario');
+  const campoSenha = document.getElementById('senha');
+  if (campoUsuario) campoUsuario.value = '';
+  if (campoSenha) campoSenha.value = '';
+
+  const btnEntrar = document.querySelector('#tela-login button');
+  if (btnEntrar) {
+    btnEntrar.disabled = false;
+    btnEntrar.textContent = "Entrar";
+    btnEntrar.style.opacity = "1";
+  }
+
+  const erroEl = document.getElementById('erro-login');
+  if (erroEl) erroEl.textContent = "";
+
   document.getElementById('tela-login').classList.remove('escondida');
   document.getElementById('tela-principal').classList.add('escondida');
   document.getElementById('cartao-detalhes').classList.remove('aberto');
   
-  const btn = document.getElementById('btn-seguir-cartao');
-  if (btn) {
-    btn.classList.remove('seguindo');
-    btn.textContent = "📍 Seguir no mapa";
+  const btnSeguir = document.getElementById('btn-seguir-cartao');
+  if (btnSeguir) {
+    btnSeguir.classList.remove('seguindo');
+    btnSeguir.textContent = "📍 Seguir no mapa";
   }
 }
 
