@@ -399,7 +399,7 @@ body {
 }
 
 /* ==============================================
-   PAINEL CENTRAL — ADMIN (COMPACTO E MODERNO)
+   PAINEL CENTRAL — ADMIN (COMPACTO E FIXO NO TOPO)
    ============================================== */
 .painel-central {
   position: fixed;
@@ -422,29 +422,16 @@ body {
   width: 100%;
   max-width: 420px;
   max-height: 85vh;
-  overflow-y: auto;
   border-radius: 12px;
   padding: 18px 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Evita scroll na caixa inteira */
 }
 
-.fechar-painel {
-  position: absolute;
-  top: 12px;
-  right: 15px;
-  font-size: 22px;
-  font-weight: bold;
-  color: #888;
-  cursor: pointer;
-  line-height: 1;
-  transition: color 0.2s;
-}
-
-.fechar-painel:hover {
-  color: #dc3545;
-}
-
+/* Cabeçalho e botão de fechar fixos no topo da caixa */
 .painel-conteudo h2 {
   font-size: 17px;
   margin-top: 0;
@@ -453,6 +440,31 @@ body {
   border-bottom: 2px solid #e9ecef;
   padding-bottom: 8px;
   text-align: left;
+  flex-shrink: 0; /* Impede que o título encolha */
+}
+
+.fechar-painel {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #888;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 10;
+  transition: color 0.2s;
+}
+
+.fechar-painel:hover {
+  color: #dc3545;
+}
+
+/* Área interna com scroll independente para o conteúdo do painel */
+.painel-conteudo-scroll {
+  overflow-y: auto;
+  max-height: calc(85vh - 70px);
+  padding-right: 4px;
 }
 
 .secao-adm {
