@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 56  ✅
+// SISTEMA RASTREAMENTO — Versão: 57  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 56";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 57";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -639,19 +639,31 @@ function renderizarListaVeiculos() {
     if (v.horario && v.horario !== '--:--') {
       try {
         const partes = v.horario.split(':');
+        const agora = new Date();
+        
+        // Cria um objeto Date para o horário da mensagem no dia de hoje
         const dataMsg = new Date();
-        dataMsg.setHours(parseInt(partes[0]), parseInt(partes[1]), parseInt(partes[2] || 0));
+        dataMsg.setHours(parseInt(partes[0]), parseInt(partes[1]), parseInt(partes[2] || 0), 0);
         
-        let diffMinutos = (new Date() - dataMsg) / 1000 / 60;
-        // Se a diferença for negativa (ex: meia-noite), ajusta para o dia anterior
-        if (diffMinutos < 0) diffMinutos += 1440;
+        let diffMs = agora - dataMsg;
         
-        if (diffMinutos > 30 && diffMinutos < 1440) {
-          // Calcula horas e minutos de inatividade para exibir detalhado
-          const horas = Math.floor(diffMinutos / 60);
+        // Se a diferença for negativa, significa que a hora da mensagem é "maior" que a hora atual,
+        // logo o sinal foi enviado no dia anterior (passou da meia-noite). Subtraímos 24 horas em ms.
+        if (diffMs < 0) {
+          diffMs += 24 * 60 * 60 * 1000;
+        }
+        
+        const diffMinutos = diffMs / 1000 / 60;
+        
+        // Se estiver inativo há mais de 30 minutos
+        if (diffMinutos > 30) {
+          const dias = Math.floor(diffMinutos / 1440);
+          const horas = Math.floor((diffMinutos % 1440) / 60);
           const minutos = Math.round(diffMinutos % 60);
           
-          if (horas > 0) {
+          if (dias > 0) {
+            statusTexto = `⚠️ Inativo (${dias}d ${horas}h)`;
+          } else if (horas > 0) {
             statusTexto = `⚠️ Inativo (${horas}h ${minutos}m)`;
           } else {
             statusTexto = `⚠️ Inativo (${minutos} min)`;
