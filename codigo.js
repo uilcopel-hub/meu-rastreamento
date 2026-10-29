@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 58  ✅
+// SISTEMA RASTREAMENTO — Versão: 59  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 58";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 59";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -21,7 +21,7 @@ let usuarioAtual = null;
 let ehAdm = false;
 let veiculoDetalheAberto = null;
 let marcadores = {};
-let veiculosSeguidos = {}; // ✅ Agora independente por veículo (placa)
+let veiculosSeguidos = {}; 
 let timerAtualizacao = null;
 let historicoRotas = {}; 
 let linhasRotas = {};    
@@ -54,7 +54,6 @@ function inicializarMapa() {
   tornarArrastavel('painel-principal'); 
 }
 
-// 🎨 Traduz nomes de cores em português para códigos hexadecimais compatíveis
 function traduzirCor(corStr) {
   if (!corStr) return '#007bff';
   const cor = String(corStr).trim().toLowerCase();
@@ -76,7 +75,6 @@ function traduzirCor(corStr) {
   return corStr; 
 }
 
-// 🚗 Ícone personalizado limpo com o emoji de carro em um círculo colorido
 function criarIconeCarroSimples(cor = '#007bff') {
   const corFinal = traduzirCor(cor);
   const htmlIcono = `
@@ -227,7 +225,6 @@ function atualizarEstadoBotaoCerca(placa) {
   }
 }
 
-// ✅ Atualiza o estado visual do botão de seguir individualmente por placa
 function atualizarEstadoBotaoSeguir(placa) {
   const btn = document.getElementById('btn-seguir-cartao');
   if (!btn) return;
@@ -490,7 +487,6 @@ async function atualizarPosicoesEmTempoReal() {
           historicoRotas[placa].push([v.lat, v.lon]);
         }
 
-        // ✅ Verifica seguimento individual para esta placa específica
         if (veiculosSeguidos[placa]) {
           mapa.setView([v.lat, v.lon], 18);
 
@@ -517,7 +513,7 @@ async function atualizarPosicoesEmTempoReal() {
 function sair() {
   usuarioAtual = null; 
   ehAdm = false;
-  veiculosSeguidos = {}; // Limpa estados de seguimento
+  veiculosSeguidos = {}; 
   
   if (timerAtualizacao) {
     clearInterval(timerAtualizacao);
@@ -581,7 +577,7 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
   atualizarEstadoBotaoCerca(placa);
-  atualizarEstadoBotaoSeguir(placa); // Sincroniza o botão de seguir para o veículo selecionado
+  atualizarEstadoBotaoSeguir(placa);
 
   if (!semSinal && mapa) {
     const corVeiculo = v.cor || v.corMarcador || '#007bff';
@@ -606,7 +602,6 @@ function fecharCartao() {
   renderizarListaVeiculos();
 }
 
-// ✅ Alterna o seguimento de forma independente para o carro aberto no cartão
 function alternarSeguirAtual() {
   if (!veiculoDetalheAberto) {
     alert("Selecione um veículo primeiro!");
@@ -696,7 +691,7 @@ function renderizarListaVeiculos() {
   });
   
   const ultEl = document.getElementById('ultima-atualizacao');
-  if (ultEl) ultEl.innerHTML = `<strong>✅ SISTEMA RASTREAMENTO — UIL TELLES: 58</strong>`;
+  if (ultEl) ultEl.innerHTML = `<strong>${VERSAO_SISTEMA}</strong>`;
 }
 
 function abrirFecharPainel() {
@@ -708,6 +703,7 @@ function abrirFecharPainel() {
   }
 }
 
+// ✅ RENDERIZA OS PAINÉIS DE ADMINISTRAÇÃO COM OS BOTÕES DE EDITAR
 function renderizarPainelAdm() {
   if (!ehAdm) return;
   const listaUsuarios = document.getElementById('lista-todos-usuarios');
@@ -719,7 +715,10 @@ function renderizarPainelAdm() {
     div.className = 'item-cadastro';
     div.innerHTML = `
       <span><strong>${u[1]}</strong><br><small>Senha: ${u[2]} | Veículos: ${qtd}</small></span>
-      <button class="btn-excluir" onclick="excluirUsuario('${u[1]}')">🗑️ Excluir</button>
+      <div style="display: flex; gap: 4px;">
+        <button class="btn-editar" style="background: #ffc107; color: #000; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;" onclick="preencherEdicaoUsuario('${u[1]}', '${u[2]}')">✏️ Editar</button>
+        <button class="btn-excluir" onclick="excluirUsuario('${u[1]}')">🗑️ Excluir</button>
+      </div>
     `;
     listaUsuarios.appendChild(div);
   });
@@ -734,10 +733,39 @@ function renderizarPainelAdm() {
         <strong>${v.nome || v.placa}</strong><br>
         <small>Placa: ${v.placa} | IMEI: ${v.imei} | Dono: ${v.usuario}</small>
       </div>
-      <button class="btn-excluir" onclick="excluirVeiculo('${v.placa}')">🗑️ Excluir</button>
+      <div style="display: flex; gap: 4px;">
+        <button class="btn-editar" style="background: #ffc107; color: #000; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;" onclick="preencherEdicaoVeiculo('${v.placa}')">✏️ Editar</button>
+        <button class="btn-excluir" onclick="excluirVeiculo('${v.placa}')">🗑️ Excluir</button>
+      </div>
     `;
     listaTodosVeic.appendChild(div);
   });
+}
+
+// ✏️ PREENCHE OS CAMPOS DE USUÁRIO PARA EDITAR
+function preencherEdicaoUsuario(usuario, senha) {
+  document.getElementById('novo-usuario').value = usuario;
+  document.getElementById('nova-senha').value = senha;
+  const confSenha = document.getElementById('confirma-senha');
+  if (confSenha) confSenha.value = senha;
+  
+  document.getElementById('novo-usuario').focus();
+  alert(`✏️ Formulário preenchido com os dados do usuário "${usuario}". Altere os dados e clique em "✅ Criar Conta" para salvar as alterações.`);
+}
+
+// ✏️ PREENCHE OS CAMPOS DO VEÍCULO PARA EDITAR
+function preencherEdicaoVeiculo(placa) {
+  const v = todosVeiculos.find(item => item.placa === placa);
+  if (!v) return;
+
+  document.getElementById('campo-nome').value = v.nome || '';
+  document.getElementById('campo-placa').value = v.placa || '';
+  document.getElementById('campo-imei').value = v.imei || '';
+  document.getElementById('campo-cor').value = v.cor || '';
+  document.getElementById('campo-usuario-dono').value = v.usuario || '';
+
+  document.getElementById('campo-nome').focus();
+  alert(`✏️ Formulário preenchido com os dados do veículo "${v.nome || v.placa}". Altere as informações desejadas e clique em "💾 Salvar Veículo".`);
 }
 
 async function criarConta() {
@@ -753,9 +781,11 @@ async function criarConta() {
   });
   const res = await resposta.json();
   if (res.ok) {
-    alert("✅ Conta criada!");
+    alert("✅ Conta salva com sucesso!");
     document.getElementById('novo-usuario').value = '';
     document.getElementById('nova-senha').value = '';
+    const confSenha = document.getElementById('confirma-senha');
+    if (confSenha) confSenha.value = '';
     
     await new Promise(resolve => setTimeout(resolve, 1000));
     await carregarTodosDados();
@@ -794,7 +824,7 @@ async function salvarVeiculo() {
 
   const res = await resposta.json();
   if (res.ok) {
-    alert("✅ Veículo adicionado!");
+    alert("✅ Veículo salvo com sucesso!");
     document.getElementById('campo-placa').value = '';
     document.getElementById('campo-imei').value = '';
     document.getElementById('campo-nome').value = '';
