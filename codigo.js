@@ -641,10 +641,21 @@ function renderizarListaVeiculos() {
         const partes = v.horario.split(':');
         const dataMsg = new Date();
         dataMsg.setHours(parseInt(partes[0]), parseInt(partes[1]), parseInt(partes[2] || 0));
-        const diffMinutos = (new Date() - dataMsg) / 1000 / 60;
+        
+        let diffMinutos = (new Date() - dataMsg) / 1000 / 60;
+        // Se a diferença for negativa (ex: meia-noite), ajusta para o dia anterior
+        if (diffMinutos < 0) diffMinutos += 1440;
         
         if (diffMinutos > 30 && diffMinutos < 1440) {
-          statusTexto = '⚠️ Inativo';
+          // Calcula horas e minutos de inatividade para exibir detalhado
+          const horas = Math.floor(diffMinutos / 60);
+          const minutos = Math.round(diffMinutos % 60);
+          
+          if (horas > 0) {
+            statusTexto = `⚠️ Inativo (${horas}h ${minutos}m)`;
+          } else {
+            statusTexto = `⚠️ Inativo (${minutos} min)`;
+          }
           classeStatus = 'status-vermelho';
         }
       } catch (e) {}
