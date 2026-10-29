@@ -62,10 +62,11 @@
       <p><strong>IMEI:</strong> <span id="cartao-imei"></span></p>
       <p id="cartao-dono-linha" class="dono-tag"></p>
       
-      <div class="cartao-km">
-        <span class="km-item diario">Hoje<br><strong id="cartao-km-hoje"></strong></span>
-        <span class="km-item semanal">7 Dias<br><strong id="cartao-km-7dias"></strong></span>
-        <span class="km-item mensal">30 Dias<br><strong id="cartao-km-30dias"></strong></span>
+      <div class="cartao-km" style="display: flex; gap: 4px; align-items: stretch;">
+        <span class="km-item diario" style="flex: 1;">Hoje<br><strong id="cartao-km-hoje"></strong></span>
+        <span class="km-item semanal" style="flex: 1;">7 Dias<br><strong id="cartao-km-7dias"></strong></span>
+        <span class="km-item mensal" style="flex: 1;">30 Dias<br><strong id="cartao-km-30dias"></strong></span>
+        <button onclick="abrirGoogleMapsVeiculo()" title="Abrir no Google Maps" style="flex: 1; background: #28a745; color: #fff; border: none; border-radius: 4px; padding: 4px 6px; cursor: pointer; font-weight: bold; font-size: 11px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">🗺️ Google<br>Maps</button>
       </div>
       
       <div class="cartao-status">
