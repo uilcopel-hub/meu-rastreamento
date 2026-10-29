@@ -106,7 +106,8 @@ function focarNoVeiculoECentralizar(placa) {
       marcadores[placa].setLatLng([v.lat, v.lon]);
       marcadores[placa].setIcon(icone);
     }
-    mapa.setView([v.lat, v.lon], 16);
+    // Zoom 18 para detalhar perfeitamente a rua
+    mapa.setView([v.lat, v.lon], 18);
   }
 }
 
@@ -455,7 +456,7 @@ async function atualizarPosicoesEmTempoReal() {
         }
 
         if (seguindoVeiculo) {
-          mapa.setView([v.lat, v.lon], 16);
+          mapa.setView([v.lat, v.lon], 18);
 
           if (!linhasRotas[placa]) {
             linhasRotas[placa] = L.polyline(historicoRotas[placa], { 
@@ -530,7 +531,6 @@ function focarNoVeiculo(placa) {
   const v = listaDados.find(x => x.placa === placa);
   if (!v) return;
   
-  // Exibe nome e dono no cartão flutuante
   document.getElementById('cartao-nome').textContent = v.nome || v.placa;
   document.getElementById('cartao-placa').textContent = v.placa;
   document.getElementById('cartao-imei').textContent = v.imei || 'Não informado';
@@ -561,7 +561,8 @@ function focarNoVeiculo(placa) {
       marcadores[placa].setLatLng([v.lat, v.lon]);
       marcadores[placa].setIcon(icone);
     }
-    mapa.setView([v.lat, v.lon], 15);
+    // Zoom 18: aproxima o máximo possível da rua do carro ao clicar
+    mapa.setView([v.lat, v.lon], 18);
   }
   
   document.getElementById('cartao-detalhes').classList.add('aberto');
