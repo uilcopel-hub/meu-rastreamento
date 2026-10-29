@@ -132,7 +132,9 @@ function atualizarTodosMarcadoresNoMapa() {
         marcadores[v.placa].setIcon(icone);
       }
       
-      marcadores[v.placa].bindTooltip(`${v.nome || v.placa} (${v.velocidade || 0} km/h)`, {direction: 'top'});
+      // ✅ Tooltip atualizado para mostrar nome, dono e velocidade ao passar o rato
+      const textoTooltip = `🚗 ${v.nome || v.placa} (Dono: ${v.usuario || 'N/A'}) — ${v.velocidade || 0} km/h`;
+      marcadores[v.placa].bindTooltip(textoTooltip, {direction: 'top'});
     }
   });
 
