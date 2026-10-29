@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 56  ✅
+// SISTEMA RASTREAMENTO — Versão: 57  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 56";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 57";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -106,7 +106,6 @@ function focarNoVeiculoECentralizar(placa) {
       marcadores[placa].setLatLng([v.lat, v.lon]);
       marcadores[placa].setIcon(icone);
     }
-    // Zoom 18 para detalhar perfeitamente a rua
     mapa.setView([v.lat, v.lon], 18);
   }
 }
@@ -132,7 +131,9 @@ function atualizarTodosMarcadoresNoMapa() {
         marcadores[v.placa].setIcon(icone);
       }
       
-      marcadores[v.placa].bindTooltip(`${v.nome || v.placa} (${v.velocidade || 0} km/h)`, {direction: 'top'});
+      // ✅ Tooltip atualizado para mostrar nome, dono e velocidade ao passar o rato
+      const textoTooltip = `🚗 ${v.nome || v.placa} (Dono: ${v.usuario || 'N/A'}) — ${v.velocidade || 0} km/h`;
+      marcadores[v.placa].bindTooltip(textoTooltip, {direction: 'top'});
     }
   });
 
@@ -561,7 +562,6 @@ function focarNoVeiculo(placa) {
       marcadores[placa].setLatLng([v.lat, v.lon]);
       marcadores[placa].setIcon(icone);
     }
-    // Zoom 18: aproxima o máximo possível da rua do carro ao clicar
     mapa.setView([v.lat, v.lon], 18);
   }
   
@@ -1048,7 +1048,7 @@ function limparHistoricoMapa() {
   dadosHistoricoCarregados = [];
 }
 
-function exportarRelatorioCSV() {
+export function exportarRelatorioCSV() {
   if (!dadosHistoricoCarregados || dadosHistoricoCarregados.length === 0) {
     alert("⚠️ Nenhum dado de histórico carregado para exportar. Clique primeiro em '🔍 Ver Rota'.");
     return;
