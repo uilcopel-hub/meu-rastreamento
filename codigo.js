@@ -92,7 +92,26 @@ function criarIconeCarroSimples(cor = '#007bff') {
     iconAnchor: [17, 17]
   });
 }
-
+function abrirGoogleMapsVeiculo() {
+  if (!veiculoDetalheAberto) {
+    alert("Selecione um veículo primeiro!");
+    return;
+  }
+  
+  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+  const v = listaDados.find(x => x.placa === veiculoDetalheAberto);
+  
+  if (!v || !v.lat || !v.lon) {
+    alert("Este veículo não possui coordenadas válidas no momento!");
+    return;
+  }
+  
+  // Cria o link oficial do Google Maps com a latitude, longitude e zoom 18
+  const urlMaps = `https://www.google.com/maps/@${v.lat},${v.lon},18z`;
+  
+  // Abre o Google Maps numa nova aba do navegador
+  window.open(urlMaps, '_blank');
+}
 function focarNoVeiculoECentralizar(placa) {
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
   const v = listaDados.find(x => x.placa === placa);
