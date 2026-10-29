@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 53  ✅
+// SISTEMA RASTREAMENTO — Versão: 54  ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 53";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 54";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -399,8 +399,16 @@ async function entrarTelaPrincipal() {
   }
 
   inicializarMapa();
+  
+  // ✅ CORREÇÃO: Garante que os marcadores aparecem imediatamente no mapa ao entrar
   atualizarTodosMarcadoresNoMapa();
   renderizarListaVeiculos();
+
+  // Se houver veículos, centraliza o mapa no primeiro veículo para dar foco automático
+  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+  if (listaDados.length > 0 && listaDados[0].lat && listaDados[0].lon) {
+    mapa.setView([listaDados[0].lat, listaDados[0].lon], 13);
+  }
 
   if (ehAdm) renderizarPainelAdm();
 
@@ -492,7 +500,7 @@ function sair() {
   
   limparHistoricoMapa();
 
-  // Limpa os campos de texto do login e restaura o botão
+  // Restaura perfeitamente a tela de login
   const campoUsuario = document.getElementById('usuario');
   const campoSenha = document.getElementById('senha');
   if (campoUsuario) campoUsuario.value = '';
