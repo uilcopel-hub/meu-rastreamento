@@ -277,7 +277,7 @@ body {
 }
 
 /* ==============================================
-   LISTA DE VEÍCULOS E BADGES (ATUALIZADO)
+   LISTA DE VEÍCULOS E BADGES
    ============================================== */
 .sem-veiculo {
   color: #888;
@@ -311,7 +311,6 @@ body {
   opacity: 0.6;
 }
 
-/* Badges de Status Modernos nos Cards */
 .badge-status {
   padding: 2px 6px;
   border-radius: 12px;
@@ -400,44 +399,42 @@ body {
 }
 
 /* ==============================================
-   PAINEL CENTRAL — ADMIN
+   PAINEL CENTRAL — ADMIN (COMPACTO E MODERNO)
    ============================================== */
 .painel-central {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2000;
-  width: 90%;
-  max-width: 480px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.painel-central::before {
-  content: '';
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.5);
-  z-index: -1;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 15px;
+  box-sizing: border-box;
 }
 
 .painel-conteudo {
-  background: white;
-  padding: 30px;
-  border-radius: 14px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
   position: relative;
 }
 
 .fechar-painel {
   position: absolute;
-  top: 15px;
-  right: 20px;
-  font-size: 26px;
+  top: 12px;
+  right: 15px;
+  font-size: 22px;
+  font-weight: bold;
   color: #888;
   cursor: pointer;
   line-height: 1;
@@ -449,44 +446,56 @@ body {
 }
 
 .painel-conteudo h2 {
-  text-align: center;
+  font-size: 17px;
+  margin-top: 0;
+  margin-bottom: 15px;
   color: #1e3c72;
-  margin-bottom: 25px;
-  font-size: 20px;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 8px;
+  text-align: left;
 }
 
 .secao-adm {
   background: #f8f9fa;
-  padding: 18px;
-  margin-bottom: 15px;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
 }
 
 .secao-adm h3 {
-  color: #444;
-  margin-bottom: 12px;
-  font-size: 15px;
+  font-size: 13px;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
 }
 
 .secao-adm input {
   width: 100%;
-  padding: 11px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.secao-adm input:focus {
+  border-color: #007bff;
 }
 
 .secao-adm button {
   width: 100%;
-  padding: 11px;
+  padding: 8px;
   background: #007bff;
   color: white;
   border: none;
   border-radius: 6px;
+  font-weight: bold;
+  font-size: 12px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 15px;
   transition: background 0.2s;
 }
 
@@ -498,20 +507,32 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.item-cadastro strong {
+  font-size: 12px;
+  color: #222;
+}
+
+.item-cadastro small {
+  color: #666;
 }
 
 .btn-excluir {
-  padding: 6px 14px;
+  padding: 4px 8px;
   background: #dc3545;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
+  font-weight: bold;
+  font-size: 11px;
   transition: background 0.2s;
 }
 
@@ -569,9 +590,10 @@ body {
 
   .painel-central {
     width: 95%;
+    padding: 10px;
   }
 
   .painel-conteudo {
-    padding: 20px 15px;
+    padding: 15px 12px;
   }
 }
