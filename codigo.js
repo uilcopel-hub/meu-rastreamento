@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 65 ✅
+// SISTEMA RASTREAMENTO — Versão: 66 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio | R=data
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 65";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 66";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -61,10 +61,9 @@ function inicializarMapa() {
 
 
 // ======================================================
-// ⏱️ CALCULAR TEMPO SEM SINAL DO RASTREADOR
+// ⏱️ CALCULAR TEMPO SEM SINAL DO RASTREADOR (REUTILIZÁVEL)
 // ======================================================
 function calcularTempoSemSinal(v) {
-
   if (!v.horario || v.horario === '--:--' || !v.dataUltima) {
     return null;
   }
@@ -75,7 +74,6 @@ function calcularTempoSemSinal(v) {
   if (isNaN(dataUltima.getTime())) return null;
 
   const agora = new Date();
-
   const diferencaMs = agora - dataUltima;
 
   if (diferencaMs < 0) return null;
@@ -90,14 +88,14 @@ function calcularTempoSemSinal(v) {
   const minutos = totalMinutos % 60;
 
   if (dias > 0) {
-    return `⚠️ Sem sinal há ${dias}d ${horas}h`;
+    return `⚠️ Inativo (${dias}d ${horas}h)`;
   }
 
   if (horas > 0) {
-    return `⚠️ Sem sinal há ${horas}h ${minutos}m`;
+    return `⚠️ Inativo (${horas}h ${minutos}m)`;
   }
 
-  return `⚠️ Sem sinal há ${minutos} min`;
+  return `⚠️ Inativo (${minutos} min)`;
 }
 
 
@@ -517,16 +515,14 @@ async function atualizarPosicoesEmTempoReal() {
       document.getElementById('cartao-km-7dias').textContent = (Number(v.km7dias) || 0).toFixed(1) + ' km';
       document.getElementById('cartao-km-30dias').textContent = (Number(v.km30dias) || 0).toFixed(1) + ' km';
       
-    
       const semSinal = !v.lat || !v.lon;
+      const tempoInativo = calcularTempoSemSinal(v);
 
-// ⏱️ Verifica tempo sem comunicação
-const tempoInativo = calcularTempoSemSinal(v);
-
-document.getElementById('cartao-status').textContent =
-  tempoInativo ? tempoInativo :
-  semSinal ? '🔄 Aguardando sinal...' :
-  (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
+      document.getElementById('cartao-status').textContent =
+        tempoInativo ? tempoInativo :
+        semSinal ? '🔄 Aguardando sinal...' :
+        (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
+      
       document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
       document.getElementById('cartao-horario').textContent = v.horario || '--:--';
       
@@ -629,15 +625,14 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-km-7dias').textContent = (Number(v.km7dias) || 0).toFixed(1) + ' km';
   document.getElementById('cartao-km-30dias').textContent = (Number(v.km30dias) || 0).toFixed(1) + ' km';
   
-const semSinal = !v.lat || !v.lon;
+  const semSinal = !v.lat || !v.lon;
+  const tempoInativo = calcularTempoSemSinal(v);
 
-// ⏱️ Verifica tempo sem comunicação
-const tempoInativo = calcularTempoSemSinal(v);
-
-document.getElementById('cartao-status').textContent =
-  tempoInativo ? tempoInativo :
-  semSinal ? '🔄 Aguardando sinal...' :
-  (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
+  document.getElementById('cartao-status').textContent =
+    tempoInativo ? tempoInativo :
+    semSinal ? '🔄 Aguardando sinal...' :
+    (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
+  
   document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
@@ -683,7 +678,7 @@ function alternarSeguirAtual() {
   }
 }
 
-// ⏱️ CÁLCULO DE INATIVIDADE SIMPLES E PRECISO USANDO A DATA (COLUNA R) E HORA (COLUNA N)
+// ⏱️ RENDERIZAR LISTA DE VEÍCULOS (Refatorado para utilizar a função unificada calcularTempoSemSinal)
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
   if (!listaEl) return;
@@ -702,35 +697,10 @@ function renderizarListaVeiculos() {
     let statusTexto = semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado');
     let classeStatus = semSinal ? 'status-cinza' : (v.velocidade > 0 ? 'status-verde' : 'status-amarelo');
 
-    if (v.horario && v.horario !== '--:--' && v.dataUltima) {
-      try {
-        // Combina a data da coluna R com o horário da coluna N (Ex: "2026-10-29T23:07:11")
-        const dataHoraCompletaStr = `${v.dataUltima}T${v.horario}`;
-        const dataMsg = new Date(dataHoraCompletaStr);
-        const agora = new Date();
-        
-        let diffMs = agora - dataMsg;
-        if (diffMs > 0) {
-          const diffMinutos = diffMs / 1000 / 60;
-          
-          // Se estiver inativo há mais de 30 minutos
-          if (diffMinutos > 30) {
-            const totalMinutos = Math.floor(diffMinutos);
-            const dias = Math.floor(totalMinutos / 1440);          // 1440 min = 24 horas
-            const horas = Math.floor((totalMinutos % 1440) / 60);  // Horas restantes
-            const minutos = totalMinutos % 60;                     // Minutos restantes
-            
-            if (dias > 0) {
-              statusTexto = `⚠️ Inativo (${dias}d ${horas}h)`;
-            } else if (horas > 0) {
-              statusTexto = `⚠️ Inativo (${horas}h ${minutos}m)`;
-            } else {
-              statusTexto = `⚠️ Inativo (${minutos} min)`;
-            }
-            classeStatus = 'status-vermelho';
-          }
-        }
-      } catch (e) {}
+    const tempoInativo = calcularTempoSemSinal(v);
+    if (tempoInativo) {
+      statusTexto = tempoInativo;
+      classeStatus = 'status-vermelho';
     }
 
     const div = document.createElement('div');
@@ -816,7 +786,6 @@ function preencherEdicaoUsuario(usuario, senha) {
   const confSenha = document.getElementById('confirma-senha');
   if (confSenha) confSenha.value = senha;
   
-  // Muda o texto do botão de criar para salvar conta
   const btnCriar = document.querySelector("button[onclick='criarConta()']");
   if (btnCriar) btnCriar.textContent = "💾 Salvar Conta";
 
@@ -836,7 +805,6 @@ function preencherEdicaoVeiculo(placa) {
   document.getElementById('campo-cor').value = v.cor || '';
   document.getElementById('campo-usuario-dono').value = v.usuario || '';
 
-  // Muda o texto do botão para Salvar Veículo
   const btnSalvar = document.querySelector("button[onclick='salvarVeiculo()']");
   if (btnSalvar) btnSalvar.textContent = "💾 Salvar Veículo";
 
@@ -849,7 +817,6 @@ async function criarConta() {
   const senha = document.getElementById('nova-senha').value;
   if (!usuario || !senha) { alert("Preencha tudo!"); return; }
   
-  // Se estamos a editar, exclui o registo antigo primeiro para não duplicar
   if (usuarioEditandoOriginal && usuarioEditandoOriginal !== usuario) {
     await fetch(URL_SCRIPT, {
       method: 'POST',
@@ -867,7 +834,6 @@ async function criarConta() {
   if (res.ok) {
     alert(usuarioEditandoOriginal ? "✅ Conta atualizada com sucesso!" : "✅ Conta criada com sucesso!");
     
-    // Reseta o modo de edição
     usuarioEditandoOriginal = null;
     document.getElementById('novo-usuario').value = '';
     document.getElementById('nova-senha').value = '';
@@ -899,7 +865,6 @@ async function salvarVeiculo() {
     return;
   }
   
-  // Se estivermos a editar e a placa mudou (ou mantiver), removemos a antiga primeiro para atualizar sem duplicar
   if (placaEditandoOriginal) {
     await fetch(URL_SCRIPT, {
       method: 'POST',
@@ -925,7 +890,6 @@ async function salvarVeiculo() {
   if (res.ok) {
     alert(placaEditandoOriginal ? "✅ Veículo atualizado com sucesso!" : "✅ Veículo adicionado com sucesso!");
     
-    // Reseta o modo de edição
     placaEditandoOriginal = null;
     document.getElementById('campo-placa').value = '';
     document.getElementById('campo-imei').value = '';
