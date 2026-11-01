@@ -622,6 +622,7 @@ function alternarSeguirAtual() {
   }
 }
 
+
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
   if (!listaEl) return;
@@ -644,20 +645,27 @@ function renderizarListaVeiculos() {
       try {
         const partes = v.horario.split(':');
         const agora = new Date();
+        
+        // Cria um objeto Date para o horário da mensagem no dia de hoje
         const dataMsg = new Date();
         dataMsg.setHours(parseInt(partes[0]), parseInt(partes[1]), parseInt(partes[2] || 0), 0);
         
         let diffMs = agora - dataMsg;
+        
+        // Se a diferença for negativa, significa que a hora da mensagem é "maior" que a hora atual,
+        // logo o sinal foi enviado no dia anterior (passou da meia-noite). Subtraímos 24 horas em ms.
         if (diffMs < 0) {
           diffMs += 24 * 60 * 60 * 1000;
         }
         
         const diffMinutos = diffMs / 1000 / 60;
         
+        // Se estiver inativo há mais de 30 minutos
         if (diffMinutos > 30) {
-          const dias = Math.floor(diffMinutos / 1440);
-          const horas = Math.floor((diffMinutos % 1440) / 60);
-          const minutos = Math.round(diffMinutos % 60);
+          const totalMinutos = Math.floor(diffMinutos);
+          const dias = Math.floor(totalMinutos / 1440);          // 1440 min = 24 horas
+          const horas = Math.floor((totalMinutos % 1440) / 60);  // Horas restantes após retirar os dias
+          const minutos = totalMinutos % 60;                     // Minutos restantes
           
           if (dias > 0) {
             statusTexto = `⚠️ Inativo (${dias}d ${horas}h)`;
@@ -697,6 +705,9 @@ function renderizarListaVeiculos() {
   const ultEl = document.getElementById('ultima-atualizacao');
   if (ultEl) ultEl.innerHTML = `<strong>${VERSAO_SISTEMA}</strong>`;
 }
+
+
+
 
 function abrirFecharPainel() {
   const painel = document.getElementById('painel-adm');
