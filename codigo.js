@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 63  ✅
+// SISTEMA RASTREAMENTO — Versão: 64 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio | R=data
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 63";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 64";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -392,7 +392,7 @@ async function carregarDadosUsuario(dados = null) {
       cercaAtiva: linha[14] === true || linha[14] === 'true',
       cercaLatLon: String(linha[15] || '').trim(),
       cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
-      dataUltima: String(linha[17] || '').trim(), // Coluna R = Data
+      dataUltima: String(linha[17] || '').trim(), // 👈 Lê a Coluna R (data)
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
 }
@@ -419,7 +419,7 @@ async function carregarTodosDados() {
       cercaAtiva: linha[14] === true || linha[14] === 'true',
       cercaLatLon: String(linha[15] || '').trim(),
       cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
-      dataUltima: String(linha[17] || '').trim(), // Coluna R = Data
+      dataUltima: String(linha[17] || '').trim(), // 👈 Lê a Coluna R (data)
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   veiculosDoUsuario = todosVeiculos;
@@ -624,7 +624,7 @@ function alternarSeguirAtual() {
   }
 }
 
-// ⏱️ CÁLCULO DE INATIVIDADE PRECISO USANDO A DATA E HORA DA COLUNA R
+// ⏱️ CÁLCULO DE INATIVIDADE SIMPLES E PRECISO USANDO A DATA (COLUNA R) E HORA (COLUNA N)
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
   if (!listaEl) return;
@@ -645,7 +645,7 @@ function renderizarListaVeiculos() {
 
     if (v.horario && v.horario !== '--:--' && v.dataUltima) {
       try {
-        // Monta a string de data/hora completa (Ex: "2026-11-01T23:07:11")
+        // Combina a data da coluna R com o horário da coluna N (Ex: "2026-10-29T23:07:11")
         const dataHoraCompletaStr = `${v.dataUltima}T${v.horario}`;
         const dataMsg = new Date(dataHoraCompletaStr);
         const agora = new Date();
