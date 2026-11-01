@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 62  ✅
-// COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio
+// SISTEMA RASTREAMENTO — Versão: 63  ✅
+// COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio | R=data
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 62";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 63";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -392,6 +392,7 @@ async function carregarDadosUsuario(dados = null) {
       cercaAtiva: linha[14] === true || linha[14] === 'true',
       cercaLatLon: String(linha[15] || '').trim(),
       cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
+      dataUltima: String(linha[17] || '').trim(), // Coluna R = Data
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
 }
@@ -418,6 +419,7 @@ async function carregarTodosDados() {
       cercaAtiva: linha[14] === true || linha[14] === 'true',
       cercaLatLon: String(linha[15] || '').trim(),
       cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
+      dataUltima: String(linha[17] || '').trim(), // Coluna R = Data
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   veiculosDoUsuario = todosVeiculos;
@@ -622,7 +624,7 @@ function alternarSeguirAtual() {
   }
 }
 
-
+// ⏱️ CÁLCULO DE INATIVIDADE PRECISO USANDO A DATA E HORA DA COLUNA R
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
   if (!listaEl) return;
@@ -641,40 +643,33 @@ function renderizarListaVeiculos() {
     let statusTexto = semSinal ? 'Sem sinal' : (v.velocidade > 0 ? 'Em movimento' : 'Parado');
     let classeStatus = semSinal ? 'status-cinza' : (v.velocidade > 0 ? 'status-verde' : 'status-amarelo');
 
-    if (v.horario && v.horario !== '--:--') {
+    if (v.horario && v.horario !== '--:--' && v.dataUltima) {
       try {
-        const partes = v.horario.split(':');
+        // Monta a string de data/hora completa (Ex: "2026-11-01T23:07:11")
+        const dataHoraCompletaStr = `${v.dataUltima}T${v.horario}`;
+        const dataMsg = new Date(dataHoraCompletaStr);
         const agora = new Date();
         
-        // Cria um objeto Date para o horário da mensagem no dia de hoje
-        const dataMsg = new Date();
-        dataMsg.setHours(parseInt(partes[0]), parseInt(partes[1]), parseInt(partes[2] || 0), 0);
-        
         let diffMs = agora - dataMsg;
-        
-        // Se a diferença for negativa, significa que a hora da mensagem é "maior" que a hora atual,
-        // logo o sinal foi enviado no dia anterior (passou da meia-noite). Subtraímos 24 horas em ms.
-        if (diffMs < 0) {
-          diffMs += 24 * 60 * 60 * 1000;
-        }
-        
-        const diffMinutos = diffMs / 1000 / 60;
-        
-        // Se estiver inativo há mais de 30 minutos
-        if (diffMinutos > 30) {
-          const totalMinutos = Math.floor(diffMinutos);
-          const dias = Math.floor(totalMinutos / 1440);          // 1440 min = 24 horas
-          const horas = Math.floor((totalMinutos % 1440) / 60);  // Horas restantes após retirar os dias
-          const minutos = totalMinutos % 60;                     // Minutos restantes
+        if (diffMs > 0) {
+          const diffMinutos = diffMs / 1000 / 60;
           
-          if (dias > 0) {
-            statusTexto = `⚠️ Inativo (${dias}d ${horas}h)`;
-          } else if (horas > 0) {
-            statusTexto = `⚠️ Inativo (${horas}h ${minutos}m)`;
-          } else {
-            statusTexto = `⚠️ Inativo (${minutos} min)`;
+          // Se estiver inativo há mais de 30 minutos
+          if (diffMinutos > 30) {
+            const totalMinutos = Math.floor(diffMinutos);
+            const dias = Math.floor(totalMinutos / 1440);          // 1440 min = 24 horas
+            const horas = Math.floor((totalMinutos % 1440) / 60);  // Horas restantes
+            const minutos = totalMinutos % 60;                     // Minutos restantes
+            
+            if (dias > 0) {
+              statusTexto = `⚠️ Inativo (${dias}d ${horas}h)`;
+            } else if (horas > 0) {
+              statusTexto = `⚠️ Inativo (${horas}h ${minutos}m)`;
+            } else {
+              statusTexto = `⚠️ Inativo (${minutos} min)`;
+            }
+            classeStatus = 'status-vermelho';
           }
-          classeStatus = 'status-vermelho';
         }
       } catch (e) {}
     }
@@ -705,9 +700,6 @@ function renderizarListaVeiculos() {
   const ultEl = document.getElementById('ultima-atualizacao');
   if (ultEl) ultEl.innerHTML = `<strong>${VERSAO_SISTEMA}</strong>`;
 }
-
-
-
 
 function abrirFecharPainel() {
   const painel = document.getElementById('painel-adm');
