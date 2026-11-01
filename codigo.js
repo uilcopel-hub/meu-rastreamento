@@ -58,6 +58,50 @@ function inicializarMapa() {
   tornarArrastavel('painel-principal'); 
 }
 
+
+
+// ======================================================
+// ⏱️ CALCULAR TEMPO SEM SINAL DO RASTREADOR
+// ======================================================
+function calcularTempoSemSinal(v) {
+
+  if (!v.horario || v.horario === '--:--' || !v.dataUltima) {
+    return null;
+  }
+
+  const dataHoraCompleta = `${v.dataUltima}T${v.horario}`;
+  const dataUltima = new Date(dataHoraCompleta);
+
+  if (isNaN(dataUltima.getTime())) return null;
+
+  const agora = new Date();
+
+  const diferencaMs = agora - dataUltima;
+
+  if (diferencaMs < 0) return null;
+
+  const totalMinutos = Math.floor(diferencaMs / 60000);
+
+  // Considera inativo após 30 minutos
+  if (totalMinutos <= 30) return null;
+
+  const dias = Math.floor(totalMinutos / 1440);
+  const horas = Math.floor((totalMinutos % 1440) / 60);
+  const minutos = totalMinutos % 60;
+
+  if (dias > 0) {
+    return `⚠️ Sem sinal há ${dias}d ${horas}h`;
+  }
+
+  if (horas > 0) {
+    return `⚠️ Sem sinal há ${horas}h ${minutos}m`;
+  }
+
+  return `⚠️ Sem sinal há ${minutos} min`;
+}
+
+
+
 function traduzirCor(corStr) {
   if (!corStr) return '#007bff';
   const cor = String(corStr).trim().toLowerCase();
@@ -473,8 +517,16 @@ async function atualizarPosicoesEmTempoReal() {
       document.getElementById('cartao-km-7dias').textContent = (Number(v.km7dias) || 0).toFixed(1) + ' km';
       document.getElementById('cartao-km-30dias').textContent = (Number(v.km30dias) || 0).toFixed(1) + ' km';
       
+    
       const semSinal = !v.lat || !v.lon;
-      document.getElementById('cartao-status').textContent = semSinal ? '🔄 Aguardando sinal...' : (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
+
+// ⏱️ Verifica tempo sem comunicação
+const tempoInativo = calcularTempoSemSinal(v);
+
+document.getElementById('cartao-status').textContent =
+  tempoInativo ? tempoInativo :
+  semSinal ? '🔄 Aguardando sinal...' :
+  (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
       document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
       document.getElementById('cartao-horario').textContent = v.horario || '--:--';
       
@@ -577,8 +629,15 @@ function focarNoVeiculo(placa) {
   document.getElementById('cartao-km-7dias').textContent = (Number(v.km7dias) || 0).toFixed(1) + ' km';
   document.getElementById('cartao-km-30dias').textContent = (Number(v.km30dias) || 0).toFixed(1) + ' km';
   
-  const semSinal = !v.lat || !v.lon;
-  document.getElementById('cartao-status').textContent = semSinal ? '🔄 Aguardando sinal...' : (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
+const semSinal = !v.lat || !v.lon;
+
+// ⏱️ Verifica tempo sem comunicação
+const tempoInativo = calcularTempoSemSinal(v);
+
+document.getElementById('cartao-status').textContent =
+  tempoInativo ? tempoInativo :
+  semSinal ? '🔄 Aguardando sinal...' :
+  (v.velocidade > 0 ? '✅ Em movimento' : '⏹ Parado');
   document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
   document.getElementById('cartao-horario').textContent = v.horario || '--:--';
   
