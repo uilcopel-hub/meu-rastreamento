@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 66 ✅
+// SISTEMA RASTREAMENTO — Versão: 67 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio | R=data
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 66";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 67";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -30,6 +30,12 @@ let cercasVirtuais = {};
 let camadaRotaHistorico = null;
 let marcadoresParadasHistorico = [];
 let dadosHistoricoCarregados = [];
+
+// 🚗 Variáveis para a Simulação de Rota (Play / Animação)
+let timerSimulacao = null;
+let marcadorSimulacao = null;
+let indicePontoAtual = 0;
+let marcadoresExtremos = []; // Guarda os marcadores Ponto A e Ponto B
 
 // ✅ Variáveis de controlo para saber se estamos a editar
 let usuarioEditandoOriginal = null;
@@ -61,41 +67,53 @@ function inicializarMapa() {
 
 
 // ======================================================
-// ⏱️ CALCULAR TEMPO SEM SINAL DO RASTREADOR (REUTILIZÁVEL)
+// ⏱️ CALCULAR TEMPO SEM SINAL DO RASTREADOR (ROBUSTO)
 // ======================================================
 function calcularTempoSemSinal(v) {
   if (!v.horario || v.horario === '--:--' || !v.dataUltima) {
     return null;
   }
 
-  const dataHoraCompleta = `${v.dataUltima}T${v.horario}`;
-  const dataUltima = new Date(dataHoraCompleta);
+  try {
+    const partesData = String(v.dataUltima).split(/[-/]/);
+    const partesHora = String(v.horario).split(':');
 
-  if (isNaN(dataUltima.getTime())) return null;
+    if (partesData.length < 3 || partesHora.length < 2) return null;
 
-  const agora = new Date();
-  const diferencaMs = agora - dataUltima;
+    let ano = parseInt(partesData[0], 10);
+    let mes = parseInt(partesData[1], 10) - 1; 
+    let dia = parseInt(partesData[2], 10);
+    
+    if (ano < 1000) {
+      dia = parseInt(partesData[0], 10);
+      mes = parseInt(partesData[1], 10) - 1;
+      ano = parseInt(partesData[2], 10);
+    }
 
-  if (diferencaMs < 0) return null;
+    const hora = parseInt(partesHora[0], 10) || 0;
+    const minuto = parseInt(partesHora[1], 10) || 0;
+    const segundo = parseInt(partesHora[2], 10) || 0;
 
-  const totalMinutos = Math.floor(diferencaMs / 60000);
+    const dataUltima = new Date(ano, mes, dia, hora, minuto, segundo);
+    const agora = new Date();
 
-  // Considera inativo após 30 minutos
-  if (totalMinutos <= 30) return null;
+    const diferencaMs = agora - dataUltima;
+    if (diferencaMs < 0) return null;
 
-  const dias = Math.floor(totalMinutos / 1440);
-  const horas = Math.floor((totalMinutos % 1440) / 60);
-  const minutos = totalMinutos % 60;
+    const totalMinutos = Math.floor(diferencaMs / 60000);
 
-  if (dias > 0) {
-    return `⚠️ Inativo (${dias}d ${horas}h)`;
+    if (totalMinutos <= 30) return null;
+
+    const dias = Math.floor(totalMinutos / 1440);
+    const horas = Math.floor((totalMinutos % 1440) / 60);
+    const minutos = totalMinutos % 60;
+
+    if (dias > 0) return `⚠️ Inativo (${dias}d ${horas}h)`;
+    if (horas > 0) return `⚠️ Inativo (${horas}h ${minutos}m)`;
+    return `⚠️ Inativo (${minutos} min)`;
+  } catch (e) {
+    return null;
   }
-
-  if (horas > 0) {
-    return `⚠️ Inativo (${horas}h ${minutos}m)`;
-  }
-
-  return `⚠️ Inativo (${minutos} min)`;
 }
 
 
@@ -434,7 +452,7 @@ async function carregarDadosUsuario(dados = null) {
       cercaAtiva: linha[14] === true || linha[14] === 'true',
       cercaLatLon: String(linha[15] || '').trim(),
       cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
-      dataUltima: String(linha[17] || '').trim(), // 👈 Lê a Coluna R (data)
+      dataUltima: String(linha[17] || '').trim(), 
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
 }
@@ -461,7 +479,7 @@ async function carregarTodosDados() {
       cercaAtiva: linha[14] === true || linha[14] === 'true',
       cercaLatLon: String(linha[15] || '').trim(),
       cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
-      dataUltima: String(linha[17] || '').trim(), // 👈 Lê a Coluna R (data)
+      dataUltima: String(linha[17] || '').trim(), 
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
   veiculosDoUsuario = todosVeiculos;
@@ -678,7 +696,6 @@ function alternarSeguirAtual() {
   }
 }
 
-// ⏱️ RENDERIZAR LISTA DE VEÍCULOS (Refatorado para utilizar a função unificada calcularTempoSemSinal)
 function renderizarListaVeiculos() {
   const listaEl = document.getElementById('lista-veiculos');
   if (!listaEl) return;
@@ -739,7 +756,6 @@ function abrirFecharPainel() {
   }
 }
 
-// ✅ RENDERIZA OS PAINÉIS DE ADMINISTRAÇÃO COM BOTÕES DINÂMICOS
 function renderizarPainelAdm() {
   if (!ehAdm) return;
   const listaUsuarios = document.getElementById('lista-todos-usuarios');
@@ -778,9 +794,8 @@ function renderizarPainelAdm() {
   });
 }
 
-// ✏️ PREENCHE OS CAMPOS DE USUÁRIO PARA EDITAR E MUDA O TEXTO DO BOTÃO PARA SALVAR
 function preencherEdicaoUsuario(usuario, senha) {
-  usuarioEditandoOriginal = usuario; // Guarda quem estamos a editar
+  usuarioEditandoOriginal = usuario;
   document.getElementById('novo-usuario').value = usuario;
   document.getElementById('nova-senha').value = senha;
   const confSenha = document.getElementById('confirma-senha');
@@ -792,12 +807,11 @@ function preencherEdicaoUsuario(usuario, senha) {
   document.getElementById('novo-usuario').focus();
 }
 
-// ✏️ PREENCHE OS CAMPOS DO VEÍCULO PARA EDITAR E MUDA O TEXTO DO BOTÃO PARA SALVAR
 function preencherEdicaoVeiculo(placa) {
   const v = todosVeiculos.find(item => item.placa === placa);
   if (!v) return;
 
-  placaEditandoOriginal = placa; // Guarda a placa original para atualizar corretamente
+  placaEditandoOriginal = placa;
 
   document.getElementById('campo-nome').value = v.nome || '';
   document.getElementById('campo-placa').value = v.placa || '';
@@ -1080,6 +1094,7 @@ function limparAlertaCerca() {
   document.getElementById('aviso-cerca-container').style.display = 'none';
 }
 
+// 🔍 BUSCAR E DESENHAR HISTÓRICO COM MARCADORES A, B E PARADAS
 async function buscarEdesenharHistorico() {
   if (!veiculoDetalheAberto) {
     alert("Selecione um veículo primeiro!");
@@ -1118,6 +1133,7 @@ async function buscarEdesenharHistorico() {
       }
     }
 
+    // Desenha a linha da rota
     camadaRotaHistorico = L.polyline(coordenadas, {
       color: '#007bff',
       weight: 5,
@@ -1126,13 +1142,93 @@ async function buscarEdesenharHistorico() {
 
     mapa.fitBounds(camadaRotaHistorico.getBounds(), { padding: [50, 50] });
 
+    // 🟢 Adiciona o Ponto A (Início)
+    const pontoInicial = res.pontos[0];
+    const iconePontoA = L.divIcon({
+      className: 'marcador-ponto-a',
+      html: '<div style="background: #28a745; color: #fff; border: 2px solid white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.4);">A</div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+    const markerA = L.marker([pontoInicial.lat, pontoInicial.lon], { icon: iconePontoA }).addTo(mapa);
+    markerA.bindPopup(`<b>🏁 Ponto A (Início)</b><br>Horário: ${pontoInicial.horario}`);
+    marcadoresExtremos.push(markerA);
+
+    // 🔴 Adiciona o Ponto B (Final)
+    const pontoFinal = res.pontos[res.pontos.length - 1];
+    const iconePontoB = L.divIcon({
+      className: 'marcador-ponto-b',
+      html: '<div style="background: #dc3545; color: #fff; border: 2px solid white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.4);">B</div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+    const markerB = L.marker([pontoFinal.lat, pontoFinal.lon], { icon: iconePontoB }).addTo(mapa);
+    markerB.bindPopup(`<b>🏁 Ponto B (Final)</b><br>Horário: ${pontoFinal.horario}`);
+    marcadoresExtremos.push(markerB);
+
     analisarEmarcarParadas(pontosParada);
+
+    // Exibe o botão de Play
+    const btnPlay = document.getElementById('btn-play-simulacao');
+    if (btnPlay) btnPlay.style.display = 'inline-block';
 
     alert(`✅ Rota carregada com sucesso! (${res.pontos.length} pontos encontrados).`);
 
   } catch (erro) {
     console.error(erro);
     alert("❌ Erro ao buscar histórico no servidor.");
+  }
+}
+
+// ▶️ FUNÇÃO DE SIMULAÇÃO (PLAY / PAUSE DA ROTA)
+function playRota() {
+  if (!dadosHistoricoCarregados || dadosHistoricoCarregados.length === 0) {
+    alert("Carregue primeiro uma rota clicando em 'Ver Rota'!");
+    return;
+  }
+
+  const btnPlay = document.getElementById('btn-play-simulacao');
+
+  if (timerSimulacao) {
+    pausarSimulacao();
+    if (btnPlay) btnPlay.textContent = "▶️ Play";
+    return;
+  }
+
+  if (btnPlay) btnPlay.textContent = "⏸️ Pausar";
+
+  if (indicePontoAtual >= dadosHistoricoCarregados.length - 1) {
+    indicePontoAtual = 0;
+  }
+
+  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+  const v = listaDados.find(x => x.placa === veiculoDetalheAberto);
+  const corVeiculo = v ? (v.cor || v.corMarcador || '#007bff') : '#007bff';
+  const iconeCarro = criarIconeCarroSimples(corVeiculo);
+
+  if (!marcadorSimulacao) {
+    const pInicial = dadosHistoricoCarregados[0];
+    marcadorSimulacao = L.marker([pInicial.lat, pInicial.lon], { icon: iconeCarro }).addTo(mapa);
+  }
+
+  timerSimulacao = setInterval(() => {
+    if (indicePontoAtual < dadosHistoricoCarregados.length) {
+      const p = dadosHistoricoCarregados[indicePontoAtual];
+      marcadorSimulacao.setLatLng([p.lat, p.lon]);
+      marcadorSimulacao.bindTooltip(`🚗 ${p.horario} — ${p.velocidade} km/h`, { direction: 'top' }).openTooltip();
+      mapa.setView([p.lat, p.lon]);
+      indicePontoAtual++;
+    } else {
+      pausarSimulacao();
+      if (btnPlay) btnPlay.textContent = "▶️ Replay";
+    }
+  }, 800);
+}
+
+function pausarSimulacao() {
+  if (timerSimulacao) {
+    clearInterval(timerSimulacao);
+    timerSimulacao = null;
   }
 }
 
@@ -1180,16 +1276,36 @@ function analisarEmarcarParadas(pontosParada) {
 }
 
 function limparHistoricoMapa() {
+  pausarSimulacao();
+  indicePontoAtual = 0;
+
   if (camadaRotaHistorico && mapa) {
     mapa.removeLayer(camadaRotaHistorico);
     camadaRotaHistorico = null;
   }
   
+  if (marcadorSimulacao && mapa) {
+    mapa.removeLayer(marcadorSimulacao);
+    marcadorSimulacao = null;
+  }
+
   marcadoresParadasHistorico.forEach(m => {
     if (mapa) mapa.removeLayer(m);
   });
   marcadoresParadasHistorico = [];
+
+  marcadoresExtremos.forEach(m => {
+    if (mapa) mapa.removeLayer(m);
+  });
+  marcadoresExtremos = [];
+
   dadosHistoricoCarregados = [];
+
+  const btnPlay = document.getElementById('btn-play-simulacao');
+  if (btnPlay) {
+    btnPlay.style.display = 'none';
+    btnPlay.textContent = "▶️ Play";
+  }
 }
 
 function exportarRelatorioCSV() {
