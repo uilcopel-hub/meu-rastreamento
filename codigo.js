@@ -1309,13 +1309,7 @@ function limparHistoricoMapa() {
 }
 
 
-// 📖 Função para Abrir e Fechar o Modal do Manual de Instruções
-function abrirFecharManual() {
-  const modal = document.getElementById('modal-manual');
-  if (modal) {
-    modal.classList.toggle('escondida');
-  }
-}
+
 
 
 
@@ -1340,7 +1334,13 @@ function exportarRelatorioCSV() {
   link.click();
   document.body.removeChild(link);
 }
-
+// 📖 Função para Abrir e Fechar o Modal do Manual de Instruções (Botão de Ajuda)
+function abrirFecharManual() {
+  const modal = document.getElementById('modal-manual');
+  if (modal) {
+    modal.classList.toggle('escondida');
+  }
+}
 window.onload = function() {
   mostrarVersaoLogin();
 };
