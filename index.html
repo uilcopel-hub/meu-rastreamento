@@ -37,6 +37,9 @@
         <button id="btnRuas" class="btn-mapa ativo" onclick="trocarMapa('ruas')">🗺️ Ruas</button>
         <button id="btnSat" class="btn-mapa" onclick="trocarMapa('satellite')">🛰️ Satélite</button>
         
+        <!-- BOTÃO DE AJUDA / MANUAL DE INSTRUÇÕES -->
+        <button id="btn-ajuda" class="btn-mapa" style="background: #17a2b8; color: white;" onclick="abrirFecharManual()">❓ Ajuda</button>
+
         <button id="btn-gerenciar" class="btn-secundario escondida" onclick="abrirFecharPainel()">⚙️ Gerenciar</button>
         <button class="btn-sair" onclick="sair()">Sair</button>
       </div>
@@ -98,12 +101,57 @@
         <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
           <input type="date" id="data-historico" style="flex: 1; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px;">
           <button onclick="buscarEdesenharHistorico()" style="background: #007bff; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">🔍 Ver Rota</button>
-          <!-- Botão Play adicionado -->
           <button id="btn-play-simulacao" onclick="playRota()" style="background: #28a745; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none;">▶️ Play</button>
         </div>
         <div style="display: flex; gap: 6px;">
           <button onclick="limparHistoricoMapa()" style="flex: 1; background: #6c757d; color: #fff; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px;">❌ Limpar Rota</button>
           <button onclick="exportarRelatorioCSV()" style="flex: 1; background: #28a745; color: #fff; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px;">📥 Exportar CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POP-UP MODAL DO MANUAL DE INSTRUÇÕES -->
+    <div id="modal-manual" class="modal-sobreposta escondida">
+      <div class="modal-conteudo">
+        <div class="modal-cabecalho">
+          <h2>📖 Manual do Usuário</h2>
+          <span class="fechar-modal" onclick="abrirFecharManual()">&times;</span>
+        </div>
+        <div class="modal-corpo">
+          <h3>1. 🔑 Acesso ao Sistema</h3>
+          <p>Insira seu usuário e senha na tela de login e clique em <b>Entrar</b>.</p>
+
+          <h3>2. 🗺️ Monitoramento em Tempo Real</h3>
+          <p>O mapa é atualizado automaticamente a cada 10 segundos. Utilize os botões no topo para alternar entre a visão de <b>Ruas</b> e <b>Satélite</b>.</p>
+          <ul>
+            <li><span style="color:#28a745; font-weight:bold;">🟢 Em movimento:</span> Veículo trafegando.</li>
+            <li><span style="color:#ffc107; font-weight:bold;">🟡 Parado:</span> Veículo parado ou ligado recentemente.</li>
+            <li><span style="color:#dc3545; font-weight:bold;">🔴 ⚠️ Inativo:</span> Rastreador sem sinal há mais de 30 minutos.</li>
+          </ul>
+
+          <h3>3. 🚙 Detalhes do Veículo</h3>
+          <p>Ao clicar em um veículo na lista ou no mapa, você pode ver a quilometragem percorrida (Hoje, 7 Dias, 30 Dias), velocidade e abrir a localização direta no <b>Google Maps</b>.</p>
+
+          <h3>4. 📍 Recursos Especiais</h3>
+          <ul>
+            <li><b>📍 Seguir no mapa:</b> Centraliza e acompanha o veículo em tempo real à medida que ele se move.</li>
+            <li><b>🛡️ Ativar Cerca:</b> Cria uma zona de proteção de 200m em volta do veículo. Se ele sair, emitirá um alerta de violação.</li>
+          </ul>
+
+          <h3>5. 📊 Histórico e Simulação (Play)</h3>
+          <p>Selecione uma data e clique em <b>🔍 Ver Rota</b>. O mapa exibirá o trajeto com:</p>
+          <ul>
+            <li><b>🟢 Ponto A:</b> Local de início da rota.</li>
+            <li><b>🔴 Ponto B:</b> Destino final da rota.</li>
+            <li><b>🅿️ Paradas:</b> Locais onde o veículo ficou estacionado.</li>
+            <li><b>▶️ Play:</b> Botão animado para simular o percurso do veículo passo a passo.</li>
+          </ul>
+
+          <h3>6. ⚙️ Painel de Gerenciamento (ADM)</h3>
+          <p>Administradores podem utilizar o botão <b>⚙️ Gerenciar</b> para criar, editar ou excluir contas de usuários e cadastrar novos veículos.</p>
+        </div>
+        <div class="modal-rodape">
+          <button onclick="abrirFecharManual()" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">Entendi / Fechar</button>
         </div>
       </div>
     </div>
@@ -114,7 +162,6 @@
         <span class="fechar-painel" onclick="abrirFecharPainel()">&times;</span>
         <h2>👑 Painel de Controle</h2>
         
-        <!-- ÁREA INTERNA COM SCROLL INDEPENDENTE -->
         <div class="painel-conteudo-scroll">
           <div class="secao-adm">
             <h3>➕ Criar Usuário</h3>
@@ -130,7 +177,7 @@
             <input type="text" id="campo-nome" placeholder="Nome / Modelo">
             <input type="text" id="campo-placa" placeholder="Placa">
             <input type="text" id="campo-imei" placeholder="IMEI do Rastreador">
-            <input type="number" id="campo-cor" placeholder="Cor / Observação"> <!-- Corrigido para text caso estivesse number -->
+            <input type="text" id="campo-cor" placeholder="Cor / Observação">
             <input type="text" id="campo-usuario-dono" placeholder="Usuário DONO">
             <button onclick="salvarVeiculo()">💾 Salvar Veículo</button>
           </div>
@@ -149,6 +196,6 @@
     </div>
   </div>
 
-  <script src="codigo.js?v=46.0"></script>
+  <script src="codigo.js?v=68.0"></script>
 </body>
 </html>
