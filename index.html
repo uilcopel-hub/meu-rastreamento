@@ -98,6 +98,8 @@
         <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
           <input type="date" id="data-historico" style="flex: 1; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px;">
           <button onclick="buscarEdesenharHistorico()" style="background: #007bff; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">🔍 Ver Rota</button>
+          <!-- Botão Play adicionado -->
+          <button id="btn-play-simulacao" onclick="playRota()" style="background: #28a745; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none;">▶️ Play</button>
         </div>
         <div style="display: flex; gap: 6px;">
           <button onclick="limparHistoricoMapa()" style="flex: 1; background: #6c757d; color: #fff; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px;">❌ Limpar Rota</button>
@@ -128,7 +130,7 @@
             <input type="text" id="campo-nome" placeholder="Nome / Modelo">
             <input type="text" id="campo-placa" placeholder="Placa">
             <input type="text" id="campo-imei" placeholder="IMEI do Rastreador">
-            <input type="text" id="campo-cor" placeholder="Cor / Observação">
+            <input type="number" id="campo-cor" placeholder="Cor / Observação"> <!-- Corrigido para text caso estivesse number -->
             <input type="text" id="campo-usuario-dono" placeholder="Usuário DONO">
             <button onclick="salvarVeiculo()">💾 Salvar Veículo</button>
           </div>
@@ -147,6 +149,6 @@
     </div>
   </div>
 
-  <script src="codigo.js?v=45.0"></script>
+  <script src="codigo.js?v=46.0"></script>
 </body>
 </html>
