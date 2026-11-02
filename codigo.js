@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 69 ✅
+// SISTEMA RASTREAMENTO — Versão: 70 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio | R=data
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 69";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 70";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -231,7 +231,7 @@ function sincronizarCercasNoMapa(listaDados) {
       if (partes.length === 2) {
         const latCentro = parseFloat(partes[0]);
         const lonCentro = parseFloat(partes[1]);
-        const raio = v.cercaRaio || 200;
+        const raio = v.cercaRaio || 100;
 
         if (!cercasVirtuais[placa] || !cercasVirtuais[placa].ativo) {
           let circulo = L.circle([latCentro, lonCentro], {
@@ -451,7 +451,7 @@ async function carregarDadosUsuario(dados = null) {
       horario: linha[13] || '--:--', 
       cercaAtiva: linha[14] === true || linha[14] === 'true',
       cercaLatLon: String(linha[15] || '').trim(),
-      cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
+      cercaRaio: linha[16] ? parseFloat(linha[16]) : 100,
       dataUltima: String(linha[17] || '').trim(), 
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
@@ -478,7 +478,7 @@ async function carregarTodosDados() {
       horario: linha[13] || '--:--', 
       cercaAtiva: linha[14] === true || linha[14] === 'true',
       cercaLatLon: String(linha[15] || '').trim(),
-      cercaRaio: linha[16] ? parseFloat(linha[16]) : 200,
+      cercaRaio: linha[16] ? parseFloat(linha[16]) : 100,
       dataUltima: String(linha[17] || '').trim(), 
       corMarcador: CORES_PADRAO[idx % CORES_PADRAO.length]
     }));
@@ -999,7 +999,7 @@ async function alternarCercaVirtual() {
   
   const ativarNovoEstado = !cercasVirtuais[placa] || !cercasVirtuais[placa].ativo;
   const latLonStr = `${v.lat},${v.lon}`;
-  const raioMetros = 200;
+  const raioMetros = 100;
 
   btnCerca.disabled = true;
   btnCerca.textContent = "⏳ A gravar...";
