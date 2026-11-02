@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 70 ✅
+// SISTEMA RASTREAMENTO — Versão: 71 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio | R=data
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 70";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 71";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -31,8 +31,8 @@ let camadaRotaHistorico = null;
 let marcadoresParadasHistorico = [];
 let dadosHistoricoCarregados = [];
 
-// 🚗 Variáveis para a Simulação de Rota (Play / Animação)
-let timerSimulacao = null;
+// 🚗 Variáveis para a Simulação de Rota (Play / Animação Fluida)
+let reproduzindoRota = false;
 let marcadorSimulacao = null;
 let indicePontoAtual = 0;
 let marcadoresExtremos = []; // Guarda os marcadores Ponto A e Ponto B
@@ -1180,7 +1180,7 @@ async function buscarEdesenharHistorico() {
   }
 }
 
-// ▶️ FUNÇÃO DE SIMULAÇÃO (PLAY / PAUSE DA ROTA)
+// ▶️ FUNÇÃO DE SIMULAÇÃO FLUIDA COM INTERPOLAÇÃO (LERP) E REQUESTANIMATIONFRAME
 function playRota() {
   if (!dadosHistoricoCarregados || dadosHistoricoCarregados.length === 0) {
     alert("Carregue primeiro uma rota clicando em 'Ver Rota'!");
@@ -1189,12 +1189,13 @@ function playRota() {
 
   const btnPlay = document.getElementById('btn-play-simulacao');
 
-  if (timerSimulacao) {
+  if (reproduzindoRota) {
     pausarSimulacao();
     if (btnPlay) btnPlay.textContent = "▶️ Play";
     return;
   }
 
+  reproduzindoRota = true;
   if (btnPlay) btnPlay.textContent = "⏸️ Pausar";
 
   if (indicePontoAtual >= dadosHistoricoCarregados.length - 1) {
@@ -1211,25 +1212,56 @@ function playRota() {
     marcadorSimulacao = L.marker([pInicial.lat, pInicial.lon], { icon: iconeCarro }).addTo(mapa);
   }
 
-  timerSimulacao = setInterval(() => {
-    if (indicePontoAtual < dadosHistoricoCarregados.length) {
-      const p = dadosHistoricoCarregados[indicePontoAtual];
-      marcadorSimulacao.setLatLng([p.lat, p.lon]);
-      marcadorSimulacao.bindTooltip(`🚗 ${p.horario} — ${p.velocidade} km/h`, { direction: 'top' }).openTooltip();
-      mapa.setView([p.lat, p.lon]);
-      indicePontoAtual++;
-    } else {
-      pausarSimulacao();
-      if (btnPlay) btnPlay.textContent = "▶️ Replay";
+  executarProximoTrechoFluido();
+}
+
+function executarProximoTrechoFluido() {
+  if (!reproduzindoRota || indicePontoAtual >= dadosHistoricoCarregados.length - 1) {
+    reproduzindoRota = false;
+    const btnPlay = document.getElementById('btn-play-simulacao');
+    if (btnPlay) btnPlay.textContent = "▶️ Replay";
+    return;
+  }
+
+  const atual = dadosHistoricoCarregados[indicePontoAtual];
+  const proximo = dadosHistoricoCarregados[indicePontoAtual + 1];
+
+  const p1 = [parseFloat(atual.lat), parseFloat(atual.lon)];
+  const p2 = [parseFloat(proximo.lat), parseFloat(proximo.lon)];
+
+  const duracaoTrecho = 800; // Duração da transição suave em milissegundos entre pontos
+  const inicioTempo = performance.now();
+
+  function animarPasso(tempoAtual) {
+    if (!reproduzindoRota) return;
+
+    const progresso = Math.min((tempoAtual - inicioTempo) / duracaoTrecho, 1);
+
+    // Interpolação Linear (LERP) para movimento contínuo
+    const latAtual = p1[0] + (p2[0] - p1[0]) * progresso;
+    const lonAtual = p1[1] + (p2[1] - p1[1]) * progresso;
+
+    marcadorSimulacao.setLatLng([latAtual, lonAtual]);
+    marcadorSimulacao.bindTooltip(`🚗 ${proximo.horario} — ${proximo.velocidade} km/h`, { direction: 'top' });
+
+    // Se o veículo estiver a ser seguido, centraliza o mapa suavemente
+    if (veiculosSeguidos[veiculoDetalheAberto]) {
+      mapa.panTo([latAtual, lonAtual], { animate: false });
     }
-  }, 800);
+
+    if (progresso < 1) {
+      requestAnimationFrame(animarPasso);
+    } else {
+      indicePontoAtual++;
+      executarProximoTrechoFluido();
+    }
+  }
+
+  requestAnimationFrame(animarPasso);
 }
 
 function pausarSimulacao() {
-  if (timerSimulacao) {
-    clearInterval(timerSimulacao);
-    timerSimulacao = null;
-  }
+  reproduzindoRota = false;
 }
 
 function analisarEmarcarParadas(pontosParada) {
@@ -1308,12 +1340,6 @@ function limparHistoricoMapa() {
   }
 }
 
-
-
-
-
-
-
 function exportarRelatorioCSV() {
   if (!dadosHistoricoCarregados || dadosHistoricoCarregados.length === 0) {
     alert("⚠️ Nenhum dado de histórico carregado para exportar. Clique primeiro em '🔍 Ver Rota'.");
@@ -1334,6 +1360,7 @@ function exportarRelatorioCSV() {
   link.click();
   document.body.removeChild(link);
 }
+
 // 📖 Função para Abrir e Fechar o Modal do Manual de Instruções (Botão de Ajuda)
 function abrirFecharManual() {
   const modal = document.getElementById('modal-manual');
@@ -1341,6 +1368,7 @@ function abrirFecharManual() {
     modal.classList.toggle('escondida');
   }
 }
+
 window.onload = function() {
   mostrarVersaoLogin();
 };
