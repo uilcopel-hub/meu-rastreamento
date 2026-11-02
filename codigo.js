@@ -1308,6 +1308,18 @@ function limparHistoricoMapa() {
   }
 }
 
+
+// 📖 Função para Abrir e Fechar o Modal do Manual de Instruções
+function abrirFecharManual() {
+  const modal = document.getElementById('modal-manual');
+  if (modal) {
+    modal.classList.toggle('escondida');
+  }
+}
+
+
+
+
 function exportarRelatorioCSV() {
   if (!dadosHistoricoCarregados || dadosHistoricoCarregados.length === 0) {
     alert("⚠️ Nenhum dado de histórico carregado para exportar. Clique primeiro em '🔍 Ver Rota'.");
