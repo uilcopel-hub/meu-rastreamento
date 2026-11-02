@@ -428,10 +428,9 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Evita scroll na caixa inteira */
+  overflow: hidden;
 }
 
-/* Cabeçalho e botão de fechar fixos no topo da caixa */
 .painel-conteudo h2 {
   font-size: 17px;
   margin-top: 0;
@@ -440,7 +439,7 @@ body {
   border-bottom: 2px solid #e9ecef;
   padding-bottom: 8px;
   text-align: left;
-  flex-shrink: 0; /* Impede que o título encolha */
+  flex-shrink: 0;
 }
 
 .fechar-painel {
@@ -460,7 +459,6 @@ body {
   color: #dc3545;
 }
 
-/* Área interna com scroll independente para o conteúdo do painel */
 .painel-conteudo-scroll {
   overflow-y: auto;
   max-height: calc(85vh - 70px);
@@ -605,6 +603,10 @@ body {
     padding: 10px;
   }
 
+  .painel-conteudo {
+    padding: 15px 12px;
+  }
+}
 
 /* ==============================================
    ESTILOS DO MODAL DO MANUAL (POP-UP DE AJUDA)
@@ -616,7 +618,7 @@ body {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 9999;
+  z-index: 99999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -668,7 +670,7 @@ body {
   margin-top: 12px;
   margin-bottom: 4px;
   color: #007bff;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1.5px solid #eee;
   padding-bottom: 2px;
 }
 
@@ -691,11 +693,4 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
-}
-
-
-   
-  .painel-conteudo {
-    padding: 15px 12px;
-  }
 }
