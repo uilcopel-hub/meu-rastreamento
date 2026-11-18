@@ -675,7 +675,8 @@ function focarNoVeiculo(placa) {
 
 function fecharCartao() {
   veiculoDetalheAberto = null;
-  limparHistoricoMapa();
+  
+  // Remove apenas o cartão da tela, sem desligar o "Seguir no mapa" nem apagar a linha de trajeto em tempo real
   document.getElementById('cartao-detalhes').classList.remove('aberto');
   renderizarListaVeiculos();
 }
