@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 71 ✅
+// SISTEMA RASTREAMENTO — Versão: 71.2 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio | R=data
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 71";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 71.2";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -41,6 +41,11 @@ let marcadoresExtremos = []; // Guarda os marcadores Ponto A e Ponto B
 let usuarioEditandoOriginal = null;
 let placaEditandoOriginal = null;
 
+// 📐 Controle de layout / espaço na tela
+let listaRecolhida = false;
+let cartaoMinimizado = false;
+let historicoExpandido = false;
+
 
 function mostrarVersaoLogin() {
   const el = document.getElementById('versao-sistema');
@@ -64,6 +69,50 @@ function inicializarMapa() {
   tornarArrastavel('painel-principal'); 
 }
 
+
+// ======================================================
+// 📐 CONTROLE DE MINIMIZAR / EXPANDIR PAINÉIS
+// ======================================================
+function alternarListaVeiculos() {
+  listaRecolhida = !listaRecolhida;
+  const painel = document.getElementById('painel-principal');
+  const corpo = document.getElementById('corpo-lista-veiculos');
+  const btn = document.getElementById('btn-minimizar-lista');
+
+  if (painel) painel.classList.toggle('recolhida', listaRecolhida);
+  if (corpo) corpo.classList.toggle('escondida', listaRecolhida);
+  if (btn) {
+    btn.textContent = listaRecolhida ? '＋' : '−';
+    btn.title = listaRecolhida ? 'Expandir lista de veículos' : 'Minimizar lista de veículos';
+  }
+}
+
+function alternarMinimizarCartao() {
+  cartaoMinimizado = !cartaoMinimizado;
+  const cartao = document.getElementById('cartao-detalhes');
+  const corpo = document.getElementById('cartao-corpo');
+  const btn = document.getElementById('btn-minimizar-cartao');
+
+  if (cartao) cartao.classList.toggle('minimizado', cartaoMinimizado);
+  if (corpo) corpo.classList.toggle('escondida', cartaoMinimizado);
+  if (btn) {
+    btn.textContent = cartaoMinimizado ? '＋' : '−';
+    btn.title = cartaoMinimizado ? 'Expandir detalhes do veículo' : 'Minimizar cartão de detalhes';
+  }
+}
+
+function alternarHistoricoCartao() {
+  historicoExpandido = !historicoExpandido;
+  const secao = document.getElementById('secao-historico-conteudo');
+  const btn = document.getElementById('btn-toggle-historico');
+
+  if (secao) secao.classList.toggle('escondida', !historicoExpandido);
+  if (btn) {
+    btn.textContent = historicoExpandido
+      ? '📊 Histórico de Rota e Paradas ▴'
+      : '📊 Histórico de Rota e Paradas ▾';
+  }
+}
 
 
 // ======================================================
@@ -115,7 +164,6 @@ function calcularTempoSemSinal(v) {
     return null;
   }
 }
-
 
 
 function traduzirCor(corStr) {
@@ -623,11 +671,22 @@ function sair() {
 }
 
 function focarNoVeiculo(placa) {
-  if (veiculoDetalheAberto === placa) { fecharCartao(); return; }
+  if (veiculoDetalheAberto === placa && !cartaoMinimizado) { fecharCartao(); return; }
   veiculoDetalheAberto = placa;
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
   const v = listaDados.find(x => x.placa === placa);
   if (!v) return;
+
+  if (cartaoMinimizado) {
+    cartaoMinimizado = false;
+    document.getElementById('cartao-detalhes').classList.remove('minimizado');
+    document.getElementById('cartao-corpo').classList.remove('escondida');
+    const btnMin = document.getElementById('btn-minimizar-cartao');
+    if (btnMin) {
+      btnMin.textContent = '−';
+      btnMin.title = 'Minimizar cartão de detalhes';
+    }
+  }
   
   document.getElementById('cartao-nome').textContent = v.nome || v.placa;
   document.getElementById('cartao-placa').textContent = v.placa;
@@ -675,9 +734,16 @@ function focarNoVeiculo(placa) {
 
 function fecharCartao() {
   veiculoDetalheAberto = null;
-  
-  // Remove apenas o cartão da tela, sem desligar o "Seguir no mapa" nem apagar a linha de trajeto em tempo real
-  document.getElementById('cartao-detalhes').classList.remove('aberto');
+  cartaoMinimizado = false;
+  const cartao = document.getElementById('cartao-detalhes');
+  const corpo = document.getElementById('cartao-corpo');
+  const btnMin = document.getElementById('btn-minimizar-cartao');
+  if (cartao) {
+    cartao.classList.remove('aberto');
+    cartao.classList.remove('minimizado');
+  }
+  if (corpo) corpo.classList.remove('escondida');
+  if (btnMin) btnMin.textContent = '−';
   renderizarListaVeiculos();
 }
 
@@ -769,8 +835,8 @@ function renderizarPainelAdm() {
     div.innerHTML = `
       <span><strong>${u[1]}</strong><br><small>Senha: ${u[2]} | Veículos: ${qtd}</small></span>
       <div style="display: flex; gap: 4px;">
-        <button class="btn-editar" style="background: #ffc107; color: #000; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;" onclick="preencherEdicaoUsuario('${u[1]}', '${u[2]}')">✏️ Editar</button>
-        <button class="btn-excluir" onclick="excluirUsuario('${u[1]}')">🗑️ Excluir</button>
+        <button type="button" class="btn-editar" style="background: #ffc107; color: #000; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;" onclick="preencherEdicaoUsuario('${u[1]}', '${u[2]}')">✏️ Editar</button>
+        <button type="button" class="btn-excluir" onclick="excluirUsuario('${u[1]}')">🗑️ Excluir</button>
       </div>
     `;
     listaUsuarios.appendChild(div);
@@ -787,8 +853,8 @@ function renderizarPainelAdm() {
         <small>Placa: ${v.placa} | IMEI: ${v.imei} | Dono: ${v.usuario}</small>
       </div>
       <div style="display: flex; gap: 4px;">
-        <button class="btn-editar" style="background: #ffc107; color: #000; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;" onclick="preencherEdicaoVeiculo('${v.placa}')">✏️ Editar</button>
-        <button class="btn-excluir" onclick="excluirVeiculo('${v.placa}')">🗑️ Excluir</button>
+        <button type="button" class="btn-editar" style="background: #ffc107; color: #000; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;" onclick="preencherEdicaoVeiculo('${v.placa}')">✏️ Editar</button>
+        <button type="button" class="btn-excluir" onclick="excluirVeiculo('${v.placa}')">🗑️ Excluir</button>
       </div>
     `;
     listaTodosVeic.appendChild(div);
