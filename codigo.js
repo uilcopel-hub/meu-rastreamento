@@ -1,8 +1,8 @@
 // ==============================================
-// SISTEMA RASTREAMENTO — Versão: 71.2 ✅
+// SISTEMA RASTREAMENTO — Versão: 72.0 ✅
 // COLUNAS: A=tipo | B=usuario | C=senha | D=placa | E=imei | F=nome | G=cor | H=lat | I=lon | J=velocidade | K=kmHoje | L=km7dias | M=km30dias | N=horario | O=cerca_ativa | P=cerca_lat_lon | Q=cerca_raio | R=data
 // ==============================================
-const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 71.2";
+const VERSAO_SISTEMA = "✅ SISTEMA RASTREAMENTO — UIL TELLES: 72.0";
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzyQyLHIISlIbnH2T_Gdq6s2hYLU9rSifp8DEU2pwUhvORyBN50wrDL6QPUbFTw9Y0M/exec";
 const USUARIO_ADM = "adm";
 const SENHA_ADM = "123456";
@@ -65,40 +65,90 @@ function inicializarMapa() {
   mapaRuas.addTo(mapa);
   modoAtual = 'ruas';
 
-  tornarArrastavel('cartao-detalhes'); 
-  tornarArrastavel('painel-principal'); 
+  // Permite arrastar os painéis quando estiverem maximizados
+  tornarArrastavel('cartao-detalhes', 'cabecalho-cartao-detalhes'); 
+  tornarArrastavel('painel-principal', 'cabecalho-lista-veiculos'); 
 }
 
 
 // ======================================================
-// 📐 CONTROLE DE MINIMIZAR / EXPANDIR PAINÉIS
+// 📐 DOCK NA BARRA DO TOPO + RESTAURAR POSIÇÃO ORGANIZADA
 // ======================================================
+function resetarPosicaoManual(el) {
+  if (!el) return;
+  el.style.top = '';
+  el.style.left = '';
+  el.style.bottom = '';
+  el.style.right = '';
+}
+
+function atualizarDockMinimizados() {
+  const dock = document.getElementById('dock-minimizados');
+  const painel = document.getElementById('painel-principal');
+  const cartao = document.getElementById('cartao-detalhes');
+
+  if (!dock) return;
+  dock.innerHTML = '';
+
+  // 1. Pílula do cartão do veículo minimizado (ex: "kwid + ×")
+  if (veiculoDetalheAberto && cartaoMinimizado) {
+    const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+    const v = listaDados.find(x => x.placa === veiculoDetalheAberto);
+    const nomeCurto = v ? (v.nome || v.placa) : veiculoDetalheAberto;
+
+    const pilulaCartao = document.createElement('div');
+    pilulaCartao.className = 'pilula-minimizada';
+    pilulaCartao.innerHTML = `
+      <span>${nomeCurto}</span>
+      <button type="button" title="Maximizar cartão" onclick="alternarMinimizarCartao()">＋</button>
+      <button type="button" class="btn-pilula-fechar" title="Fechar cartão" onclick="fecharCartao()">×</button>
+    `;
+    dock.appendChild(pilulaCartao);
+  }
+
+  // 2. Pílula da lista de veículos minimizada (ex: "Meus Veículos +")
+  if (listaRecolhida) {
+    const pilulaLista = document.createElement('div');
+    pilulaLista.className = 'pilula-minimizada';
+    pilulaLista.innerHTML = `
+      <span>Meus Veículos</span>
+      <button type="button" title="Maximizar lista de veículos" onclick="alternarListaVeiculos()">＋</button>
+    `;
+    dock.appendChild(pilulaLista);
+  }
+
+  // Mostra/esconde os painéis flutuantes conforme o estado
+  if (painel) {
+    painel.classList.toggle('escondida', listaRecolhida);
+  }
+
+  if (cartao) {
+    cartao.classList.toggle('lista-fechada', listaRecolhida);
+    if (veiculoDetalheAberto && !cartaoMinimizado) {
+      cartao.classList.add('aberto');
+    } else {
+      cartao.classList.remove('aberto');
+    }
+  }
+}
+
 function alternarListaVeiculos() {
   listaRecolhida = !listaRecolhida;
   const painel = document.getElementById('painel-principal');
-  const corpo = document.getElementById('corpo-lista-veiculos');
-  const btn = document.getElementById('btn-minimizar-lista');
-
-  if (painel) painel.classList.toggle('recolhida', listaRecolhida);
-  if (corpo) corpo.classList.toggle('escondida', listaRecolhida);
-  if (btn) {
-    btn.textContent = listaRecolhida ? '＋' : '−';
-    btn.title = listaRecolhida ? 'Expandir lista de veículos' : 'Minimizar lista de veículos';
+  if (!listaRecolhida && painel) {
+    resetarPosicaoManual(painel);
   }
+  atualizarDockMinimizados();
 }
 
 function alternarMinimizarCartao() {
+  if (!veiculoDetalheAberto) return;
   cartaoMinimizado = !cartaoMinimizado;
   const cartao = document.getElementById('cartao-detalhes');
-  const corpo = document.getElementById('cartao-corpo');
-  const btn = document.getElementById('btn-minimizar-cartao');
-
-  if (cartao) cartao.classList.toggle('minimizado', cartaoMinimizado);
-  if (corpo) corpo.classList.toggle('escondida', cartaoMinimizado);
-  if (btn) {
-    btn.textContent = cartaoMinimizado ? '＋' : '−';
-    btn.title = cartaoMinimizado ? 'Expandir detalhes do veículo' : 'Minimizar cartão de detalhes';
+  if (!cartaoMinimizado && cartao) {
+    resetarPosicaoManual(cartao);
   }
+  atualizarDockMinimizados();
 }
 
 function alternarHistoricoCartao() {
@@ -545,6 +595,12 @@ async function entrarTelaPrincipal() {
     btnGerenciar.classList.add('escondida');
   }
 
+  listaRecolhida = false;
+  cartaoMinimizado = false;
+  resetarPosicaoManual(document.getElementById('painel-principal'));
+  resetarPosicaoManual(document.getElementById('cartao-detalhes'));
+  atualizarDockMinimizados();
+
   inicializarMapa();
   atualizarTodosMarcadoresNoMapa();
   renderizarListaVeiculos();
@@ -572,8 +628,39 @@ async function atualizarPosicoesEmTempoReal() {
   renderizarListaVeiculos();
   atualizarTodosMarcadoresNoMapa();
 
+  // Continua seguindo e desenhando rota mesmo se o cartão estiver minimizado ou fechado
+  const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
+  listaDados.forEach(v => {
+    const semSinal = !v.lat || !v.lon;
+    if (semSinal) return;
+
+    verificarCercaVirtual(v);
+
+    if (mapa && veiculosSeguidos[v.placa]) {
+      const placa = v.placa;
+      if (!historicoRotas[placa]) {
+        historicoRotas[placa] = [];
+      }
+      const ultimoPonto = historicoRotas[placa][historicoRotas[placa].length - 1];
+      if (!ultimoPonto || ultimoPonto[0] !== v.lat || ultimoPonto[1] !== v.lon) {
+        historicoRotas[placa].push([v.lat, v.lon]);
+      }
+
+      mapa.setView([v.lat, v.lon], 18);
+
+      if (!linhasRotas[placa]) {
+        linhasRotas[placa] = L.polyline(historicoRotas[placa], { 
+          color: '#007bff', 
+          weight: 5, 
+          opacity: 0.8 
+        }).addTo(mapa);
+      } else {
+        linhasRotas[placa].setLatLngs(historicoRotas[placa]);
+      }
+    }
+  });
+
   if (veiculoDetalheAberto) {
-    const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
     const v = listaDados.find(x => x.placa === veiculoDetalheAberto);
     
     if (v) {
@@ -591,41 +678,6 @@ async function atualizarPosicoesEmTempoReal() {
       
       document.getElementById('cartao-velocidade').textContent = semSinal ? '--' : (v.velocidade || 0) + ' km/h';
       document.getElementById('cartao-horario').textContent = v.horario || '--:--';
-      
-      if (!semSinal) {
-        verificarCercaVirtual(v);
-      }
-      
-      if (!semSinal && mapa) {
-        const placa = v.placa;
-        if (!historicoRotas[placa]) {
-          historicoRotas[placa] = [];
-        }
-        
-        const ultimoPonto = historicoRotas[placa][historicoRotas[placa].length - 1];
-        if (!ultimoPonto || ultimoPonto[0] !== v.lat || ultimoPonto[1] !== v.lon) {
-          historicoRotas[placa].push([v.lat, v.lon]);
-        }
-
-        if (veiculosSeguidos[placa]) {
-          mapa.setView([v.lat, v.lon], 18);
-
-          if (!linhasRotas[placa]) {
-            linhasRotas[placa] = L.polyline(historicoRotas[placa], { 
-              color: '#007bff', 
-              weight: 5, 
-              opacity: 0.8 
-            }).addTo(mapa);
-          } else {
-            linhasRotas[placa].setLatLngs(historicoRotas[placa]);
-          }
-        } else {
-          if (linhasRotas[placa]) {
-            mapa.removeLayer(linhasRotas[placa]);
-            delete linhasRotas[placa];
-          }
-        }
-      }
     }
   }
 }
@@ -634,6 +686,9 @@ function sair() {
   usuarioAtual = null; 
   ehAdm = false;
   veiculosSeguidos = {}; 
+  veiculoDetalheAberto = null;
+  listaRecolhida = false;
+  cartaoMinimizado = false;
   
   if (timerAtualizacao) {
     clearInterval(timerAtualizacao);
@@ -649,6 +704,7 @@ function sair() {
   sessionStorage.clear();
   
   limparHistoricoMapa();
+  atualizarDockMinimizados();
 
   const campoUsuario = document.getElementById('usuario');
   const campoSenha = document.getElementById('senha');
@@ -667,26 +723,18 @@ function sair() {
 
   document.getElementById('tela-login').classList.remove('escondida');
   document.getElementById('tela-principal').classList.add('escondida');
-  document.getElementById('cartao-detalhes').classList.remove('aberto');
 }
 
 function focarNoVeiculo(placa) {
   if (veiculoDetalheAberto === placa && !cartaoMinimizado) { fecharCartao(); return; }
   veiculoDetalheAberto = placa;
+  cartaoMinimizado = false;
+
   const listaDados = ehAdm ? todosVeiculos : veiculosDoUsuario;
   const v = listaDados.find(x => x.placa === placa);
   if (!v) return;
 
-  if (cartaoMinimizado) {
-    cartaoMinimizado = false;
-    document.getElementById('cartao-detalhes').classList.remove('minimizado');
-    document.getElementById('cartao-corpo').classList.remove('escondida');
-    const btnMin = document.getElementById('btn-minimizar-cartao');
-    if (btnMin) {
-      btnMin.textContent = '−';
-      btnMin.title = 'Minimizar cartão de detalhes';
-    }
-  }
+  resetarPosicaoManual(document.getElementById('cartao-detalhes'));
   
   document.getElementById('cartao-nome').textContent = v.nome || v.placa;
   document.getElementById('cartao-placa').textContent = v.placa;
@@ -728,22 +776,15 @@ function focarNoVeiculo(placa) {
     mapa.setView([v.lat, v.lon], 18);
   }
   
-  document.getElementById('cartao-detalhes').classList.add('aberto');
+  atualizarDockMinimizados();
   renderizarListaVeiculos();
 }
 
 function fecharCartao() {
   veiculoDetalheAberto = null;
   cartaoMinimizado = false;
-  const cartao = document.getElementById('cartao-detalhes');
-  const corpo = document.getElementById('cartao-corpo');
-  const btnMin = document.getElementById('btn-minimizar-cartao');
-  if (cartao) {
-    cartao.classList.remove('aberto');
-    cartao.classList.remove('minimizado');
-  }
-  if (corpo) corpo.classList.remove('escondida');
-  if (btnMin) btnMin.textContent = '−';
+  resetarPosicaoManual(document.getElementById('cartao-detalhes'));
+  atualizarDockMinimizados();
   renderizarListaVeiculos();
 }
 
@@ -760,6 +801,9 @@ function alternarSeguirAtual() {
   
   if (veiculosSeguidos[placa]) {
     focarNoVeiculoECentralizar(placa);
+  } else if (linhasRotas[placa] && mapa) {
+    mapa.removeLayer(linhasRotas[placa]);
+    delete linhasRotas[placa];
   }
 }
 
