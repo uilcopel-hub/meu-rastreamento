@@ -31,6 +31,9 @@
     <header class="faixa-topo">
       <h1>🚗 Rastreamento Veicular</h1>
       <div class="faixa-botoes">
+        <!-- ZONA DE ENCAIXE DOS PAINÉIS MINIMIZADOS -->
+        <div id="dock-minimizados" class="dock-minimizados"></div>
+
         <span id="nome-usuario-logado"></span>
         
         <!-- BOTÕES DO MAPA NA FAIXA DO TOPO -->
@@ -50,9 +53,9 @@
 
     <!-- PAINEL ÚNICO NO DIREITO → Lista compacta -->
     <div class="barra-lateral-flutuante barra-direita" id="painel-principal">
-      <div class="cabecalho-painel">
+      <div class="cabecalho-painel" id="cabecalho-lista-veiculos">
         <h3 id="titulo-painel">Meus Veículos</h3>
-        <button type="button" id="btn-minimizar-lista" class="btn-mini-painel" title="Minimizar/Expandir lista" onclick="alternarListaVeiculos()">−</button>
+        <button type="button" id="btn-minimizar-lista" class="btn-mini-painel" title="Minimizar lista" onclick="alternarListaVeiculos()">−</button>
       </div>
       <div id="corpo-lista-veiculos">
         <div id="lista-veiculos"></div>
@@ -62,10 +65,10 @@
 
     <!-- CARTÃO DE DETALHES — APARECE AO CLICAR -->
     <div id="cartao-detalhes" class="cartao-detalhes">
-      <div class="cartao-cabecalho">
+      <div class="cartao-cabecalho" id="cabecalho-cartao-detalhes">
         <h3 id="cartao-nome"></h3>
         <div class="cartao-acoes-topo">
-          <button type="button" id="btn-minimizar-cartao" class="cartao-minimizar" title="Minimizar/Expandir cartão" onclick="alternarMinimizarCartao()">−</button>
+          <button type="button" id="btn-minimizar-cartao" class="cartao-minimizar" title="Minimizar cartão" onclick="alternarMinimizarCartao()">−</button>
           <button type="button" class="cartao-fechar" title="Fechar cartão" onclick="fecharCartao()">×</button>
         </div>
       </div>
@@ -211,6 +214,6 @@
     </div>
   </div>
 
-  <script src="codigo.js?v=71.2"></script>
+  <script src="codigo.js?v=72.0"></script>
 </body>
 </html>
