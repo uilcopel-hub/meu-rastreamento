@@ -104,14 +104,14 @@ body {
 }
 
 /* ==============================================
-   FAIXA BRANCA NO TOPO
+   FAIXA BRANCA NO TOPO E DOCK DE MINIMIZADOS
    ============================================== */
 .faixa-topo {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 60px;
+  height: 54px;
   background: white;
   display: flex;
   justify-content: space-between;
@@ -135,6 +135,60 @@ body {
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+}
+
+/* Área na barra superior onde os painéis minimizados encaixam */
+.dock-minimizados {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 4px;
+}
+
+.pilula-minimizada {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 4px 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e3c72;
+  white-space: nowrap;
+}
+
+.pilula-minimizada button {
+  background: #e9ecef;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pilula-minimizada button:hover {
+  background: #d3d9df;
+}
+
+.pilula-minimizada button.btn-pilula-fechar {
+  background: transparent;
+  color: #888;
+  font-size: 15px;
+}
+
+.pilula-minimizada button.btn-pilula-fechar:hover {
+  color: #dc3545;
+  background: #f8d7da;
 }
 
 /* BOTÕES DO MAPA */
@@ -189,17 +243,16 @@ body {
    ============================================== */
 .barra-direita {
   position: absolute;
-  top: 75px;
+  top: 66px;
   right: 15px;
   z-index: 1000;
-  width: 280px;
+  width: 285px;
   background: white;
   padding: 12px;
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  max-height: calc(100vh - 100px);
+  max-height: calc(50vh - 45px);
   overflow-y: auto;
-  transition: width 0.2s ease, padding 0.2s ease;
 }
 
 .cabecalho-painel {
@@ -208,10 +261,6 @@ body {
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
-}
-
-.barra-direita.recolhida .cabecalho-painel {
-  margin-bottom: 0;
 }
 
 .barra-direita h3 {
@@ -243,12 +292,6 @@ body {
 
 .btn-mini-painel:hover, .cartao-minimizar:hover {
   background: #d3d9df;
-}
-
-.barra-direita.recolhida {
-  width: auto;
-  max-height: none;
-  padding: 8px 12px;
 }
 
 /* BLOCO DE KM */
@@ -309,9 +352,9 @@ body {
    ============================================== */
 #mapa {
   width: 100%;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 54px);
   position: absolute;
-  top: 60px;
+  top: 54px;
   left: 0;
   z-index: 1;
 }
@@ -327,8 +370,8 @@ body {
 }
 
 .veiculo {
-  padding: 10px 12px;
-  margin-bottom: 8px;
+  padding: 9px 11px;
+  margin-bottom: 7px;
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.04);
@@ -364,29 +407,29 @@ body {
 .status-vermelho { background: #f8d7da; color: #721c24; font-weight: bold;}
 
 .rodape-lista {
-  margin-top: 12px;
-  font-size: 11px;
+  margin-top: 8px;
+  font-size: 10px;
   color: #888;
   border-top: 1px solid #eee;
-  padding-top: 8px;
+  padding-top: 6px;
 }
 
 /* ==============================================
-   CARTÃO DE DETALHES (COMPACTO E MINIMIZÁVEL)
+   CARTÃO DE DETALHES (ALINHADO À DIREITA ABAIXO DA LISTA)
    ============================================== */
 .cartao-detalhes {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
-  width: calc(100% - 40px);
-  max-width: 300px;
+  bottom: 24px;
+  right: 15px;
+  left: auto;
+  width: 285px;
   background: white;
   border-radius: 10px;
   padding: 10px 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   z-index: 1500;
   display: none;
-  max-height: calc(100vh - 100px);
+  max-height: calc(50vh - 30px);
   overflow-y: auto;
   font-size: 12px;
 }
@@ -395,17 +438,9 @@ body {
   display: block;
 }
 
-.cartao-detalhes.minimizado {
-  width: auto;
-  max-width: 260px;
-  padding: 8px 12px;
-}
-
-.cartao-detalhes.minimizado .cartao-cabecalho {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-  gap: 8px;
+/* Quando a lista de veículos está minimizada, o cartão pode subir/crescer mais se precisar */
+.cartao-detalhes.lista-fechada {
+  max-height: calc(100vh - 95px);
 }
 
 .cartao-cabecalho {
@@ -638,13 +673,13 @@ body {
 @media (max-width: 768px) {
   .faixa-topo {
     height: auto;
-    padding: 8px 10px;
+    padding: 6px 10px;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 5px;
   }
 
   .faixa-topo h1 {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .faixa-botoes {
@@ -653,13 +688,18 @@ body {
   }
 
   .btn-mapa, .btn-secundario, .btn-sair {
-    padding: 5px 8px;
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+
+  .pilula-minimizada {
+    padding: 3px 6px;
     font-size: 11px;
   }
 
   #mapa {
-    height: calc(100vh - 90px);
-    top: 90px !important;
+    height: calc(100vh - 82px);
+    top: 82px !important;
   }
 
   .barra-direita {
@@ -667,15 +707,8 @@ body {
     left: 10px;
     right: 10px;
     top: auto;
-    bottom: 95px;
-    max-height: 130px;
-  }
-
-  .barra-direita.recolhida {
-    left: auto;
-    right: 10px;
-    bottom: 14px;
-    max-height: none;
+    bottom: 10px;
+    max-height: 150px;
   }
 
   .cartao-detalhes {
@@ -685,12 +718,6 @@ body {
     bottom: 10px;
     padding: 10px 12px;
     max-height: 55vh;
-  }
-
-  .cartao-detalhes.minimizado {
-    left: 10px;
-    right: auto;
-    max-width: 240px;
   }
 
   .painel-central {
