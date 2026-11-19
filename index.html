@@ -50,62 +50,77 @@
 
     <!-- PAINEL ÚNICO NO DIREITO → Lista compacta -->
     <div class="barra-lateral-flutuante barra-direita" id="painel-principal">
-      <h3 id="titulo-painel">Meus Veículos</h3>
-      <div id="lista-veiculos"></div>
-      <div id="ultima-atualizacao" class="rodape-lista"></div>
+      <div class="cabecalho-painel">
+        <h3 id="titulo-painel">Meus Veículos</h3>
+        <button type="button" id="btn-minimizar-lista" class="btn-mini-painel" title="Minimizar/Expandir lista" onclick="alternarListaVeiculos()">−</button>
+      </div>
+      <div id="corpo-lista-veiculos">
+        <div id="lista-veiculos"></div>
+        <div id="ultima-atualizacao" class="rodape-lista"></div>
+      </div>
     </div>
 
     <!-- CARTÃO DE DETALHES — APARECE AO CLICAR -->
     <div id="cartao-detalhes" class="cartao-detalhes">
       <div class="cartao-cabecalho">
         <h3 id="cartao-nome"></h3>
-        <button class="cartao-fechar" onclick="fecharCartao()">&times;</button>
-      </div>
-      <p><strong>Placa:</strong> <span id="cartao-placa"></span></p>
-      <p><strong>IMEI:</strong> <span id="cartao-imei"></span></p>
-      <p id="cartao-dono-linha" class="dono-tag"></p>
-      
-      <div class="cartao-km" style="display: flex; gap: 4px; align-items: stretch;">
-        <span class="km-item diario" style="flex: 1;">Hoje<br><strong id="cartao-km-hoje"></strong></span>
-        <span class="km-item semanal" style="flex: 1;">7 Dias<br><strong id="cartao-km-7dias"></strong></span>
-        <span class="km-item mensal" style="flex: 1;">30 Dias<br><strong id="cartao-km-30dias"></strong></span>
-        <button onclick="abrirGoogleMapsVeiculo()" title="Abrir no Google Maps" style="flex: 1; background: #28a745; color: #fff; border: none; border-radius: 4px; padding: 4px 6px; cursor: pointer; font-weight: bold; font-size: 11px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">🗺️ Google<br>Maps</button>
-      </div>
-      
-      <div class="cartao-status">
-        <strong>Status:</strong> <span id="cartao-status"></span><br>
-        <strong>Velocidade:</strong> <span id="cartao-velocidade"></span><br>
-        <strong>Última atualização:</strong> <span id="cartao-horario"></span>
-      </div>
-      
-      <!-- BOTÕES DE AÇÃO DO CARTÃO (Seguir + Cerca Virtual) -->
-      <div style="display: flex; gap: 8px; margin-top: 12px;">
-        <button class="btn-seguir" id="btn-seguir-cartao" style="flex: 1; margin-top: 0;" onclick="alternarSeguirAtual()">
-          📍 Seguir no mapa
-        </button>
-        <button id="btn-cerca-cartao" style="flex: 1; background: #6c757d; color: #fff; border: none; border-radius: 4px; padding: 8px; cursor: pointer; font-weight: bold; font-size: 13px;" onclick="alternarCercaVirtual()">
-          🛡️ Ativar Cerca
-        </button>
-      </div>
-
-      <!-- AVISO VISUAL DE CERCA VIOLADA DENTRO DO CARTÃO -->
-      <div id="aviso-cerca-container" style="display: none; margin-top: 10px; padding: 8px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center;">
-        ⚠️ <span id="texto-aviso-cerca">Cerca violada!</span>
-        <br>
-        <button onclick="limparAlertaCerca()" style="margin-top: 6px; background: #721c24; color: #fff; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Limpar / Rearmar</button>
-      </div>
-
-      <!-- SECÇÃO DE HISTÓRICO DE ROTAS E PARADAS -->
-      <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid #ddd;">
-        <h4 style="font-size: 13px; margin-bottom: 6px; color: #333;">📊 Histórico de Rota e Paradas</h4>
-        <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
-          <input type="date" id="data-historico" style="flex: 1; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px;">
-          <button onclick="buscarEdesenharHistorico()" style="background: #007bff; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">🔍 Ver Rota</button>
-          <button id="btn-play-simulacao" onclick="playRota()" style="background: #28a745; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none;">▶️ Play</button>
+        <div class="cartao-acoes-topo">
+          <button type="button" id="btn-minimizar-cartao" class="cartao-minimizar" title="Minimizar/Expandir cartão" onclick="alternarMinimizarCartao()">−</button>
+          <button type="button" class="cartao-fechar" title="Fechar cartão" onclick="fecharCartao()">×</button>
         </div>
-        <div style="display: flex; gap: 6px;">
-          <button onclick="limparHistoricoMapa()" style="flex: 1; background: #6c757d; color: #fff; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px;">❌ Limpar Rota</button>
-          <button onclick="exportarRelatorioCSV()" style="flex: 1; background: #28a745; color: #fff; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px;">📥 Exportar CSV</button>
+      </div>
+
+      <div id="cartao-corpo">
+        <p><strong>Placa:</strong> <span id="cartao-placa"></span></p>
+        <p><strong>IMEI:</strong> <span id="cartao-imei"></span></p>
+        <p id="cartao-dono-linha" class="dono-tag"></p>
+        
+        <div class="cartao-km" style="display: flex; gap: 4px; align-items: stretch;">
+          <span class="km-item diario" style="flex: 1;">Hoje<br><strong id="cartao-km-hoje"></strong></span>
+          <span class="km-item semanal" style="flex: 1;">7 Dias<br><strong id="cartao-km-7dias"></strong></span>
+          <span class="km-item mensal" style="flex: 1;">30 Dias<br><strong id="cartao-km-30dias"></strong></span>
+          <button type="button" onclick="abrirGoogleMapsVeiculo()" title="Abrir no Google Maps" style="flex: 1; background: #28a745; color: #fff; border: none; border-radius: 4px; padding: 4px 6px; cursor: pointer; font-weight: bold; font-size: 11px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">🗺️ Google<br>Maps</button>
+        </div>
+        
+        <div class="cartao-status">
+          <strong>Status:</strong> <span id="cartao-status"></span><br>
+          <strong>Velocidade:</strong> <span id="cartao-velocidade"></span><br>
+          <strong>Última atualização:</strong> <span id="cartao-horario"></span>
+        </div>
+        
+        <!-- BOTÕES DE AÇÃO DO CARTÃO (Seguir + Cerca Virtual) -->
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button type="button" class="btn-seguir" id="btn-seguir-cartao" style="flex: 1; margin-top: 0;" onclick="alternarSeguirAtual()">
+            📍 Seguir no mapa
+          </button>
+          <button type="button" id="btn-cerca-cartao" style="flex: 1; background: #6c757d; color: #fff; border: none; border-radius: 4px; padding: 8px; cursor: pointer; font-weight: bold; font-size: 13px;" onclick="alternarCercaVirtual()">
+            🛡️ Ativar Cerca
+          </button>
+        </div>
+
+        <!-- AVISO VISUAL DE CERCA VIOLADA DENTRO DO CARTÃO -->
+        <div id="aviso-cerca-container" style="display: none; margin-top: 8px; padding: 8px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center;">
+          ⚠️ <span id="texto-aviso-cerca">Cerca violada!</span>
+          <br>
+          <button type="button" onclick="limparAlertaCerca()" style="margin-top: 6px; background: #721c24; color: #fff; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Limpar / Rearmar</button>
+        </div>
+
+        <!-- SECÇÃO RECOLHÍVEL DE HISTÓRICO DE ROTAS E PARADAS -->
+        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #ddd;">
+          <button type="button" id="btn-toggle-historico" class="btn-toggle-secao" onclick="alternarHistoricoCartao()">
+            📊 Histórico de Rota e Paradas ▾
+          </button>
+          <div id="secao-historico-conteudo" class="escondida" style="margin-top: 8px;">
+            <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
+              <input type="date" id="data-historico" style="flex: 1; padding: 5px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px;">
+              <button type="button" onclick="buscarEdesenharHistorico()" style="background: #007bff; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">🔍 Ver Rota</button>
+              <button type="button" id="btn-play-simulacao" onclick="playRota()" style="background: #28a745; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none;">▶️ Play</button>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" onclick="limparHistoricoMapa()" style="flex: 1; background: #6c757d; color: #fff; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px;">❌ Limpar Rota</button>
+              <button type="button" onclick="exportarRelatorioCSV()" style="flex: 1; background: #28a745; color: #fff; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 11px;">📥 Exportar CSV</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -115,7 +130,7 @@
       <div class="modal-conteudo">
         <div class="modal-cabecalho">
           <h2>📖 Manual do Usuário</h2>
-          <span class="fechar-modal" onclick="abrirFecharManual()">&times;</span>
+          <span class="fechar-modal" onclick="abrirFecharManual()">×</span>
         </div>
         <div class="modal-corpo">
           <h3>1. 🔑 Acesso ao Sistema</h3>
@@ -151,7 +166,7 @@
           <p>Administradores podem utilizar o botão <b>⚙️ Gerenciar</b> para criar, editar ou excluir contas de usuários e cadastrar novos veículos.</p>
         </div>
         <div class="modal-rodape">
-          <button onclick="abrirFecharManual()" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">Entendi / Fechar</button>
+          <button type="button" onclick="abrirFecharManual()" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">Entendi / Fechar</button>
         </div>
       </div>
     </div>
@@ -159,7 +174,7 @@
     <!-- PAINEL ADMINISTRADOR CENTRAL -->
     <div id="painel-adm" class="painel-central escondida">
       <div class="painel-conteudo">
-        <span class="fechar-painel" onclick="abrirFecharPainel()">&times;</span>
+        <span class="fechar-painel" onclick="abrirFecharPainel()">×</span>
         <h2>👑 Painel de Controle</h2>
         
         <div class="painel-conteudo-scroll">
@@ -169,7 +184,7 @@
             <input type="password" id="nova-senha" placeholder="Senha (mín. 4 caracteres)">
             <input type="password" id="confirma-senha" placeholder="Repetir senha">
             <p id="erro-cadastro" class="erro"></p>
-            <button onclick="criarConta()">✅ Criar Conta</button>
+            <button type="button" onclick="criarConta()">✅ Criar Conta</button>
           </div>
         
           <div class="secao-adm">
@@ -179,7 +194,7 @@
             <input type="text" id="campo-imei" placeholder="IMEI do Rastreador">
             <input type="text" id="campo-cor" placeholder="Cor / Observação">
             <input type="text" id="campo-usuario-dono" placeholder="Usuário DONO">
-            <button onclick="salvarVeiculo()">💾 Salvar Veículo</button>
+            <button type="button" onclick="salvarVeiculo()">💾 Salvar Veículo</button>
           </div>
         
           <div class="secao-adm">
@@ -196,6 +211,6 @@
     </div>
   </div>
 
-  <script src="codigo.js?v=68.0"></script>
+  <script src="codigo.js?v=71.2"></script>
 </body>
 </html>
