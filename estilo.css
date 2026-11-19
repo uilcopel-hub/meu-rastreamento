@@ -25,10 +25,10 @@ body {
   left: 0;
 }
 
-.cartao-cabecalho, .barra-direita h3 {
+.cartao-cabecalho, .cabecalho-painel {
   cursor: grab;
 }
-.cartao-cabecalho:active, .barra-direita h3:active {
+.cartao-cabecalho:active, .cabecalho-painel:active {
   cursor: grabbing;
 }
 
@@ -199,16 +199,56 @@ body {
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
   max-height: calc(100vh - 100px);
   overflow-y: auto;
+  transition: width 0.2s ease, padding 0.2s ease;
+}
+
+.cabecalho-painel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.barra-direita.recolhida .cabecalho-painel {
+  margin-bottom: 0;
 }
 
 .barra-direita h3 {
   color: #1e3c72;
-  margin-bottom: 10px;
-  font-size: 16px;
+  margin: 0;
+  font-size: 15px;
 }
 
 .barra-direita h3.titulo-adm {
   color: #9c27b0;
+}
+
+.btn-mini-painel, .cartao-minimizar {
+  background: #e9ecef;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  width: 24px;
+  height: 24px;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-mini-painel:hover, .cartao-minimizar:hover {
+  background: #d3d9df;
+}
+
+.barra-direita.recolhida {
+  width: auto;
+  max-height: none;
+  padding: 8px 12px;
 }
 
 /* BLOCO DE KM */
@@ -332,7 +372,7 @@ body {
 }
 
 /* ==============================================
-   CARTÃO DE DETALHES (COMPACTO)
+   CARTÃO DE DETALHES (COMPACTO E MINIMIZÁVEL)
    ============================================== */
 .cartao-detalhes {
   position: absolute;
@@ -342,7 +382,7 @@ body {
   max-width: 300px;
   background: white;
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 10px 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   z-index: 1500;
   display: none;
@@ -355,6 +395,19 @@ body {
   display: block;
 }
 
+.cartao-detalhes.minimizado {
+  width: auto;
+  max-width: 260px;
+  padding: 8px 12px;
+}
+
+.cartao-detalhes.minimizado .cartao-cabecalho {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  gap: 8px;
+}
+
 .cartao-cabecalho {
   display: flex;
   justify-content: space-between;
@@ -362,10 +415,22 @@ body {
   margin-bottom: 8px;
   padding-bottom: 6px;
   border-bottom: 1px solid #eee;
+  gap: 6px;
 }
 
-.cartao-cabecalho h2 {
-  font-size: 15px;
+.cartao-cabecalho h3 {
+  font-size: 14px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cartao-acoes-topo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .cartao-fechar {
@@ -374,13 +439,30 @@ body {
   font-size: 20px;
   cursor: pointer;
   color: #888;
-  padding: 0;
+  padding: 0 2px;
   line-height: 1;
   transition: color 0.2s;
 }
 
 .cartao-fechar:hover {
   color: #dc3545;
+}
+
+.btn-toggle-secao {
+  width: 100%;
+  background: #f1f3f5;
+  color: #333;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.btn-toggle-secao:hover {
+  background: #e9ecef;
 }
 
 .cartao-km {
@@ -589,13 +671,26 @@ body {
     max-height: 130px;
   }
 
+  .barra-direita.recolhida {
+    left: auto;
+    right: 10px;
+    bottom: 14px;
+    max-height: none;
+  }
+
   .cartao-detalhes {
     left: 10px;
     right: 10px;
     width: auto;
     bottom: 10px;
-    padding: 12px;
+    padding: 10px 12px;
     max-height: 55vh;
+  }
+
+  .cartao-detalhes.minimizado {
+    left: 10px;
+    right: auto;
+    max-width: 240px;
   }
 
   .painel-central {
